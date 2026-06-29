@@ -19,6 +19,10 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Contracts\CountryServiceInterface::class,
             \App\Services\External\RestCountriesService::class
         );
+        $this->app->bind(
+            \App\Repositories\Contracts\EconomicIndicatorRepositoryInterface::class,
+            \App\Repositories\EconomicIndicatorRepository::class
+        );
     }
 
     /**
