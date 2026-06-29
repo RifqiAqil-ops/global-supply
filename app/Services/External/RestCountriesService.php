@@ -231,7 +231,6 @@ class RestCountriesService extends BaseApiClient implements CountryServiceInterf
             'sub_region' => $item['subregion'] ?? null,
             'latitude' => isset($item['latlng'][0]) ? (float) $item['latlng'][0] : null,
             'longitude' => isset($item['latlng'][1]) ? (float) $item['latlng'][1] : null,
-            'population' => (int) ($item['population'] ?? 0),
             'area' => isset($item['area']) ? (float) $item['area'] : null,
             'flag_url' => 'https://flagcdn.com/w320/' . strtolower($iso2) . '.png',
             'flag_emoji' => $item['flag'] ?? null,
@@ -273,6 +272,7 @@ class RestCountriesService extends BaseApiClient implements CountryServiceInterf
             timezones: $country->timezones ?? [],
             languages: $country->languages ?? [],
             borders: $country->borders ?? [],
+            tld: $country->tld,
         );
     }
 }

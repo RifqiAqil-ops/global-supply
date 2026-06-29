@@ -49,18 +49,7 @@ class CountryController extends Controller
 
         $isOffline = false;
 
-        // 1. Fetch REST Countries live data
-        try {
-            $countryDTO = $this->countryService->fetchByIso($code);
-            if ($countryDTO->isCached) {
-                $isOffline = true;
-            }
-        } catch (Throwable $e) {
-            Log::error("Failed to load live country details: " . $e->getMessage());
-            abort(500, "Unable to load country details.");
-        }
-
-        // 2. Fetch World Bank indicators live
+        // 1. Fetch World Bank indicators live (to sync population data to master record first)
         try {
             $indicators = $this->worldBankService->getLatestIndicators($countryModel->id);
             if ($indicators->first() && $indicators->first()->isCached) {
@@ -70,6 +59,17 @@ class CountryController extends Controller
             Log::warning("Country details failed to load live indicators: " . $e->getMessage());
             $indicators = collect();
             $isOffline = true;
+        }
+
+        // 2. Fetch REST Countries live data (reads updated population from DB)
+        try {
+            $countryDTO = $this->countryService->fetchByIso($code);
+            if ($countryDTO->isCached) {
+                $isOffline = true;
+            }
+        } catch (Throwable $e) {
+            Log::error("Failed to load live country details: " . $e->getMessage());
+            abort(500, "Unable to load country details.");
         }
 
         // 3. Fetch Weather live

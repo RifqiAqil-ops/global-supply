@@ -148,7 +148,7 @@
                             <i class="bi bi-thermometer-half"></i>
                         </div>
                         <h2 class="text-white fw-bold mb-1">{{ number_format($weather->temperature, 1) }}&deg;C</h2>
-                        <p class="text-muted small mb-3">Apparent Temperature: {{ number_format($weather->apparent_temperature, 1) }}&deg;C</p>
+                        <p class="text-muted small mb-3">Apparent Temperature: {{ number_format($weather->feels_like, 1) }}&deg;C</p>
                         
                         <div class="d-flex justify-content-center gap-2 mb-3">
                             <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-20 py-1.5 px-2.5 fw-semibold fs-7">{{ $weather->weather_description }}</span>
@@ -161,7 +161,7 @@
                             </div>
                             <div class="col-6">
                                 <span class="text-muted small d-block">Relative Humidity</span>
-                                <span class="text-white fw-semibold small">{{ $weather->relative_humidity }}%</span>
+                                <span class="text-white fw-semibold small">{{ $weather->humidity }}%</span>
                             </div>
                             <div class="col-6">
                                 <span class="text-muted small d-block">Surface Pressure</span>

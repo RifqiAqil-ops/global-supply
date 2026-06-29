@@ -26,6 +26,7 @@ class CountryDTO
         public readonly array $timezones = [],
         public readonly array $languages = [],
         public readonly array $borders = [],
+        public readonly ?string $tld = null,
     ) {}
 
     /**
@@ -53,6 +54,7 @@ class CountryDTO
             timezones: $data['timezones'] ?? [],
             languages: $data['languages'] ?? [],
             borders: $data['borders'] ?? [],
+            tld: $data['tld'] ?? null,
         );
     }
 

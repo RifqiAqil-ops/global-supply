@@ -264,6 +264,9 @@ class WorldBankService extends BaseApiClient
                 $data = $response->json();
                 if (isset($data[1]) && is_array($data[1])) {
                     $records = $data[1];
+                    $latestPopulation = null;
+                    $latestPopYear = 0;
+
                     foreach ($records as $record) {
                         $year = (int) ($record['date'] ?? 0);
                         $value = $record['value'] !== null ? (float) $record['value'] : null;
@@ -287,10 +290,17 @@ class WorldBankService extends BaseApiClient
                             ]
                         );
 
-                        // Side Effect: If the indicator is total population, update the master countries table
-                        if ($code === 'SP.POP.TOTL' && $year === $endYear - 1) {
-                            Country::where('id', $country->id)->update(['population' => (int) $value]);
+                        // Side Effect: Track latest population value
+                        if ($code === 'SP.POP.TOTL') {
+                            if ($year > $latestPopYear) {
+                                $latestPopYear = $year;
+                                $latestPopulation = (int) $value;
+                            }
                         }
+                    }
+
+                    if ($code === 'SP.POP.TOTL' && $latestPopulation !== null) {
+                        Country::where('id', $country->id)->update(['population' => $latestPopulation]);
                     }
                 }
             } else {
