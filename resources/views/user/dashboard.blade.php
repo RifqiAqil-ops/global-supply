@@ -9,9 +9,12 @@
         <p class="text-muted small mb-0">Consolidated risk score across global logistics, weather, and macro economics.</p>
     </div>
     <div>
-        <button class="btn btn-primary d-flex align-items-center gap-2">
-            <i class="bi bi-arrow-clockwise"></i> Refresh Metrics
-        </button>
+        <form method="POST" action="{{ route('user.refresh-metrics') }}" class="m-0">
+            @csrf
+            <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-arrow-clockwise"></i> Refresh Metrics
+            </button>
+        </form>
     </div>
 </div>
 
@@ -30,7 +33,7 @@
     <div class="col-sm-6 col-xl-3">
         <x-stat-card 
             title="Countries Monitored" 
-            value="195" 
+            value="{{ $countriesMonitored }}" 
             change="All Clear" 
             changeType="neutral" 
             icon="bi-globe" 
@@ -40,7 +43,7 @@
     <div class="col-sm-6 col-xl-3">
         <x-stat-card 
             title="Active Extreme Events" 
-            value="8" 
+            value="{{ $extremeWeatherCount }}" 
             change="+2 events" 
             changeType="up" 
             icon="bi-cloud-lightning-rain" 
@@ -50,7 +53,7 @@
     <div class="col-sm-6 col-xl-3">
         <x-stat-card 
             title="Currency Pairs Monitored" 
-            value="15" 
+            value="{{ $currenciesCount }}" 
             change="-0.4% Volatility" 
             changeType="down" 
             icon="bi-currency-exchange" 
@@ -148,38 +151,44 @@
     <div class="col-lg-7">
         <x-card title="My Sourcing Watchlist" icon="bi-eye">
             <x-slot name="headerActions">
-                <button class="btn btn-sm btn-secondary py-1 px-3">View All</button>
+                <a href="{{ route('watchlists.index') }}" class="btn btn-sm btn-secondary py-1 px-3">View All</a>
             </x-slot>
             
             <x-table :headers="['Country Code', 'Sourcing Region', 'Risk Score', 'Port Status', 'Action']">
+                @forelse($watchlistCountries as $c)
+                @php
+                    $weather = $c->weatherData->first();
+                    $weatherDesc = $weather ? $weather->weather_description : 'No Data';
+                    $portStatus = 'Active';
+                    $portIcon = 'bi-check-circle-fill';
+                    $portColor = 'text-success';
+                    
+                    if ($c->iso2 === 'CN') {
+                        $portStatus = 'Congested';
+                        $portIcon = 'bi-exclamation-triangle-fill';
+                        $portColor = 'text-warning';
+                    } elseif ($c->iso2 === 'PH') {
+                        $portStatus = 'Disrupted';
+                        $portIcon = 'bi-x-circle-fill';
+                        $portColor = 'text-danger';
+                    }
+                @endphp
                 <tr>
-                    <td><strong>USA</strong></td>
-                    <td class="small text-muted">North America</td>
-                    <td><x-badge type="success">12.5 (Low)</x-badge></td>
-                    <td><span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Active</span></td>
-                    <td><button class="btn btn-sm btn-link text-primary p-0">Details</button></td>
+                    <td><strong>{{ $c->iso3 }}</strong></td>
+                    <td class="small text-muted">{{ $c->region }}</td>
+                    <td>
+                        <x-badge type="{{ $c->iso2 === 'PH' ? 'danger' : ($c->iso2 === 'US' ? 'success' : 'warning') }}">
+                            {{ $c->iso2 === 'PH' ? '62.4 (High)' : ($c->iso2 === 'US' ? '12.5 (Low)' : '39.8 (Medium)') }}
+                        </x-badge>
+                    </td>
+                    <td><span class="{{ $portColor }}"><i class="bi {{ $portIcon }} me-1"></i> {{ $portStatus }}</span></td>
+                    <td><a href="{{ route('countries.index') }}" class="btn btn-sm btn-link text-primary p-0 text-decoration-none">Details</a></td>
                 </tr>
+                @empty
                 <tr>
-                    <td><strong>CHN</strong></td>
-                    <td class="small text-muted">East Asia</td>
-                    <td><x-badge type="warning">48.2 (Medium)</x-badge></td>
-                    <td><span class="text-warning"><i class="bi bi-exclamation-triangle-fill me-1"></i> Congested</span></td>
-                    <td><button class="btn btn-sm btn-link text-primary p-0">Details</button></td>
+                    <td colspan="5" class="text-center text-muted py-3">No watchlist countries configured.</td>
                 </tr>
-                <tr>
-                    <td><strong>IND</strong></td>
-                    <td class="small text-muted">South Asia</td>
-                    <td><x-badge type="warning">39.8 (Medium)</x-badge></td>
-                    <td><span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Active</span></td>
-                    <td><button class="btn btn-sm btn-link text-primary p-0">Details</button></td>
-                </tr>
-                <tr>
-                    <td><strong>PHL</strong></td>
-                    <td class="small text-muted">Southeast Asia</td>
-                    <td><x-badge type="danger">62.4 (High)</x-badge></td>
-                    <td><span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Disrupted</span></td>
-                    <td><button class="btn btn-sm btn-link text-primary p-0">Details</button></td>
-                </tr>
+                @endforelse
             </x-table>
         </x-card>
     </div>
@@ -213,7 +222,7 @@
                     <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-20 mt-1 small">Geopolitics</span>
                     <div>
                         <h6 class="text-white mb-1 fw-semibold small">Suez Canal Route Tension Escalates With Local Shipping Restrictions</h6>
-                        <span class="text-muted small d-block" style="font-size: 0.75rem;">Source: Lloyd's List &bull; 10 mins ago</span>
+                        <span class="text-muted small d-block" style="font-size: 0.75rem;">Source: Lloyd\'s List &bull; 10 mins ago</span>
                     </div>
                 </div>
                 <div class="p-2.5 rounded border border-secondary border-opacity-10 d-flex gap-3 align-items-start" style="background-color: rgba(255, 255, 255, 0.01);">
@@ -242,7 +251,7 @@
                     <div class="text-success"><i class="bi bi-plus-circle-fill"></i></div>
                     <div>
                         <span class="text-white small fw-semibold">Watchlist Added</span>
-                        <p class="text-muted small mb-0" style="font-size: 0.75rem;">User logged country item 'PHL' to primary watchlist.</p>
+                        <p class="text-muted small mb-0" style="font-size: 0.75rem;">User logged country item \'PHL\' to primary watchlist.</p>
                         <span class="text-muted small" style="font-size: 0.7rem;">Today, 10:14 AM</span>
                     </div>
                 </div>
