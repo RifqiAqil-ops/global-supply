@@ -161,7 +161,7 @@ class ExchangeRateService extends BaseApiClient
     }
 
     /**
-     * Get the latest rate for a currency code with 1-hour TTL caching.
+     * Get the latest rate for a currency code. Always attempts real-time fetch first, falls back to DB cache if API fails.
      */
     public function getLatestRate(string $currencyCode, bool $forceRefresh = false): ?ExchangeRate
     {
@@ -173,9 +173,60 @@ class ExchangeRateService extends BaseApiClient
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, $ttl, function () use ($currencyCode) {
-            return $this->rateRepository->latestRate($currencyCode);
-        });
+        // Try API first
+        try {
+            // Find a country with this currency code to link country_id if possible
+            $country = Country::where('currency_code', $currencyCode)->first();
+            
+            $response = $this->request('GET', 'latest/USD');
+            if (empty($response) || !isset($response['rates'])) {
+                throw new \Exception("ExchangeRate API returned invalid response.");
+            }
+
+            $rates = $response['rates'];
+            $rateDate = $response['date'] ?? now()->toDateString();
+            $idrRate = $rates['IDR'] ?? null;
+
+            if (!isset($rates[$currencyCode])) {
+                throw new \Exception("Currency code '{$currencyCode}' not found in API response.");
+            }
+
+            $apiRate = (float) $rates[$currencyCode];
+            $rateToUsd = $apiRate > 0 ? round(1 / $apiRate, 10) : 0.0;
+            $rateToIdr = ($idrRate && $apiRate > 0) ? round($idrRate / $apiRate, 4) : null;
+
+            $record = ExchangeRate::updateOrCreate(
+                ['currency_code' => $currencyCode, 'rate_date' => $rateDate],
+                [
+                    'country_id'     => $country ? $country->id : null,
+                    'currency_name'  => $country ? $country->currency_name : null,
+                    'rate_to_usd'    => $rateToUsd,
+                    'rate_to_idr'    => $rateToIdr,
+                    'change_percent' => null,
+                    'source'         => 'ExchangeRate API',
+                ]
+            );
+
+            if ($record) {
+                $record->isCached = false;
+            }
+            Cache::put($cacheKey, $record, $ttl);
+            return $record;
+
+        } catch (Throwable $e) {
+            Log::warning("ExchangeRate API call failed for '{$currencyCode}', falling back to database: " . $e->getMessage());
+
+            // Fallback to cache/database
+            $record = Cache::remember($cacheKey, $ttl, function () use ($currencyCode) {
+                return $this->rateRepository->latestRate($currencyCode);
+            });
+
+            if ($record) {
+                $record->isCached = true;
+            }
+
+            return $record;
+        }
     }
 
     /**

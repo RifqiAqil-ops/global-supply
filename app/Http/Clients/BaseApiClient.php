@@ -178,7 +178,7 @@ abstract class BaseApiClient
     /**
      * Record request log to database.
      */
-    private function logApiCall(
+    protected function logApiCall(
         string $method,
         string $endpoint,
         ?int $statusCode,

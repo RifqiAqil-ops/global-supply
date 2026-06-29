@@ -154,20 +154,149 @@ class WorldBankService extends BaseApiClient
     }
 
     /**
-     * Get indicators for a country using Laravel cache (TTL = 24 hours).
+     * Get indicators for a country. Always attempts real-time fetch first, falls back to DB cache if API fails.
      */
     public function getLatestIndicators(int $countryId, bool $forceRefresh = false): EloquentCollection
     {
+        $country = Country::findOrFail($countryId);
         $cacheKey = "country.{$countryId}.indicators.latest";
-        $ttl = config('gscrip.cache_ttl.world_bank', 86400); // 24 hours
 
         if ($forceRefresh) {
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, $ttl, function () use ($countryId) {
-            return $this->indicatorRepository->latestIndicators($countryId);
-        });
+        // Try live parallel API fetch first
+        try {
+            $startYear = now()->subYears(5)->year;
+            $endYear = now()->year;
+
+            $this->refreshCountryIndicators($country, $startYear, $endYear);
+
+            $indicators = $this->indicatorRepository->latestIndicators($countryId);
+            foreach ($indicators as $ind) {
+                $ind->isCached = false;
+            }
+
+            Cache::put($cacheKey, $indicators, config('gscrip.cache_ttl.world_bank', 86400));
+            return $indicators;
+
+        } catch (Throwable $e) {
+            Log::warning("World Bank API call failed for '{$country->name}', falling back to database: " . $e->getMessage());
+
+            // Fallback to cache/database
+            $indicators = Cache::remember($cacheKey, config('gscrip.cache_ttl.world_bank', 86400), function () use ($countryId) {
+                return $this->indicatorRepository->latestIndicators($countryId);
+            });
+
+            foreach ($indicators as $ind) {
+                $ind->isCached = true;
+            }
+
+            return $indicators;
+        }
+    }
+
+    /**
+     * Refreshes indicators for a single country using Laravel's parallel HTTP pool.
+     */
+    public function refreshCountryIndicators(Country $country, int $startYear, int $endYear): void
+    {
+        $iso3 = strtoupper($country->iso3);
+        $baseUrl = config('gscrip.api.world_bank', 'https://api.worldbank.org/v2');
+
+        $t1 = microtime(true);
+        $responses = \Illuminate\Support\Facades\Http::pool(fn (\Illuminate\Http\Client\Pool $pool) => [
+            $pool->as('gdp')->timeout(5)->get("{$baseUrl}/country/{$iso3}/indicator/NY.GDP.MKTP.CD?date={$startYear}:{$endYear}&format=json"),
+            $pool->as('gdp_capita')->timeout(5)->get("{$baseUrl}/country/{$iso3}/indicator/NY.GDP.PCAP.CD?date={$startYear}:{$endYear}&format=json"),
+            $pool->as('inflation')->timeout(5)->get("{$baseUrl}/country/{$iso3}/indicator/FP.CPI.TOTL.ZG?date={$startYear}:{$endYear}&format=json"),
+            $pool->as('population')->timeout(5)->get("{$baseUrl}/country/{$iso3}/indicator/SP.POP.TOTL?date={$startYear}:{$endYear}&format=json"),
+            $pool->as('exports')->timeout(5)->get("{$baseUrl}/country/{$iso3}/indicator/NE.EXP.GNFS.CD?date={$startYear}:{$endYear}&format=json"),
+            $pool->as('imports')->timeout(5)->get("{$baseUrl}/country/{$iso3}/indicator/NE.IMP.GNFS.CD?date={$startYear}:{$endYear}&format=json"),
+        ]);
+
+        $elapsed = round((microtime(true) - $t1) * 1000, 2);
+
+        // Pre-parse the indicators mapping
+        $indicatorMapping = self::INDICATORS;
+
+        foreach ($responses as $key => $response) {
+            $code = match($key) {
+                'gdp' => 'NY.GDP.MKTP.CD',
+                'gdp_capita' => 'NY.GDP.PCAP.CD',
+                'inflation' => 'FP.CPI.TOTL.ZG',
+                'population' => 'SP.POP.TOTL',
+                'exports' => 'NE.EXP.GNFS.CD',
+                'imports' => 'NE.IMP.GNFS.CD',
+            };
+
+            $name = $indicatorMapping[$code];
+            $endpoint = "{$baseUrl}/country/{$iso3}/indicator/{$code}?date={$startYear}:{$endYear}&format=json";
+
+            $isSuccess = false;
+            $statusCode = 0;
+            $responseBody = '';
+            $errorMessage = null;
+
+            if ($response instanceof \Illuminate\Http\Client\Response) {
+                $statusCode = $response->status();
+                $responseBody = $response->body();
+                $isSuccess = $response->successful();
+                if (!$isSuccess) {
+                    $errorMessage = "HTTP Error " . $statusCode;
+                }
+            } else if ($response instanceof \Throwable) {
+                $errorMessage = "Connection failed: " . $response->getMessage();
+            }
+
+            // Log each API call manually to api_logs
+            $this->logApiCall(
+                method: 'GET',
+                endpoint: $endpoint,
+                statusCode: $statusCode ?: null,
+                responseTime: $elapsed,
+                responseSize: strlen($responseBody),
+                params: ['date' => "{$startYear}:{$endYear}", 'format' => 'json'],
+                isSuccess: $isSuccess,
+                errorMessage: $errorMessage
+            );
+
+            if ($isSuccess && $response instanceof \Illuminate\Http\Client\Response) {
+                $data = $response->json();
+                if (isset($data[1]) && is_array($data[1])) {
+                    $records = $data[1];
+                    foreach ($records as $record) {
+                        $year = (int) ($record['date'] ?? 0);
+                        $value = $record['value'] !== null ? (float) $record['value'] : null;
+
+                        if ($year === 0 || $value === null) {
+                            continue;
+                        }
+
+                        // Save indicator record
+                        EconomicIndicator::updateOrCreate(
+                            [
+                                'country_id' => $country->id,
+                                'indicator_code' => $code,
+                                'year' => $year
+                            ],
+                            [
+                                'indicator_name' => $name,
+                                'value' => $value,
+                                'unit' => $record['unit'] ?: null,
+                                'source' => 'World Bank API',
+                            ]
+                        );
+
+                        // Side Effect: If the indicator is total population, update the master countries table
+                        if ($code === 'SP.POP.TOTL' && $year === $endYear - 1) {
+                            Country::where('id', $country->id)->update(['population' => (int) $value]);
+                        }
+                    }
+                }
+            } else {
+                throw new \Exception($errorMessage ?? "World Bank API call for indicator {$code} failed.");
+            }
+        }
     }
 
     /**
@@ -192,11 +321,6 @@ class WorldBankService extends BaseApiClient
      */
     public function flushCache(): void
     {
-        // Flush tags or wildcard keys if Redis, else standard flush or keys
-        // Since we are using standard database cache by default, let's clear full cache or flush locally
-        // Laravel's database store doesn't support tags, so we can run a simple pattern flush if Redis
-        // Or clear specifically for processed countries. A simple Cache::flush() is safe or custom keys clearing.
-        // Let's clear the entire cache since it's the simplest and safest fallback for database stores.
         Cache::flush();
     }
 }

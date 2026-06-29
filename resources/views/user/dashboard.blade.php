@@ -182,7 +182,7 @@
                         </x-badge>
                     </td>
                     <td><span class="{{ $portColor }}"><i class="bi {{ $portIcon }} me-1"></i> {{ $portStatus }}</span></td>
-                    <td><a href="{{ route('countries.index') }}" class="btn btn-sm btn-link text-primary p-0 text-decoration-none">Details</a></td>
+                    <td><a href="{{ route('countries.show', $c->iso2) }}" class="btn btn-sm btn-link text-primary p-0 text-decoration-none">Details</a></td>
                 </tr>
                 @empty
                 <tr>

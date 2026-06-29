@@ -1,0 +1,232 @@
+@extends('layouts.app')
+
+@section('title', $countryDTO->name . ' Detail')
+
+@section('content')
+<div class="container-fluid py-4">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url('/') }}" class="text-decoration-none text-muted">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('countries.index') }}" class="text-decoration-none text-muted">Countries</a></li>
+            <li class="breadcrumb-item active text-white" aria-current="page">{{ $countryDTO->name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Fallback / Live Indicator Alert -->
+    @if($isOffline)
+        <div class="alert alert-warning border-warning border-opacity-20 bg-warning bg-opacity-5 d-flex align-items-center gap-2 mb-4 shadow-sm" role="alert">
+            <span class="spinner-grow spinner-grow-sm text-warning" role="status" aria-hidden="true"></span>
+            <div>
+                <strong>Offline Fallback Mode Active:</strong> API connection timeout or rate limit reached. Displaying latest cached data from database.
+            </div>
+        </div>
+    @else
+        <div class="alert alert-success border-success border-opacity-20 bg-success bg-opacity-5 d-flex align-items-center gap-2 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-broadcast text-success animate-ping"></i>
+            <div>
+                <strong>Live API Data Connection:</strong> Viewing real-time data directly from REST Countries, World Bank, Open-Meteo, and Exchange Rate APIs.
+            </div>
+        </div>
+    @endif
+
+    <!-- Country Header Card -->
+    <div class="card card-premium border-0 mb-4 overflow-hidden">
+        <div class="card-body p-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="{{ $countryDTO->flagUrl }}" alt="{{ $countryDTO->name }} Flag" class="rounded border border-secondary border-opacity-20 shadow-sm" style="width: 80px; height: 53px; object-fit: cover;">
+                    <div>
+                        <h1 class="h3 text-white mb-1 fw-bold">{{ $countryDTO->name }}</h1>
+                        <p class="text-muted small mb-0">{{ $countryDTO->officialName }} &bull; {{ $countryDTO->region }} ({{ $countryDTO->subRegion }})</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-secondary py-2 px-3 fw-bold border border-secondary border-opacity-30">ISO2: {{ $countryDTO->iso2 }}</span>
+                    <span class="badge bg-secondary py-2 px-3 fw-bold border border-secondary border-opacity-30">ISO3: {{ $countryDTO->iso3 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- LEFT COLUMN: Profile, Economic & Currency -->
+        <div class="col-lg-8">
+            <!-- Profile Card -->
+            <div class="card card-premium border-0 mb-4">
+                <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                    <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-info-circle me-2 text-primary"></i>Country Profile & Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Capital City</span>
+                            <span class="text-white fw-medium">{{ $countryDTO->capital ?? 'N/A' }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Total Population</span>
+                            <span class="text-white fw-medium">{{ number_format($countryDTO->population) }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Total Area Size</span>
+                            <span class="text-white fw-medium">{{ $countryDTO->area ? number_format($countryDTO->area) . ' sq km' : 'N/A' }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Official TLD Domain</span>
+                            <span class="text-white fw-medium"><code>{{ $countryDTO->tld ?? 'N/A' }}</code></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Economic Indicators Card -->
+            <div class="card card-premium border-0 mb-4">
+                <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                    <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-graph-up me-2 text-primary"></i>Economic Indicators (World Bank Live)</h5>
+                </div>
+                <div class="card-body p-0">
+                    <x-table :headers="['Indicator Name', 'Year', 'Value', 'Unit', 'Source']">
+                        @forelse($indicators as $ind)
+                        <tr>
+                            <td><strong>{{ $ind->indicator_name }}</strong></td>
+                            <td>{{ $ind->year }}</td>
+                            <td>{{ number_format($ind->value, 2) }}</td>
+                            <td class="small text-muted">{{ $ind->unit ?? 'USD' }}</td>
+                            <td><x-badge type="success">{{ $ind->source }}</x-badge></td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">No economic indicators available for this country.</td>
+                        </tr>
+                        @endforelse
+                    </x-table>
+                </div>
+            </div>
+
+            <!-- Currency & Exchange Rate -->
+            <div class="card card-premium border-0 mb-4">
+                <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                    <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-currency-exchange me-2 text-primary"></i>Currency Exchange Rates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Currency Unit</span>
+                            <h4 class="text-white fw-bold mb-1">{{ $countryDTO->currencyName }} ({{ $countryDTO->currencySymbol }})</h4>
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 px-2.5 py-1 small fw-bold">Code: {{ $countryDTO->currencyCode }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-3 rounded border border-secondary border-opacity-20" style="background-color: rgba(255,255,255,0.01);">
+                                <span class="text-muted small d-block">Relative Exchange Value</span>
+                                <div class="d-flex flex-column gap-1 mt-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted small">1 {{ $countryDTO->currencyCode }} =</span>
+                                        <span class="text-white fw-semibold">{{ $exchangeRate ? round($exchangeRate->rate_to_usd, 6) . ' USD' : 'N/A' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted small">1 {{ $countryDTO->currencyCode }} =</span>
+                                        <span class="text-white fw-semibold">{{ $exchangeRate ? number_format($exchangeRate->rate_to_idr, 2) . ' IDR' : 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Weather & News -->
+        <div class="col-lg-4">
+            <!-- Weather Card -->
+            <div class="card card-premium border-0 mb-4">
+                <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                    <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-cloud-sun me-2 text-primary"></i>Local Weather (Open-Meteo Live)</h5>
+                </div>
+                <div class="card-body text-center py-4">
+                    @if($weather)
+                        <div class="display-3 text-warning mb-2">
+                            <i class="bi bi-thermometer-half"></i>
+                        </div>
+                        <h2 class="text-white fw-bold mb-1">{{ number_format($weather->temperature, 1) }}&deg;C</h2>
+                        <p class="text-muted small mb-3">Apparent Temperature: {{ number_format($weather->apparent_temperature, 1) }}&deg;C</p>
+                        
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-20 py-1.5 px-2.5 fw-semibold fs-7">{{ $weather->weather_description }}</span>
+                        </div>
+
+                        <div class="row g-2 text-start pt-3 border-top border-secondary border-opacity-10">
+                            <div class="col-6">
+                                <span class="text-muted small d-block">Wind Speed</span>
+                                <span class="text-white fw-semibold small">{{ $weather->wind_speed }} km/h</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted small d-block">Relative Humidity</span>
+                                <span class="text-white fw-semibold small">{{ $weather->relative_humidity }}%</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted small d-block">Surface Pressure</span>
+                                <span class="text-white fw-semibold small">{{ $weather->pressure }} hPa</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted small d-block">Visibility</span>
+                                <span class="text-white fw-semibold small">{{ $weather->visibility / 1000 }} km</span>
+                            </div>
+                        </div>
+                    @else
+                        <div class="text-muted py-4">
+                            <i class="bi bi-cloud-slash display-5 mb-2"></i>
+                            <p class="small mb-0">No live weather data available.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- News Feed Card -->
+            <div class="card card-premium border-0">
+                <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                    <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-newspaper me-2 text-primary"></i>Geopolitical & Economic News</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-3">
+                        @forelse($news as $article)
+                        @php
+                            $sentimentColor = 'bg-secondary';
+                            if ($article->sentiment === 'positive') $sentimentColor = 'bg-success';
+                            elseif ($article->sentiment === 'negative') $sentimentColor = 'bg-danger';
+                        @endphp
+                        <div class="p-2.5 rounded border border-secondary border-opacity-10" style="background-color: rgba(255, 255, 255, 0.01);">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge {{ $sentimentColor }} bg-opacity-10 text-{{ $article->sentiment }} border border-{{ $article->sentiment }} border-opacity-20 small fw-bold">{{ strtoupper($article->sentiment) }}</span>
+                                <span class="text-muted small" style="font-size: 0.7rem;">{{ $article->published_at->diffForHumans() }}</span>
+                            </div>
+                            <h6 class="text-white mb-1 fw-semibold small"><a href="{{ $article->source_url }}" target="_blank" class="text-decoration-none text-white hover-primary">{{ $article->title }}</a></h6>
+                            <span class="text-muted small d-block" style="font-size: 0.72rem;">Source: {{ $article->source_name }}</span>
+                        </div>
+                        @empty
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-newspaper display-6 mb-2"></i>
+                            <p class="small mb-0">No country-specific news articles found.</p>
+                        </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes ping {
+    75%, 100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+.animate-ping {
+    animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.hover-primary:hover {
+    color: var(--bs-primary) !important;
+}
+</style>
+@endsection

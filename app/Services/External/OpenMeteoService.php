@@ -130,7 +130,7 @@ class OpenMeteoService extends BaseApiClient
     }
 
     /**
-     * Get the latest weather for a country, utilising cache (TTL = 30 mins).
+     * Get the latest weather for a country. Always attempts real-time fetch first, falls back to DB cache if API fails.
      */
     public function getLatestWeather(int $countryId, bool $forceRefresh = false): ?WeatherData
     {
@@ -141,9 +141,30 @@ class OpenMeteoService extends BaseApiClient
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, $ttl, function () use ($countryId) {
-            return $this->weatherRepository->latestWeather($countryId);
-        });
+        // Try API first
+        try {
+            $weather = $this->refreshCountryWeather($countryId);
+            if ($weather) {
+                $weather->isCached = false;
+            }
+            
+            Cache::put($cacheKey, $weather, $ttl);
+            return $weather;
+
+        } catch (Throwable $e) {
+            Log::warning("Open-Meteo API call failed for country ID '{$countryId}', falling back to database: " . $e->getMessage());
+
+            // Fallback to cache/database
+            $weather = Cache::remember($cacheKey, $ttl, function () use ($countryId) {
+                return $this->weatherRepository->latestWeather($countryId);
+            });
+
+            if ($weather) {
+                $weather->isCached = true;
+            }
+
+            return $weather;
+        }
     }
 
     /**

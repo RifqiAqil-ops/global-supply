@@ -27,17 +27,30 @@ class RestCountriesService extends BaseApiClient implements CountryServiceInterf
     }
 
     /**
-     * Fetch country info by ISO code from the local database.
+     * Fetch country info by ISO code. Always attempts real-time fetch first, falls back to DB cache if API fails.
      */
     public function fetchByIso(string $isoCode): CountryDTO
     {
-        $country = $this->countryRepository->findByCode($isoCode);
-        
-        if (!$country) {
+        try {
+            // Attempt to refresh data from API
             $country = $this->refreshCountry($isoCode);
+            $dto = $this->mapToDTO($country);
+            $dto->isCached = false;
+            return $dto;
+        } catch (Throwable $e) {
+            Log::warning("REST Countries API call failed for ISO '{$isoCode}', falling back to database: " . $e->getMessage());
+            
+            // Fallback to database
+            $country = $this->countryRepository->findByCode($isoCode);
+            if ($country) {
+                $dto = $this->mapToDTO($country);
+                $dto->isCached = true;
+                return $dto;
+            }
+            
+            // If neither works, throw the exception
+            throw $e;
         }
-
-        return $this->mapToDTO($country);
     }
 
     /**
@@ -141,7 +154,9 @@ class RestCountriesService extends BaseApiClient implements CountryServiceInterf
     public function refreshCountry(string $code): Country
     {
         $code = trim(strtoupper($code));
-        $data = $this->request('GET', 'countries.json');
+        $data = Cache::remember('countries.api_raw', 300, function () {
+            return $this->request('GET', 'countries.json');
+        });
 
         if (empty($data)) {
             throw new \Exception("Country dataset is empty.");

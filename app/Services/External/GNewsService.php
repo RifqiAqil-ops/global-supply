@@ -192,6 +192,9 @@ class GNewsService extends BaseApiClient
     /**
      * Get latest news articles with 1-hour TTL caching.
      */
+    /**
+     * Get the latest news articles. Always attempts real-time fetch first, falls back to DB cache if API fails.
+     */
     public function getLatestArticles(int $limit = 20, ?string $category = null, bool $forceRefresh = false): EloquentCollection
     {
         $cacheKey = "news.latest." . ($category ?? 'general') . ".{$limit}";
@@ -201,13 +204,38 @@ class GNewsService extends BaseApiClient
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, $ttl, function () use ($limit, $category) {
-            return $this->newsRepository->latestArticles($limit, $category);
-        });
+        // Try API first if configured
+        try {
+            if ($this->hasApiKey()) {
+                $this->syncAllNews();
+                
+                $articles = $this->newsRepository->latestArticles($limit, $category);
+                foreach ($articles as $art) {
+                    $art->isCached = false;
+                }
+
+                Cache::put($cacheKey, $articles, $ttl);
+                return $articles;
+            } else {
+                throw new \Exception("GNews API Key not configured.");
+            }
+        } catch (Throwable $e) {
+            Log::warning("GNews API call failed, falling back to database: " . $e->getMessage());
+
+            $articles = Cache::remember($cacheKey, $ttl, function () use ($limit, $category) {
+                return $this->newsRepository->latestArticles($limit, $category);
+            });
+
+            foreach ($articles as $art) {
+                $art->isCached = true;
+            }
+
+            return $articles;
+        }
     }
 
     /**
-     * Get news for a country with cache.
+     * Get news for a country. Always attempts real-time fetch first, falls back to DB cache if API fails.
      */
     public function getCountryNews(int $countryId, int $limit = 10, bool $forceRefresh = false): EloquentCollection
     {
@@ -218,9 +246,34 @@ class GNewsService extends BaseApiClient
             Cache::forget($cacheKey);
         }
 
-        return Cache::remember($cacheKey, $ttl, function () use ($countryId, $limit) {
-            return $this->newsRepository->articlesByCountry($countryId, $limit);
-        });
+        // Try API first if configured
+        try {
+            if ($this->hasApiKey()) {
+                $this->syncCountryNews($countryId);
+
+                $articles = $this->newsRepository->articlesByCountry($countryId, $limit);
+                foreach ($articles as $art) {
+                    $art->isCached = false;
+                }
+
+                Cache::put($cacheKey, $articles, $ttl);
+                return $articles;
+            } else {
+                throw new \Exception("GNews API Key not configured.");
+            }
+        } catch (Throwable $e) {
+            Log::warning("GNews country API call failed for ID '{$countryId}', falling back to database: " . $e->getMessage());
+
+            $articles = Cache::remember($cacheKey, $ttl, function () use ($countryId, $limit) {
+                return $this->newsRepository->articlesByCountry($countryId, $limit);
+            });
+
+            foreach ($articles as $art) {
+                $art->isCached = true;
+            }
+
+            return $articles;
+        }
     }
 
     /**

@@ -4,6 +4,8 @@ namespace App\DTOs;
 
 class CountryDTO
 {
+    public bool $isCached = false;
+
     public function __construct(
         public readonly string $iso2,
         public readonly string $iso3,

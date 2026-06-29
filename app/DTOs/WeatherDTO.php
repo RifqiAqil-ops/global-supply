@@ -4,6 +4,8 @@ namespace App\DTOs;
 
 class WeatherDTO
 {
+    public bool $isCached = false;
+
     public function __construct(
         public readonly float $temperature,
         public readonly ?float $feelsLike = null,

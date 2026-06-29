@@ -4,6 +4,8 @@ namespace App\DTOs;
 
 class ExchangeRateDTO
 {
+    public bool $isCached = false;
+
     public function __construct(
         public readonly string $currencyCode,
         public readonly float $rateToUsd,

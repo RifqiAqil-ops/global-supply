@@ -4,6 +4,8 @@ namespace App\DTOs;
 
 class NewsDTO
 {
+    public bool $isCached = false;
+
     public function __construct(
         public readonly string $title,
         public readonly ?string $description = null,

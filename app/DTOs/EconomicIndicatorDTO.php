@@ -4,6 +4,8 @@ namespace App\DTOs;
 
 class EconomicIndicatorDTO
 {
+    public bool $isCached = false;
+
     public function __construct(
         public readonly string $indicatorCode,
         public readonly string $indicatorName,

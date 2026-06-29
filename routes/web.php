@@ -86,6 +86,8 @@ Route::middleware('auth')->group(function () {
         return view('placeholders.module', ['title' => 'Countries Index', 'icon' => 'bi-flag']);
     })->name('countries.index');
 
+    Route::get('countries/{code}', [\App\Http\Controllers\CountryController::class, 'show'])->name('countries.show');
+
     Route::get('ports', function () {
         return view('placeholders.module', ['title' => 'Ports & Logistics', 'icon' => 'bi-anchor']);
     })->name('ports.index');
