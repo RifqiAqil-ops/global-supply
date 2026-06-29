@@ -203,9 +203,12 @@
                             <span class="text-muted small d-block" style="font-size: 0.72rem;">Source: {{ $article->source_name }}</span>
                         </div>
                         @empty
-                        <div class="text-center text-muted py-4">
-                            <i class="bi bi-newspaper display-6 mb-2"></i>
-                            <p class="small mb-0">No country-specific news articles found.</p>
+                        <div class="text-center py-4 px-3 rounded border border-warning border-opacity-10 bg-warning bg-opacity-5">
+                            <i class="bi bi-exclamation-triangle-fill text-warning display-7 mb-2 d-block"></i>
+                            <h6 class="text-white mb-1 small fw-semibold">No Live News Feed Available</h6>
+                            <p class="text-muted small mb-0" style="font-size: 0.75rem; line-height: 1.3;">
+                                <strong>Cause:</strong> GNews API Key is missing or GNews API daily limit of 100 free requests has been reached. Showing offline cached repository news instead.
+                            </p>
                         </div>
                         @endforelse
                     </div>
