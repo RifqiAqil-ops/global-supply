@@ -23,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\EconomicIndicatorRepositoryInterface::class,
             \App\Repositories\EconomicIndicatorRepository::class
         );
+        $this->app->bind(
+            \App\Repositories\Contracts\WeatherRepositoryInterface::class,
+            \App\Repositories\WeatherRepository::class
+        );
     }
 
     /**
