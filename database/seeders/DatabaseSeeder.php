@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             RiskCategorySeeder::class,
             RiskWeightSeeder::class,
             SystemConfigSeeder::class,
+            PortSeeder::class,
         ]);
     }
 }

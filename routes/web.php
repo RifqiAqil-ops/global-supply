@@ -86,9 +86,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('countries/{code}', [\App\Http\Controllers\CountryController::class, 'show'])->name('countries.show');
 
-    Route::get('ports', function () {
-        return view('placeholders.module', ['title' => 'Ports & Logistics', 'icon' => 'bi-anchor']);
-    })->name('ports.index');
+    Route::get('ports', [\App\Http\Controllers\PortController::class, 'index'])->name('ports.index');
 
     Route::get('watchlists', function () {
         return view('placeholders.module', ['title' => 'Watchlists', 'icon' => 'bi-eye']);

@@ -35,6 +35,14 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\Contracts\NewsRepositoryInterface::class,
             \App\Repositories\NewsRepository::class
         );
+        $this->app->bind(
+            \App\Repositories\Contracts\PortRepositoryInterface::class,
+            \App\Repositories\PortRepository::class
+        );
+        $this->app->bind(
+            \App\Services\Contracts\PortServiceInterface::class,
+            \App\Services\External\PortService::class
+        );
     }
 
     /**

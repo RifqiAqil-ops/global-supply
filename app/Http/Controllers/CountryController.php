@@ -88,8 +88,8 @@ class CountryController extends Controller
     {
         $code = strtoupper(trim($code));
         
-        // Find country first in DB to get the ID
-        $countryModel = Country::where('iso2', $code)->orWhere('iso3', $code)->first();
+        // Find country first in DB to get the ID with ports relation eager loaded
+        $countryModel = Country::with(['ports'])->where('iso2', $code)->orWhere('iso3', $code)->first();
         if (!$countryModel) {
             abort(404, "Country '{$code}' not found.");
         }
@@ -156,6 +156,8 @@ class CountryController extends Controller
             $news = collect();
             $isOffline = true;
         }
+
+
 
         return view('user.country_detail', compact(
             'countryModel',

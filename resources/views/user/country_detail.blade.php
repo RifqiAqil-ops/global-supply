@@ -50,85 +50,140 @@
     </div>
 
     <div class="row g-4">
-        <!-- LEFT COLUMN: Profile, Economic & Currency -->
+        <!-- LEFT COLUMN: Profile, Economic & Currency & Ports Tabs -->
         <div class="col-lg-8">
-            <!-- Profile Card -->
-            <div class="card card-premium border-0 mb-4">
-                <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
-                    <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-info-circle me-2 text-primary"></i>Country Profile & Details</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-sm-6">
-                            <span class="text-muted small d-block">Capital City</span>
-                            <span class="text-white fw-medium">{{ $countryDTO->capital ?? 'N/A' }}</span>
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs premium-tabs mb-4 border-0" id="countryDetailTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-pane" type="button" role="tab" aria-controls="overview-pane" aria-selected="true">
+                        <i class="bi bi-info-circle me-1"></i> Overview
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ports-tab" data-bs-toggle="tab" data-bs-target="#ports-pane" type="button" role="tab" aria-controls="ports-pane" aria-selected="false">
+                        <i class="bi bi-anchor me-1"></i> Ports & Logistics <span class="badge bg-primary bg-opacity-20 text-primary ms-1" style="font-size: 0.72rem; vertical-align: middle;">{{ $countryModel->ports->count() }}</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="countryDetailTabsContent">
+                <!-- OVERVIEW TAB -->
+                <div class="tab-pane fade show active" id="overview-pane" role="tabpanel" aria-labelledby="overview-tab">
+                    <!-- Profile Card -->
+                    <div class="card card-premium border-0 mb-4">
+                        <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                            <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-info-circle me-2 text-primary"></i>Country Profile & Details</h5>
                         </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted small d-block">Total Population</span>
-                            <span class="text-white fw-medium">{{ number_format($countryDTO->population) }}</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted small d-block">Total Area Size</span>
-                            <span class="text-white fw-medium">{{ $countryDTO->area ? number_format($countryDTO->area) . ' sq km' : 'N/A' }}</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted small d-block">Official TLD Domain</span>
-                            <span class="text-white fw-medium"><code>{{ $countryDTO->tld ?? 'N/A' }}</code></span>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <span class="text-muted small d-block">Capital City</span>
+                                    <span class="text-white fw-medium">{{ $countryDTO->capital ?? 'N/A' }}</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="text-muted small d-block">Total Population</span>
+                                    <span class="text-white fw-medium">{{ number_format($countryDTO->population) }}</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="text-muted small d-block">Total Area Size</span>
+                                    <span class="text-white fw-medium">{{ $countryDTO->area ? number_format($countryDTO->area) . ' sq km' : 'N/A' }}</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="text-muted small d-block">Official TLD Domain</span>
+                                    <span class="text-white fw-medium"><code>{{ $countryDTO->tld ?? 'N/A' }}</code></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Economic Indicators Card -->
-            <div class="card card-premium border-0 mb-4">
-                <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
-                    <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-graph-up me-2 text-primary"></i>Economic Indicators (World Bank Live)</h5>
-                </div>
-                <div class="card-body p-0">
-                    <x-table :headers="['Indicator Name', 'Year', 'Value', 'Unit', 'Source']">
-                        @forelse($indicators as $ind)
-                        <tr>
-                            <td><strong>{{ $ind->indicator_name }}</strong></td>
-                            <td>{{ $ind->year }}</td>
-                            <td>{{ number_format($ind->value, 2) }}</td>
-                            <td class="small text-muted">{{ $ind->unit ?? 'USD' }}</td>
-                            <td><x-badge type="success">{{ $ind->source }}</x-badge></td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-3">No economic indicators available for this country.</td>
-                        </tr>
-                        @endforelse
-                    </x-table>
-                </div>
-            </div>
-
-            <!-- Currency & Exchange Rate -->
-            <div class="card card-premium border-0 mb-4">
-                <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
-                    <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-currency-exchange me-2 text-primary"></i>Currency Exchange Rates</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3 align-items-center">
-                        <div class="col-sm-6">
-                            <span class="text-muted small d-block">Currency Unit</span>
-                            <h4 class="text-white fw-bold mb-1">{{ $countryDTO->currencyName }} ({{ $countryDTO->currencySymbol }})</h4>
-                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 px-2.5 py-1 small fw-bold">Code: {{ $countryDTO->currencyCode }}</span>
+                    <!-- Economic Indicators Card -->
+                    <div class="card card-premium border-0 mb-4">
+                        <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                            <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-graph-up me-2 text-primary"></i>Economic Indicators (World Bank Live)</h5>
                         </div>
-                        <div class="col-sm-6">
-                            <div class="p-3 rounded border border-secondary border-opacity-20" style="background-color: rgba(255,255,255,0.01);">
-                                <span class="text-muted small d-block">Relative Exchange Value</span>
-                                <div class="d-flex flex-column gap-1 mt-2">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted small">1 {{ $countryDTO->currencyCode }} =</span>
-                                        <span class="text-white fw-semibold">{{ $exchangeRate ? round($exchangeRate->rate_to_usd, 6) . ' USD' : 'N/A' }}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted small">1 {{ $countryDTO->currencyCode }} =</span>
-                                        <span class="text-white fw-semibold">{{ $exchangeRate ? number_format($exchangeRate->rate_to_idr, 2) . ' IDR' : 'N/A' }}</span>
+                        <div class="card-body p-0">
+                            <x-table :headers="['Indicator Name', 'Year', 'Value', 'Unit', 'Source']">
+                                @forelse($indicators as $ind)
+                                <tr>
+                                    <td><strong>{{ $ind->indicator_name }}</strong></td>
+                                    <td>{{ $ind->year }}</td>
+                                    <td>{{ number_format($ind->value, 2) }}</td>
+                                    <td class="small text-muted">{{ $ind->unit ?? 'USD' }}</td>
+                                    <td><x-badge type="success">{{ $ind->source }}</x-badge></td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-3">No economic indicators available for this country.</td>
+                                </tr>
+                                @endforelse
+                            </x-table>
+                        </div>
+                    </div>
+
+                    <!-- Currency & Exchange Rate -->
+                    <div class="card card-premium border-0 mb-4">
+                        <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                            <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-currency-exchange me-2 text-primary"></i>Currency Exchange Rates</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3 align-items-center">
+                                <div class="col-sm-6">
+                                    <span class="text-muted small d-block">Currency Unit</span>
+                                    <h4 class="text-white fw-bold mb-1">{{ $countryDTO->currencyName }} ({{ $countryDTO->currencySymbol }})</h4>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 px-2.5 py-1 small fw-bold">Code: {{ $countryDTO->currencyCode }}</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="p-3 rounded border border-secondary border-opacity-20" style="background-color: rgba(255,255,255,0.01);">
+                                        <span class="text-muted small d-block">Relative Exchange Value</span>
+                                        <div class="d-flex flex-column gap-1 mt-2">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="text-muted small">1 {{ $countryDTO->currencyCode }} =</span>
+                                                <span class="text-white fw-semibold">{{ $exchangeRate ? round($exchangeRate->rate_to_usd, 6) . ' USD' : 'N/A' }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="text-muted small">1 {{ $countryDTO->currencyCode }} =</span>
+                                                <span class="text-white fw-semibold">{{ $exchangeRate ? number_format($exchangeRate->rate_to_idr, 2) . ' IDR' : 'N/A' }}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PORTS TAB -->
+                <div class="tab-pane fade" id="ports-pane" role="tabpanel" aria-labelledby="ports-tab">
+                    <div class="card card-premium border-0 mb-4">
+                        <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title text-white mb-0 fs-6 fw-semibold">
+                                    <i class="bi bi-anchor me-2 text-primary"></i>Shipping Ports & Logistics Directory
+                                </h5>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-2.5 py-1 small fw-bold">
+                                    Total Ports: {{ $countryModel->ports->count() }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <x-table :headers="['Port Name', 'Code', 'Coordinates', 'Harbor Type', 'Shelter', 'Max Depth']">
+                                @forelse($countryModel->ports as $port)
+                                <tr>
+                                    <td class="align-middle"><strong>{{ $port->name }}</strong></td>
+                                    <td class="align-middle small"><code>{{ $port->port_code ?? 'N/A' }}</code></td>
+                                    <td class="align-middle small text-muted">
+                                        {{ number_format($port->latitude, 4) }}, {{ number_format($port->longitude, 4) }}
+                                    </td>
+                                    <td class="align-middle small text-capitalize">{{ $port->harbor_type ?? 'N/A' }}</td>
+                                    <td class="align-middle small text-capitalize">{{ $port->shelter ?? 'N/A' }}</td>
+                                    <td class="align-middle small text-white">{{ $port->max_depth ? $port->max_depth . ' m' : 'N/A' }}</td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No ports registered for this country.</td>
+                                </tr>
+                                @endforelse
+                            </x-table>
                         </div>
                     </div>
                 </div>
@@ -230,6 +285,26 @@
 }
 .hover-primary:hover {
     color: var(--bs-primary) !important;
+}
+/* Premium Tabs Style overrides */
+.premium-tabs .nav-link {
+    color: var(--color-text-muted, #adb5bd) !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem;
+    padding: 8px 16px;
+    border-radius: 0 !important;
+    transition: all 0.2s ease-in-out;
+}
+.premium-tabs .nav-link:hover {
+    color: var(--color-text-main, #ffffff) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.2) !important;
+}
+.premium-tabs .nav-link.active {
+    color: var(--bs-primary, #0d6efd) !important;
+    border-bottom: 2px solid var(--bs-primary, #0d6efd) !important;
 }
 </style>
 @endsection
