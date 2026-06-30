@@ -82,9 +82,7 @@ Route::middleware('auth')->group(function () {
     | Shared Placeholder Routes
     |--------------------------------------------------------------------------
     */
-    Route::get('countries', function () {
-        return view('placeholders.module', ['title' => 'Countries Index', 'icon' => 'bi-flag']);
-    })->name('countries.index');
+    Route::get('countries', [\App\Http\Controllers\CountryController::class, 'index'])->name('countries.index');
 
     Route::get('countries/{code}', [\App\Http\Controllers\CountryController::class, 'show'])->name('countries.show');
 

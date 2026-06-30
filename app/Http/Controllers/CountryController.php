@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country;
+use App\Models\EconomicIndicator;
+use App\Models\ApiLog;
 use App\Services\External\GNewsService;
 use App\Services\External\OpenMeteoService;
 use App\Services\External\RestCountriesService;
 use App\Services\External\ExchangeRateService;
 use App\Services\External\WorldBankService;
+use App\Repositories\Contracts\CountryRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -19,19 +22,63 @@ class CountryController extends Controller
     protected OpenMeteoService $openMeteoService;
     protected ExchangeRateService $exchangeRateService;
     protected GNewsService $gnewsService;
+    protected CountryRepositoryInterface $countryRepository;
 
     public function __construct(
         RestCountriesService $countryService,
         WorldBankService $worldBankService,
         OpenMeteoService $openMeteoService,
         ExchangeRateService $exchangeRateService,
-        GNewsService $gnewsService
+        GNewsService $gnewsService,
+        CountryRepositoryInterface $countryRepository
     ) {
         $this->countryService = $countryService;
         $this->worldBankService = $worldBankService;
         $this->openMeteoService = $openMeteoService;
         $this->exchangeRateService = $exchangeRateService;
         $this->gnewsService = $gnewsService;
+        $this->countryRepository = $countryRepository;
+    }
+
+    /**
+     * Show Global Country Dashboard.
+     */
+    public function index(Request $request)
+    {
+        $filters = $request->only([
+            'search', 'region', 'population_range', 'gdp_range', 'inflation_range', 'sort_by', 'sort_dir'
+        ]);
+
+        // Default pagination limit = 15
+        $countries = $this->countryRepository->paginateFiltered(15, $filters);
+        
+        // Eager load relations for N+1 optimization
+        $countries->load(['latestWeather', 'economicIndicators']);
+
+        // 1. Total countries
+        $totalCountries = Country::count();
+
+        // 2. Average GDP (Latest available per country)
+        $avgGdp = EconomicIndicator::where('indicator_code', 'NY.GDP.MKTP.CD')
+            ->whereRaw('year = (select max(year) from economic_indicators as sub where sub.country_id = economic_indicators.country_id and sub.indicator_code = economic_indicators.indicator_code)')
+            ->avg('value') ?? 0.0;
+
+        // 3. Average Inflation (Latest available per country)
+        $avgInflation = EconomicIndicator::where('indicator_code', 'FP.CPI.TOTL.ZG')
+            ->whereRaw('year = (select max(year) from economic_indicators as sub where sub.country_id = economic_indicators.country_id and sub.indicator_code = economic_indicators.indicator_code)')
+            ->avg('value') ?? 0.0;
+
+        // 4. Average Population
+        $avgPopulation = Country::avg('population') ?? 0.0;
+
+        // 5. Last Live Update (Latest successful API log)
+        $lastLiveUpdate = ApiLog::where('is_success', true)
+            ->latest()
+            ->value('created_at');
+
+        return view('user.countries_index', compact(
+            'countries', 'filters', 'totalCountries', 'avgGdp', 'avgInflation', 'avgPopulation', 'lastLiveUpdate'
+        ));
     }
 
     /**
