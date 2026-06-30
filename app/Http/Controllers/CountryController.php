@@ -53,7 +53,7 @@ class CountryController extends Controller
         $countries = $this->countryRepository->paginateFiltered(15, $filters);
         
         // Eager load relations for N+1 optimization
-        $countries->load(['latestWeather', 'economicIndicators']);
+        $countries->load(['latestWeather', 'economicIndicators', 'latestRiskScore']);
 
         // 1. Total countries
         $totalCountries = Country::count();
@@ -157,7 +157,13 @@ class CountryController extends Controller
             $isOffline = true;
         }
 
-
+        // 6. Recalculate latest risk score from current API feeds
+        try {
+            app(\App\Services\Contracts\RiskScoringEngineInterface::class)->calculateCountryScore($countryModel->id);
+            $countryModel->load(['latestRiskScore']);
+        } catch (\Throwable $e) {
+            Log::warning("Failed to calculate country risk score on load: " . $e->getMessage());
+        }
 
         return view('user.country_detail', compact(
             'countryModel',

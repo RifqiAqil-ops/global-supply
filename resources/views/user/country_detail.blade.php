@@ -92,6 +92,28 @@
                                     <span class="text-muted small d-block">Official TLD Domain</span>
                                     <span class="text-white fw-medium"><code>{{ $countryDTO->tld ?? 'N/A' }}</code></span>
                                 </div>
+                                <div class="col-sm-6">
+                                    <span class="text-muted small d-block">Composite Risk Score</span>
+                                    @if($countryModel->latestRiskScore)
+                                        @php
+                                            $level = $countryModel->latestRiskScore->risk_level;
+                                            $badgeType = 'success';
+                                            if ($level === 'high' || $level === 'critical') $badgeType = 'danger';
+                                            elseif ($level === 'medium') $badgeType = 'warning';
+                                        @endphp
+                                        <x-badge type="{{ $badgeType }}">
+                                            {{ number_format($countryModel->latestRiskScore->composite_score, 2) }} ({{ ucfirst($level) }})
+                                        </x-badge>
+                                    @else
+                                        <span class="text-white fw-medium">N/A</span>
+                                    @endif
+                                </div>
+                                <div class="col-sm-6">
+                                    <span class="text-muted small d-block">Risk Last Calculated</span>
+                                    <span class="text-white fw-medium">
+                                        {{ $countryModel->latestRiskScore ? $countryModel->latestRiskScore->calculated_at->diffForHumans() : 'Never' }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -43,6 +43,10 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Contracts\PortServiceInterface::class,
             \App\Services\External\PortService::class
         );
+        $this->app->bind(
+            \App\Services\Contracts\RiskScoringEngineInterface::class,
+            \App\Services\Internal\RiskScoringEngine::class
+        );
     }
 
     /**

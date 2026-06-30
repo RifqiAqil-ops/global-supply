@@ -210,7 +210,19 @@
                         </div>
                     </td>
                     <td class="align-middle">
-                        <span class="badge bg-secondary bg-opacity-20 text-muted border border-secondary border-opacity-20 py-1.5 px-2 fw-semibold" style="font-size: 0.72rem;">Coming Soon</span>
+                        @if($c->latestRiskScore)
+                            @php
+                                $level = $c->latestRiskScore->risk_level;
+                                $badgeType = 'success';
+                                if ($level === 'high' || $level === 'critical') $badgeType = 'danger';
+                                elseif ($level === 'medium') $badgeType = 'warning';
+                            @endphp
+                            <x-badge type="{{ $badgeType }}">
+                                {{ number_format($c->latestRiskScore->composite_score, 1) }} ({{ ucfirst($level) }})
+                            </x-badge>
+                        @else
+                            <span class="text-muted small">N/A</span>
+                        @endif
                     </td>
                     <td class="align-middle">
                         <a href="{{ route('countries.show', $c->iso2) }}" class="btn btn-sm btn-link text-primary p-0 text-decoration-none fw-semibold">View Details</a>

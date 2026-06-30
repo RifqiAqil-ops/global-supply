@@ -24,12 +24,24 @@ class DashboardController extends Controller
         // Currencies count
         $currenciesCount = ExchangeRate::distinct('currency_code')->count();
 
-        // Get some countries with their indicators and weather
-        $watchlistCountries = Country::whereIn('iso2', ['US', 'CN', 'IN', 'PH'])
-            ->with(['weatherData'])
+        // Calculate actual average global risk score
+        $avgRisk = \App\Models\CountryRiskScore::avg('composite_score') ?? 0.0;
+
+        // Fetch top 5 risk hotspots dynamically
+        $topRiskCountries = \App\Models\CountryRiskScore::with('country')
+            ->orderByDesc('composite_score')
+            ->limit(5)
             ->get();
 
-        return view('user.dashboard', compact('countriesMonitored', 'extremeWeatherCount', 'currenciesCount', 'watchlistCountries'));
+        // Get some countries with their indicators and weather
+        $watchlistCountries = Country::whereIn('iso2', ['US', 'CN', 'IN', 'PH'])
+            ->with(['weatherData', 'latestRiskScore'])
+            ->get();
+
+        return view('user.dashboard', compact(
+            'countriesMonitored', 'extremeWeatherCount', 'currenciesCount', 
+            'watchlistCountries', 'avgRisk', 'topRiskCountries'
+        ));
     }
 
     /**

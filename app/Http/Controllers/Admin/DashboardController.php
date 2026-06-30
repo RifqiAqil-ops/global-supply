@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ApiLog;
 use App\Models\RiskWeight;
+use App\Services\Contracts\RiskScoringEngineInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -177,6 +178,13 @@ class DashboardController extends Controller
                     'weight' => round($val / 100.0, 4)
                 ]);
             }
+        }
+
+        // Recalculate risk scores for all countries immediately after weight updates
+        try {
+            app(RiskScoringEngineInterface::class)->recalculateAllCountries();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to recalculate risk scores after weight update: " . $e->getMessage());
         }
 
         return redirect()->back()->with('success', 'Scoring weights updated successfully!');

@@ -23,9 +23,9 @@
     <div class="col-sm-6 col-xl-3">
         <x-stat-card 
             title="Global Average Risk Index" 
-            value="43.2" 
-            change="+1.4%" 
-            changeType="up" 
+            value="{{ number_format($avgRisk, 1) }}" 
+            change="System Score" 
+            changeType="neutral" 
             icon="bi-shield-exclamation" 
             iconColor="warning" 
         />
@@ -95,51 +95,48 @@
     <div class="col-lg-4">
         <x-card title="Top Risk Hotspots" icon="bi-exclamation-triangle">
             <x-table :headers="['Country', 'Risk Index', 'Trend']">
+                @forelse($topRiskCountries as $tr)
+                @php
+                    $badgeType = 'success';
+                    if ($tr->risk_level === 'high' || $tr->risk_level === 'critical') $badgeType = 'danger';
+                    elseif ($tr->risk_level === 'medium') $badgeType = 'warning';
+                    
+                    $trendIcon = 'bi-dash';
+                    $trendColor = 'text-muted';
+                    $trendText = 'Stable';
+                    if ($tr->score_change > 0) {
+                        $trendIcon = 'bi-arrow-up';
+                        $trendColor = 'text-danger';
+                        $trendText = 'Rising';
+                    } elseif ($tr->score_change < 0) {
+                        $trendIcon = 'bi-arrow-down';
+                        $trendColor = 'text-success';
+                        $trendText = 'Lower';
+                    }
+                @endphp
                 <tr>
                     <td>
-                        <span class="d-flex align-items-center gap-2 small">
-                            <span class="fs-6">🇻🇪</span> Venezuela
-                        </span>
+                        <a href="{{ route('countries.show', $tr->country->iso2) }}" class="d-flex align-items-center gap-2 small text-white text-decoration-none hover-primary">
+                            <img src="{{ $tr->country->flag_url }}" alt="{{ $tr->country->name }} Flag" class="rounded border border-secondary border-opacity-10" style="width: 20px; height: 13px; object-fit: cover;">
+                            {{ $tr->country->name }}
+                        </a>
                     </td>
-                    <td><x-badge type="danger">78.5 (Critical)</x-badge></td>
-                    <td><span class="text-danger small"><i class="bi bi-arrow-up"></i> High</span></td>
-                </tr>
-                <tr>
                     <td>
-                        <span class="d-flex align-items-center gap-2 small">
-                            <span class="fs-6">🇮🇷</span> Iran
-                        </span>
+                        <x-badge type="{{ $badgeType }}">
+                            {{ number_format($tr->composite_score, 1) }} ({{ ucfirst($tr->risk_level) }})
+                        </x-badge>
                     </td>
-                    <td><x-badge type="danger">72.1 (High)</x-badge></td>
-                    <td><span class="text-danger small"><i class="bi bi-arrow-up"></i> High</span></td>
-                </tr>
-                <tr>
                     <td>
-                        <span class="d-flex align-items-center gap-2 small">
-                            <span class="fs-6">🇹🇷</span> Turkey
+                        <span class="{{ $trendColor }} small">
+                            <i class="bi {{ $trendIcon }}"></i> {{ $trendText }}
                         </span>
                     </td>
-                    <td><x-badge type="warning">64.8 (Medium)</x-badge></td>
-                    <td><span class="text-success small"><i class="bi bi-arrow-down"></i> Lower</span></td>
                 </tr>
+                @empty
                 <tr>
-                    <td>
-                        <span class="d-flex align-items-center gap-2 small">
-                            <span class="fs-6">🇦🇷</span> Argentina
-                        </span>
-                    </td>
-                    <td><x-badge type="warning">59.0 (Medium)</x-badge></td>
-                    <td><span class="text-muted small"><i class="bi bi-dash"></i> Stable</span></td>
+                    <td colspan="3" class="text-center text-muted py-3">No risk hotspot entries found.</td>
                 </tr>
-                <tr>
-                    <td>
-                        <span class="d-flex align-items-center gap-2 small">
-                            <span class="fs-6">🇬🇧</span> United Kingdom
-                        </span>
-                    </td>
-                    <td><x-badge type="success">18.2 (Low)</x-badge></td>
-                    <td><span class="text-success small"><i class="bi bi-arrow-down"></i> Lower</span></td>
-                </tr>
+                @endforelse
             </x-table>
         </x-card>
     </div>
@@ -157,28 +154,40 @@
             <x-table :headers="['Country Code', 'Sourcing Region', 'Risk Score', 'Port Status', 'Action']">
                 @forelse($watchlistCountries as $c)
                 @php
-                    $weather = $c->weatherData->first();
-                    $weatherDesc = $weather ? $weather->weather_description : 'No Data';
+                    $latestScore = $c->latestRiskScore;
+                    $compositeVal = $latestScore ? (float)$latestScore->composite_score : null;
+                    $level = $latestScore ? $latestScore->risk_level : 'low';
+                    
+                    $badgeType = 'success';
+                    if ($level === 'high' || $level === 'critical') $badgeType = 'danger';
+                    elseif ($level === 'medium') $badgeType = 'warning';
+
                     $portStatus = 'Active';
                     $portIcon = 'bi-check-circle-fill';
                     $portColor = 'text-success';
                     
-                    if ($c->iso2 === 'CN') {
+                    // Simple logic for port status mock based on ports count
+                    if ($c->ports->count() === 0) {
+                        $portStatus = 'No Ports';
+                        $portIcon = 'bi-dash-circle';
+                        $portColor = 'text-muted';
+                    } elseif ($c->iso2 === 'CN') {
                         $portStatus = 'Congested';
                         $portIcon = 'bi-exclamation-triangle-fill';
                         $portColor = 'text-warning';
-                    } elseif ($c->iso2 === 'PH') {
-                        $portStatus = 'Disrupted';
-                        $portIcon = 'bi-x-circle-fill';
-                        $portColor = 'text-danger';
                     }
                 @endphp
                 <tr>
-                    <td><strong>{{ $c->iso3 }}</strong></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="{{ $c->flag_url }}" alt="{{ $c->name }} Flag" class="rounded border border-secondary border-opacity-10" style="width: 20px; height: 13px; object-fit: cover;">
+                            <strong>{{ $c->iso3 }}</strong>
+                        </div>
+                    </td>
                     <td class="small text-muted">{{ $c->region }}</td>
                     <td>
-                        <x-badge type="{{ $c->iso2 === 'PH' ? 'danger' : ($c->iso2 === 'US' ? 'success' : 'warning') }}">
-                            {{ $c->iso2 === 'PH' ? '62.4 (High)' : ($c->iso2 === 'US' ? '12.5 (Low)' : '39.8 (Medium)') }}
+                        <x-badge type="{{ $badgeType }}">
+                            {{ $compositeVal !== null ? number_format($compositeVal, 1) . ' (' . ucfirst($level) . ')' : 'N/A' }}
                         </x-badge>
                     </td>
                     <td><span class="{{ $portColor }}"><i class="bi {{ $portIcon }} me-1"></i> {{ $portStatus }}</span></td>
