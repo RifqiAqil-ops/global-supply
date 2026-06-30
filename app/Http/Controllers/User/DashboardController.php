@@ -38,9 +38,35 @@ class DashboardController extends Controller
             ->with(['weatherData', 'latestRiskScore'])
             ->get();
 
+        // 1. Top 10 Highest Risk Countries
+        $topHighestRisk = \App\Models\CountryRiskScore::with('country')
+            ->orderByDesc('composite_score')
+            ->limit(10)
+            ->get();
+
+        // 2. Top 10 Lowest Risk Countries
+        $topLowestRisk = \App\Models\CountryRiskScore::with('country')
+            ->orderBy('composite_score')
+            ->limit(10)
+            ->get();
+
+        // 3. Recent Risk Changes
+        $recentChanges = \App\Models\CountryRiskScore::with('country')
+            ->where('score_change', '!=', 0)
+            ->orderByDesc('calculated_at')
+            ->limit(5)
+            ->get();
+
+        // 4. Recent Alerts
+        $recentAlerts = \App\Models\ActivityLog::where('action', 'risk_alert')
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
         return view('user.dashboard', compact(
             'countriesMonitored', 'extremeWeatherCount', 'currenciesCount', 
-            'watchlistCountries', 'avgRisk', 'topRiskCountries'
+            'watchlistCountries', 'avgRisk', 'topRiskCountries',
+            'topHighestRisk', 'topLowestRisk', 'recentChanges', 'recentAlerts'
         ));
     }
 

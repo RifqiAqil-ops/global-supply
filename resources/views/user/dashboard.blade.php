@@ -282,6 +282,136 @@
                 </div>
             </div>
         </x-card>
+</div>
+
+<!-- Widgets Row 1: Top 10 High/Low Risk Countries -->
+<div class="row g-4 mb-4">
+    <!-- Top 10 Highest Risk Countries -->
+    <div class="col-lg-6">
+        <x-card title="Top 10 Highest Risk Countries" icon="bi-shield-exclamation text-danger">
+            <x-table :headers="['Country', 'Composite Score', 'Risk Level']">
+                @forelse($topHighestRisk as $item)
+                @php
+                    $level = $item->risk_level;
+                    $badgeType = 'success';
+                    if ($level === 'high' || $level === 'critical') $badgeType = 'danger';
+                    elseif ($level === 'medium') $badgeType = 'warning';
+                @endphp
+                <tr>
+                    <td>
+                        <a href="{{ route('countries.show', $item->country->iso2) }}" class="d-flex align-items-center gap-2 small text-white text-decoration-none hover-primary">
+                            <img src="{{ $item->country->flag_url }}" alt="{{ $item->country->name }} Flag" class="rounded border border-secondary border-opacity-10" style="width: 20px; height: 13px; object-fit: cover;">
+                            {{ $item->country->name }}
+                        </a>
+                    </td>
+                    <td><strong class="text-white">{{ number_format($item->composite_score, 2) }}</strong></td>
+                    <td><x-badge type="{{ $badgeType }}">{{ ucfirst($level) }}</x-badge></td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="3" class="text-center text-muted py-3">No risk scoring data found.</td>
+                </tr>
+                @endforelse
+            </x-table>
+        </x-card>
+    </div>
+
+    <!-- Top 10 Lowest Risk Countries -->
+    <div class="col-lg-6">
+        <x-card title="Top 10 Lowest Risk Countries" icon="bi-shield-check text-success">
+            <x-table :headers="['Country', 'Composite Score', 'Risk Level']">
+                @forelse($topLowestRisk as $item)
+                @php
+                    $level = $item->risk_level;
+                    $badgeType = 'success';
+                    if ($level === 'high' || $level === 'critical') $badgeType = 'danger';
+                    elseif ($level === 'medium') $badgeType = 'warning';
+                @endphp
+                <tr>
+                    <td>
+                        <a href="{{ route('countries.show', $item->country->iso2) }}" class="d-flex align-items-center gap-2 small text-white text-decoration-none hover-primary">
+                            <img src="{{ $item->country->flag_url }}" alt="{{ $item->country->name }} Flag" class="rounded border border-secondary border-opacity-10" style="width: 20px; height: 13px; object-fit: cover;">
+                            {{ $item->country->name }}
+                        </a>
+                    </td>
+                    <td><strong class="text-white">{{ number_format($item->composite_score, 2) }}</strong></td>
+                    <td><x-badge type="{{ $badgeType }}">{{ ucfirst($level) }}</x-badge></td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="3" class="text-center text-muted py-3">No risk scoring data found.</td>
+                </tr>
+                @endforelse
+            </x-table>
+        </x-card>
+    </div>
+</div>
+
+<!-- Widgets Row 2: Recent Risk Changes & System Alerts -->
+<div class="row g-4 mb-4">
+    <!-- Recent Risk Changes -->
+    <div class="col-lg-6">
+        <x-card title="Recent Risk Changes" icon="bi-arrow-left-right text-primary">
+            <x-table :headers="['Country', 'Previous Score', 'New Score', 'Change']">
+                @forelse($recentChanges as $item)
+                @php
+                    $diff = $item->score_change;
+                    $diffColor = $diff > 0 ? 'text-danger' : 'text-success';
+                    $diffIcon = $diff > 0 ? 'bi-arrow-up' : 'bi-arrow-down';
+                    $prevScore = $item->composite_score - $diff;
+                @endphp
+                <tr>
+                    <td>
+                        <a href="{{ route('countries.show', $item->country->iso2) }}" class="d-flex align-items-center gap-2 small text-white text-decoration-none hover-primary">
+                            <img src="{{ $item->country->flag_url }}" alt="{{ $item->country->name }} Flag" class="rounded border border-secondary border-opacity-10" style="width: 20px; height: 13px; object-fit: cover;">
+                            {{ $item->country->name }}
+                        </a>
+                    </td>
+                    <td><span class="text-muted">{{ number_format($prevScore, 2) }}</span></td>
+                    <td><span class="text-white fw-bold">{{ number_format($item->composite_score, 2) }}</span></td>
+                    <td>
+                        <span class="{{ $diffColor }} fw-semibold small">
+                            <i class="bi {{ $diffIcon }}"></i> {{ $diff > 0 ? '+' : '' }}{{ number_format($diff, 2) }}
+                        </span>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-3">No risk score modifications logged yet.</td>
+                </tr>
+                @endforelse
+            </x-table>
+        </x-card>
+    </div>
+
+    <!-- Recent Alerts -->
+    <div class="col-lg-6">
+        <x-card title="Recent System Alerts Log" icon="bi-bell-fill text-warning">
+            <div class="d-flex flex-column gap-2" style="max-height: 380px; overflow-y: auto;">
+                @forelse($recentAlerts as $alert)
+                <div class="d-flex gap-3 align-items-start p-2.5 rounded border border-danger border-opacity-10" style="background-color: rgba(220, 53, 69, 0.02);">
+                    <div class="text-danger mt-0.5"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="text-white small fw-bold">{{ $alert->description }}</span>
+                            <span class="text-muted small" style="font-size: 0.72rem;">{{ $alert->created_at->diffForHumans() }}</span>
+                        </div>
+                        <div class="text-muted small mt-1" style="font-size: 0.72rem;">
+                            Change details: score shifted from 
+                            <span class="text-warning fw-semibold">{{ number_format($alert->old_values['composite_score'] ?? 0, 2) }}</span> 
+                            to 
+                            <span class="text-danger fw-semibold">{{ number_format($alert->new_values['composite_score'] ?? 0, 2) }}</span>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-shield-check display-6 d-block mb-2 text-success"></i>
+                    <p class="small mb-0">No active system alerts recorded.</p>
+                </div>
+                @endforelse
+            </div>
+        </x-card>
     </div>
 </div>
 @endsection

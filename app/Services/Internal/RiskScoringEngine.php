@@ -328,6 +328,25 @@ class RiskScoringEngine implements RiskScoringEngineInterface
 
             return $riskScoreModel;
         });
+
+        // Trigger Alert Engine
+        $thresholds = [30, 60, 80];
+        foreach ($thresholds as $T) {
+            if ($previousScore !== null && $previousScore < $T && $compositeScore >= $T) {
+                \App\Models\ActivityLog::create([
+                    'action' => 'risk_alert',
+                    'model_type' => Country::class,
+                    'model_id' => $countryId,
+                    'description' => "Risk alert: {$country->name} risk score rose from " . number_format($previousScore, 2) . " to " . number_format($compositeScore, 2) . " (crossed threshold {$T})",
+                    'old_values' => ['composite_score' => $previousScore],
+                    'new_values' => ['composite_score' => $compositeScore],
+                    'ip_address' => request() ? request()->ip() : '127.0.0.1',
+                    'user_agent' => request() ? request()->userAgent() : 'System'
+                ]);
+            }
+        }
+
+        return $riskScoreModel;
     }
 
     /**

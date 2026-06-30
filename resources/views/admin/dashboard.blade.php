@@ -193,6 +193,38 @@
     </div>
 </div>
 
+<!-- System Risk Alerts Log Row -->
+<div class="row g-4 mt-2">
+    <div class="col-12">
+        <x-card title="System Risk Alerts Log" icon="bi-bell-fill">
+            <div class="d-flex flex-column gap-2">
+                @forelse($recentAlerts as $alert)
+                <div class="d-flex gap-3 align-items-start p-2.5 rounded border border-danger border-opacity-10" style="background-color: rgba(220, 53, 69, 0.02);">
+                    <div class="text-danger mt-0.5"><i class="bi bi-exclamation-triangle-fill fs-5"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="text-white small fw-bold">{{ $alert->description }}</span>
+                            <span class="text-muted small" style="font-size: 0.72rem;">{{ $alert->created_at->diffForHumans() }}</span>
+                        </div>
+                        <div class="text-muted small mt-1" style="font-size: 0.72rem;">
+                            Change details: score shifted from 
+                            <span class="text-warning fw-semibold">{{ number_format($alert->old_values['composite_score'] ?? 0, 2) }}</span> 
+                            to 
+                            <span class="text-danger fw-semibold">{{ number_format($alert->new_values['composite_score'] ?? 0, 2) }}</span>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-shield-check display-6 d-block mb-2 text-success"></i>
+                    <p class="small mb-0">No risk alert logs triggered in the system.</p>
+                </div>
+                @endforelse
+            </div>
+        </x-card>
+    </div>
+</div>
+
 <!-- Modal for editing risk weights -->
 <div class="modal fade" id="modalEditWeights" tabindex="-1" aria-labelledby="modalEditWeightsLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

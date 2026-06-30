@@ -88,6 +88,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('ports', [\App\Http\Controllers\PortController::class, 'index'])->name('ports.index');
 
+    Route::get('risk-history', [\App\Http\Controllers\User\RiskHistoryController::class, 'index'])->name('risk-history.index');
+    Route::get('reports', [\App\Http\Controllers\User\ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/export/pdf', [\App\Http\Controllers\User\ReportController::class, 'exportPdf'])->name('reports.export.pdf');
+    Route::get('reports/export/csv', [\App\Http\Controllers\User\ReportController::class, 'exportCsv'])->name('reports.export.csv');
+
     Route::get('watchlists', function () {
         return view('placeholders.module', ['title' => 'Watchlists', 'icon' => 'bi-eye']);
     })->name('watchlists.index');

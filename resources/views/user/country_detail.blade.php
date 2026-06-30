@@ -118,6 +118,54 @@
                         </div>
                     </div>
 
+                    <!-- Risk Breakdown Card -->
+                    @if($countryModel->latestRiskScore)
+                    @php
+                        $scoreDetails = $countryModel->latestRiskScore->details->keyBy('riskCategory.slug');
+                    @endphp
+                    <div class="card card-premium border-0 mb-4">
+                        <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                            <h5 class="card-title text-white mb-0 fs-6 fw-semibold">
+                                <i class="bi bi-shield-exclamation me-2 text-primary"></i>Risk Category Breakdown
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex flex-column gap-3">
+                                @foreach([
+                                    'economic-risk' => ['label' => 'Economic Risk', 'color' => 'bg-danger'],
+                                    'weather-risk' => ['label' => 'Weather Risk', 'color' => 'bg-warning text-dark'],
+                                    'currency-stability-risk' => ['label' => 'Currency Stability Risk', 'color' => 'bg-success'],
+                                    'geopolitical-risk' => ['label' => 'Geopolitical Risk', 'color' => 'bg-primary'],
+                                    'logistics-risk' => ['label' => 'Logistics Risk', 'color' => 'bg-info text-dark']
+                                ] as $slug => $meta)
+                                @php
+                                    $detail = $scoreDetails->get($slug);
+                                    $val = $detail ? (float)$detail->category_score : 0.0;
+                                    $weighted = $detail ? (float)$detail->weighted_score : 0.0;
+                                @endphp
+                                <div>
+                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                        <span class="text-white fw-semibold">{{ $meta['label'] }}</span>
+                                        <span>
+                                            Score: <strong>{{ number_format($val, 2) }}</strong> 
+                                            (Weighted: <strong>{{ number_format($weighted, 2) }}</strong>)
+                                        </span>
+                                    </div>
+                                    <div class="progress" style="height: 10px; background-color: var(--color-border);">
+                                        <div class="progress-bar {{ $meta['color'] }}" role="progressbar" style="width: {{ $val }}%" aria-valuenow="{{ $val }}" aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                                <div class="pt-2 border-top border-secondary border-opacity-10 d-flex justify-content-between align-items-center">
+                                    <span class="text-white fw-bold">Total Composite Risk Rating</span>
+                                    <span class="fs-5 text-white fw-extrabold">{{ number_format($countryModel->latestRiskScore->composite_score, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Economic Indicators Card -->
                     <div class="card card-premium border-0 mb-4">
                         <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">

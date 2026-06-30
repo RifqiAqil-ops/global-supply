@@ -41,34 +41,36 @@
             </li>
 
             <li>
-                <a class="nav-link {{ Route::is(['countries.index', 'ports.index', 'watchlists.index']) ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuSourcing" role="button" aria-expanded="{{ Route::is(['countries.index', 'ports.index', 'watchlists.index']) ? 'true' : 'false' }}" aria-controls="menuSourcing">
+                <a class="nav-link {{ Route::is(['countries.index', 'ports.index', 'watchlists.index', 'risk-history.index']) ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuSourcing" role="button" aria-expanded="{{ Route::is(['countries.index', 'ports.index', 'watchlists.index', 'risk-history.index']) ? 'true' : 'false' }}" aria-controls="menuSourcing">
                     <span class="d-flex align-items-center gap-2">
                         <i class="bi bi-shield-check"></i> Sourcing Monitor
                     </span>
                     <i class="bi bi-chevron-down small menu-arrow"></i>
                 </a>
-                <div class="collapse {{ Route::is(['countries.index', 'ports.index', 'watchlists.index']) ? 'show' : '' }}" id="menuSourcing">
+                <div class="collapse {{ Route::is(['countries.index', 'ports.index', 'watchlists.index', 'risk-history.index']) ? 'show' : '' }}" id="menuSourcing">
                     <ul class="submenu">
                         <li><a href="{{ route('countries.index') }}" class="nav-link {{ Route::is('countries.index') ? 'active' : '' }}"><i class="bi bi-flag"></i> Countries Index</a></li>
                         <li><a href="{{ route('ports.index') }}" class="nav-link {{ Route::is('ports.index') ? 'active' : '' }}"><i class="bi bi-anchor"></i> Ports & Logistics</a></li>
                         <li><a href="{{ route('watchlists.index') }}" class="nav-link {{ Route::is('watchlists.index') ? 'active' : '' }}"><i class="bi bi-eye"></i> Watchlists</a></li>
+                        <li><a href="{{ route('risk-history.index') }}" class="nav-link {{ Route::is('risk-history.index') ? 'active' : '' }}"><i class="bi bi-clock-history"></i> Risk History</a></li>
                     </ul>
                 </div>
             </li>
 
             <li>
-                <a class="nav-link {{ Route::is(['compare.index', 'currency.index', 'weather.index', 'news.index']) ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuAnalytics" role="button" aria-expanded="{{ Route::is(['compare.index', 'currency.index', 'weather.index', 'news.index']) ? 'true' : 'false' }}" aria-controls="menuAnalytics">
+                <a class="nav-link {{ Route::is(['compare.index', 'currency.index', 'weather.index', 'news.index', 'reports.index']) ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuAnalytics" role="button" aria-expanded="{{ Route::is(['compare.index', 'currency.index', 'weather.index', 'news.index', 'reports.index']) ? 'true' : 'false' }}" aria-controls="menuAnalytics">
                     <span class="d-flex align-items-center gap-2">
                         <i class="bi bi-bar-chart-line"></i> Risk Analytics
                     </span>
                     <i class="bi bi-chevron-down small menu-arrow"></i>
                 </a>
-                <div class="collapse {{ Route::is(['compare.index', 'currency.index', 'weather.index', 'news.index']) ? 'show' : '' }}" id="menuAnalytics">
+                <div class="collapse {{ Route::is(['compare.index', 'currency.index', 'weather.index', 'news.index', 'reports.index']) ? 'show' : '' }}" id="menuAnalytics">
                     <ul class="submenu">
                         <li><a href="{{ route('compare.index') }}" class="nav-link {{ Route::is('compare.index') ? 'active' : '' }}"><i class="bi bi-shuffle"></i> Country Compare</a></li>
                         <li><a href="{{ route('currency.index') }}" class="nav-link {{ Route::is('currency.index') ? 'active' : '' }}"><i class="bi bi-currency-exchange"></i> Currency Monitor</a></li>
                         <li><a href="{{ route('weather.index') }}" class="nav-link {{ Route::is('weather.index') ? 'active' : '' }}"><i class="bi bi-cloud-lightning"></i> Weather Alerts</a></li>
                         <li><a href="{{ route('news.index') }}" class="nav-link {{ Route::is('news.index') ? 'active' : '' }}"><i class="bi bi-newspaper"></i> Geopolitical News</a></li>
+                        <li><a href="{{ route('reports.index') }}" class="nav-link {{ Route::is('reports.index') ? 'active' : '' }}"><i class="bi bi-file-earmark-bar-graph"></i> Sourcing Reports</a></li>
                     </ul>
                 </div>
             </li>

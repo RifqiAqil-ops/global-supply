@@ -160,7 +160,7 @@ class CountryController extends Controller
         // 6. Recalculate latest risk score from current API feeds
         try {
             app(\App\Services\Contracts\RiskScoringEngineInterface::class)->calculateCountryScore($countryModel->id);
-            $countryModel->load(['latestRiskScore']);
+            $countryModel->load(['latestRiskScore.details.riskCategory']);
         } catch (\Throwable $e) {
             Log::warning("Failed to calculate country risk score on load: " . $e->getMessage());
         }

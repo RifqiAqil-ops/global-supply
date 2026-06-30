@@ -59,7 +59,13 @@ class DashboardController extends Controller
             ]
         ];
 
-        return view('admin.dashboard', compact('weights', 'totalUsers', 'apiCallsCount', 'successRate', 'avgLatency', 'recentActions'));
+        // Fetch recent risk alerts dynamically
+        $recentAlerts = \App\Models\ActivityLog::where('action', 'risk_alert')
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        return view('admin.dashboard', compact('weights', 'totalUsers', 'apiCallsCount', 'successRate', 'avgLatency', 'recentActions', 'recentAlerts'));
     }
 
     /**
