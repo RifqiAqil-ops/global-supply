@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Http\Controllers\User;
+
+use App\Http\Controllers\Controller;
+use App\Models\NewsArticle;
+use Illuminate\Http\Request;
+
+class NewsController extends Controller
+{
+    /**
+     * Show the Geopolitical News aggregation page.
+     */
+    public function index(Request $request)
+    {
+        $query = NewsArticle::with('country');
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('country', function ($cq) use ($search) {
+                      $cq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter by sentiment
+        if ($request->filled('sentiment')) {
+            $query->where('sentiment', $request->input('sentiment'));
+        }
+
+        $articles = $query->orderByDesc('published_at')->paginate(12);
+
+        // Stats
+        $totalArticles = NewsArticle::count();
+        $negativeCount = NewsArticle::where('sentiment', 'negative')->count();
+        $positiveCount = NewsArticle::where('sentiment', 'positive')->count();
+        $neutralCount = NewsArticle::where('sentiment', 'neutral')->count();
+
+        return view('user.news', compact(
+            'articles', 'totalArticles', 'negativeCount', 'positiveCount', 'neutralCount'
+        ));
+    }
+}

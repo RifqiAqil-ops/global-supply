@@ -97,21 +97,13 @@ Route::middleware('auth')->group(function () {
         return view('placeholders.module', ['title' => 'Watchlists', 'icon' => 'bi-eye']);
     })->name('watchlists.index');
 
-    Route::get('compare', function () {
-        return view('placeholders.module', ['title' => 'Country Compare', 'icon' => 'bi-shuffle']);
-    })->name('compare.index');
+    Route::get('compare', [\App\Http\Controllers\User\CompareController::class, 'index'])->name('compare.index');
 
-    Route::get('currency', function () {
-        return view('placeholders.module', ['title' => 'Currency Monitor', 'icon' => 'bi-currency-exchange']);
-    })->name('currency.index');
+    Route::get('currency', [\App\Http\Controllers\User\CurrencyController::class, 'index'])->name('currency.index');
 
-    Route::get('weather', function () {
-        return view('placeholders.module', ['title' => 'Weather Alerts', 'icon' => 'bi-cloud-lightning-rain']);
-    })->name('weather.index');
+    Route::get('weather', [\App\Http\Controllers\User\WeatherController::class, 'index'])->name('weather.index');
 
-    Route::get('news', function () {
-        return view('placeholders.module', ['title' => 'Geopolitical News', 'icon' => 'bi-newspaper']);
-    })->name('news.index');
+    Route::get('news', [\App\Http\Controllers\User\NewsController::class, 'index'])->name('news.index');
 
     // Admin Placeholder settings
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
