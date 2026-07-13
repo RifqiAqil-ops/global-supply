@@ -5,6 +5,7 @@
     'changeType' => 'neutral', // 'up', 'down', 'neutral'
     'icon' => 'bi-circle',
     'iconColor' => 'primary', // bootstrap text colors
+    'valueId' => null,
 ])
 
 @php
@@ -28,7 +29,7 @@
         </div>
     </div>
     <div class="d-flex align-items-baseline gap-2">
-        <h3 class="display-6 fw-bold text-white mb-0">{{ $value }}</h3>
+        <h3 class="display-6 fw-bold text-white mb-0" @if($valueId) id="{{ $valueId }}" @endif>{{ $value }}</h3>
         @if($change)
             <span class="small {{ $changeColor }} fw-semibold d-flex align-items-center gap-1">
                 <i class="bi {{ $changeIcon }}"></i> {{ $change }}

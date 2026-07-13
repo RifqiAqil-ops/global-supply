@@ -13,16 +13,16 @@
 <!-- Stats Row -->
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <x-stat-card title="Tracked Currencies" :value="$totalCurrencies" icon="bi-currency-exchange" color="primary" />
+        <x-stat-card title="Tracked Currencies" :value="$totalCurrencies" icon="bi-currency-exchange" color="primary" valueId="stat-currency-tracked" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Average Daily Change" :value="number_format($avgChange, 2) . '%'" icon="bi-graph-up-arrow" color="{{ $avgChange >= 0 ? 'success' : 'danger' }}" />
+        <x-stat-card title="Average Daily Change" :value="number_format($avgChange, 2) . '%'" icon="bi-graph-up-arrow" color="{{ $avgChange >= 0 ? 'success' : 'danger' }}" valueId="stat-currency-avg-change" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Top Gainers" :value="$topGainers->count()" icon="bi-arrow-up-circle" color="success" />
+        <x-stat-card title="Top Gainers" :value="$topGainers->count()" icon="bi-arrow-up-circle" color="success" valueId="stat-currency-gainers" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Top Losers" :value="$topLosers->count()" icon="bi-arrow-down-circle" color="danger" />
+        <x-stat-card title="Top Losers" :value="$topLosers->count()" icon="bi-arrow-down-circle" color="danger" valueId="stat-currency-losers" />
     </div>
 </div>
 
@@ -38,7 +38,7 @@
     <!-- Top Movers -->
     <div class="col-lg-4">
         <x-card title="Top Gainers" icon="bi-arrow-up-circle-fill">
-            <div class="d-flex flex-column gap-2">
+            <div class="d-flex flex-column gap-2" id="dashboard-gainers-list">
                 @forelse($topGainers->take(5) as $g)
                 <div class="d-flex justify-content-between align-items-center px-2 py-1 rounded" style="background: rgba(34,197,94,0.05);">
                     <div class="d-flex align-items-center gap-2">
@@ -57,7 +57,7 @@
 
         <div class="mt-4">
             <x-card title="Top Losers" icon="bi-arrow-down-circle-fill">
-                <div class="d-flex flex-column gap-2">
+                <div class="d-flex flex-column gap-2" id="dashboard-losers-list">
                     @forelse($topLosers->take(5) as $l)
                     <div class="d-flex justify-content-between align-items-center px-2 py-1 rounded" style="background: rgba(239,68,68,0.05);">
                         <div class="d-flex align-items-center gap-2">
@@ -80,7 +80,7 @@
 <!-- Full Currency Table -->
 <x-card title="All Exchange Rates (vs USD)" icon="bi-table">
     <div class="table-responsive">
-        <x-table :headers="['Currency', 'Country', 'Rate to USD', 'Rate to IDR', 'Daily Change', 'Last Updated']">
+        <x-table :headers="['Currency', 'Country', 'Rate to USD', 'Rate to IDR', 'Daily Change', 'Last Updated']" tbodyId="exchange-rates-tbody">
             @forelse($latestRates as $rate)
             <tr>
                 <td><strong class="text-white">{{ $rate->currency_code }}</strong> <span class="text-muted small">{{ $rate->currency_name }}</span></td>
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let longestDates = [];
         trends.forEach(t => { if (t.dates.length > longestDates.length) longestDates = t.dates; });
 
-        new Chart(document.getElementById('currencyTrendChart'), {
+        window.currencyTrendChartInstance = new Chart(document.getElementById('currencyTrendChart'), {
             type: 'line',
             data: {
                 labels: longestDates,

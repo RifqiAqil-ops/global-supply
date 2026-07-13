@@ -110,7 +110,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <span class="text-muted small d-block">Risk Last Calculated</span>
-                                    <span class="text-white fw-medium">
+                                    <span class="text-white fw-medium" id="risk-last-calculated">
                                         {{ $countryModel->latestRiskScore ? $countryModel->latestRiskScore->calculated_at->diffForHumans() : 'Never' }}
                                     </span>
                                 </div>
@@ -123,7 +123,7 @@
                     @php
                         $scoreDetails = $countryModel->latestRiskScore->details->keyBy('riskCategory.slug');
                     @endphp
-                    <div class="card card-premium border-0 mb-4">
+                    <div class="card card-premium border-0 mb-4" id="country-detail-risk-breakdown-card" data-country-code="{{ $countryModel->iso2 }}">
                         <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
                             <h5 class="card-title text-white mb-0 fs-6 fw-semibold">
                                 <i class="bi bi-shield-exclamation me-2 text-primary"></i>Risk Category Breakdown
@@ -143,12 +143,12 @@
                                     $val = $detail ? (float)$detail->category_score : 0.0;
                                     $weighted = $detail ? (float)$detail->weighted_score : 0.0;
                                 @endphp
-                                <div>
+                                <div id="risk-category-row-{{ $slug }}">
                                     <div class="d-flex justify-content-between small text-muted mb-1">
                                         <span class="text-white fw-semibold">{{ $meta['label'] }}</span>
                                         <span>
-                                            Score: <strong>{{ number_format($val, 2) }}</strong> 
-                                            (Weighted: <strong>{{ number_format($weighted, 2) }}</strong>)
+                                            Score: <strong class="score-val">{{ number_format($val, 2) }}</strong> 
+                                            (Weighted: <strong class="score-weighted">{{ number_format($weighted, 2) }}</strong>)
                                         </span>
                                     </div>
                                     <div class="progress" style="height: 10px; background-color: var(--color-border);">
@@ -159,7 +159,7 @@
                                 @endforeach
                                 <div class="pt-2 border-top border-secondary border-opacity-10 d-flex justify-content-between align-items-center">
                                     <span class="text-white fw-bold">Total Composite Risk Rating</span>
-                                    <span class="fs-5 text-white fw-extrabold">{{ number_format($countryModel->latestRiskScore->composite_score, 2) }}</span>
+                                    <span class="fs-5 text-white fw-extrabold" id="total-composite-risk-value">{{ number_format($countryModel->latestRiskScore->composite_score, 2) }}</span>
                                 </div>
                             </div>
                         </div>

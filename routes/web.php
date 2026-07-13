@@ -93,9 +93,17 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/export/pdf', [\App\Http\Controllers\User\ReportController::class, 'exportPdf'])->name('reports.export.pdf');
     Route::get('reports/export/csv', [\App\Http\Controllers\User\ReportController::class, 'exportCsv'])->name('reports.export.csv');
 
-    Route::get('watchlists', function () {
-        return view('placeholders.module', ['title' => 'Watchlists', 'icon' => 'bi-eye']);
-    })->name('watchlists.index');
+    Route::prefix('live-api')->name('live-api.')->group(function () {
+        Route::get('dashboard-metrics', [\App\Http\Controllers\User\LiveUpdateController::class, 'dashboardMetrics'])->name('dashboard-metrics');
+        Route::get('weather', [\App\Http\Controllers\User\LiveUpdateController::class, 'weather'])->name('weather');
+        Route::get('exchange-rates', [\App\Http\Controllers\User\LiveUpdateController::class, 'exchangeRates'])->name('exchange-rates');
+        Route::get('news', [\App\Http\Controllers\User\LiveUpdateController::class, 'news'])->name('news');
+        Route::get('country-risk/{code}', [\App\Http\Controllers\User\LiveUpdateController::class, 'countryRisk'])->name('country-risk');
+    });
+
+    Route::resource('watchlists', \App\Http\Controllers\User\WatchlistController::class)->only([
+        'index', 'store', 'update', 'destroy'
+    ]);
 
     Route::get('compare', [\App\Http\Controllers\User\CompareController::class, 'index'])->name('compare.index');
 
@@ -105,22 +113,16 @@ Route::middleware('auth')->group(function () {
 
     Route::get('news', [\App\Http\Controllers\User\NewsController::class, 'index'])->name('news.index');
 
-    // Admin Placeholder settings
+    // Admin settings
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('users', function () {
-            return view('placeholders.module', ['title' => 'User Manager', 'icon' => 'bi-people']);
-        })->name('users.index');
+        Route::get('users', [\App\Http\Controllers\Admin\DashboardController::class, 'users'])->name('users.index');
 
         Route::get('weights', function () {
             return view('placeholders.module', ['title' => 'Risk Weights', 'icon' => 'bi-sliders']);
         })->name('weights.index');
 
-        Route::get('api-health', function () {
-            return view('placeholders.module', ['title' => 'API Health', 'icon' => 'bi-cpu']);
-        })->name('api-health.index');
+        Route::get('api-health', [\App\Http\Controllers\Admin\DashboardController::class, 'apiHealth'])->name('api-health.index');
 
-        Route::get('audit-trails', function () {
-            return view('placeholders.module', ['title' => 'Audit Trails', 'icon' => 'bi-journal-text']);
-        })->name('audit-trails.index');
+        Route::get('audit-trails', [\App\Http\Controllers\Admin\DashboardController::class, 'auditTrails'])->name('audit-trails.index');
     });
 });

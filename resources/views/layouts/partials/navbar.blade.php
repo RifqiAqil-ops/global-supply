@@ -19,6 +19,13 @@
 
         <!-- Navbar Controls & User Profiles -->
         <div class="d-flex align-items-center gap-3">
+            <!-- Global Live Sync Indicator -->
+            <div id="liveSyncIndicator" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 d-flex align-items-center gap-2 px-2.5 py-1.5 rounded" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                <span class="live-status-dot" id="liveSyncDot"></span>
+                <span class="live-status-text fw-bold" id="liveSyncText">🟢 LIVE</span>
+                <span class="text-muted ms-1" style="font-weight: 500;">Last update: <span id="liveSyncTime">--:--:--</span></span>
+            </div>
+
             <!-- Notification Dropdown Mockup -->
             <div class="dropdown">
                 <button class="btn btn-link text-muted position-relative p-2 dropdown-toggle no-caret border-0 shadow-none" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">

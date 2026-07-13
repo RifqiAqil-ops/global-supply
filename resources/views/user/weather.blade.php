@@ -27,16 +27,16 @@
 <!-- Stats Row -->
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <x-stat-card title="Monitoring Stations" :value="$totalStations" icon="bi-geo-alt" color="primary" />
+        <x-stat-card title="Monitoring Stations" :value="$totalStations" icon="bi-geo-alt" color="primary" valueId="stat-weather-stations" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Extreme Weather Alerts" :value="$extremeCount" icon="bi-exclamation-triangle" color="danger" />
+        <x-stat-card title="Extreme Weather Alerts" :value="$extremeCount" icon="bi-exclamation-triangle" color="danger" valueId="stat-weather-alerts" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Global Avg Temperature" :value="$avgTemp . '°C'" icon="bi-thermometer-half" color="warning" />
+        <x-stat-card title="Global Avg Temperature" :value="$avgTemp . '°C'" icon="bi-thermometer-half" color="warning" valueId="stat-weather-avg-temp" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Global Avg Humidity" :value="$avgHumidity . '%'" icon="bi-droplet" color="info" />
+        <x-stat-card title="Global Avg Humidity" :value="$avgHumidity . '%'" icon="bi-droplet" color="info" valueId="stat-weather-avg-humidity" />
     </div>
 </div>
 
@@ -49,7 +49,7 @@
 <div class="mt-4">
     <x-card title="Weather Data Summary" icon="bi-cloud-sun">
         <div class="table-responsive">
-            <x-table :headers="['Country', 'Temperature', 'Feels Like', 'Humidity', 'Wind', 'Precipitation', 'UV Index', 'Condition', 'Extreme', 'Updated']">
+            <x-table :headers="['Country', 'Temperature', 'Feels Like', 'Humidity', 'Wind', 'Precipitation', 'UV Index', 'Condition', 'Extreme', 'Updated']" tbodyId="weather-table-tbody">
                 @foreach($weatherEntries->sortByDesc('is_extreme')->take(50) as $w)
                 <tr>
                     <td>
@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
         maxZoom: 10,
         scrollWheelZoom: true,
     });
+    window.weatherMapInstance = map;
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap contributors © CARTO',
@@ -101,44 +102,51 @@ document.addEventListener('DOMContentLoaded', function() {
         maxZoom: 19
     }).addTo(map);
 
-    const markers = @json($mapMarkers);
+    const markersGroup = L.layerGroup().addTo(map);
+    window.weatherMarkersGroup = markersGroup;
 
-    markers.forEach(m => {
-        if (!m.lat || !m.lng) return;
+    window.updateWeatherMarkers = function(markers) {
+        markersGroup.clearLayers();
+        markers.forEach(m => {
+            if (!m.lat || !m.lng) return;
 
-        const isExtreme = m.is_extreme;
-        const iconColor = isExtreme ? '#ef4444' : (m.temp > 35 ? '#f97316' : (m.temp < 0 ? '#3b82f6' : '#22c55e'));
+            const isExtreme = m.is_extreme;
+            const iconColor = isExtreme ? '#ef4444' : (m.temp > 35 ? '#f97316' : (m.temp < 0 ? '#3b82f6' : '#22c55e'));
 
-        const icon = L.divIcon({
-            className: 'custom-weather-marker',
-            html: `<div style="
-                background: ${iconColor};
-                width: 12px; height: 12px; border-radius: 50%;
-                border: 2px solid ${isExtreme ? '#fca5a5' : 'rgba(255,255,255,0.3)'};
-                box-shadow: 0 0 ${isExtreme ? '8' : '4'}px ${iconColor};
-            "></div>`,
-            iconSize: [12, 12],
-            iconAnchor: [6, 6],
+            const icon = L.divIcon({
+                className: 'custom-weather-marker',
+                html: `<div style="
+                    background: ${iconColor};
+                    width: 12px; height: 12px; border-radius: 50%;
+                    border: 2px solid ${isExtreme ? '#fca5a5' : 'rgba(255,255,255,0.3)'};
+                    box-shadow: 0 0 ${isExtreme ? '8' : '4'}px ${iconColor};
+                "></div>`,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6],
+            });
+
+            const popup = `
+                <div class="weather-popup-title">${m.flag ? `<img src="${m.flag}" style="width:16px;height:11px;border-radius:2px;margin-right:4px;">` : ''}${m.name}</div>
+                <div class="weather-popup-metric">
+                    🌡️ Temperature: <strong>${m.temp}°C</strong> (Feels ${m.feels_like}°C)<br>
+                    💧 Humidity: <strong>${m.humidity}%</strong><br>
+                    💨 Wind: <strong>${m.wind_speed} km/h</strong> (${m.wind_dir}°)<br>
+                    🌧️ Precipitation: <strong>${m.precipitation} mm</strong><br>
+                    ☀️ UV Index: <strong>${m.uv_index}</strong><br>
+                    📡 Condition: <strong>${m.weather_desc}</strong><br>
+                    ${isExtreme ? '<span style="color:#ef4444;font-weight:700;">⚠ EXTREME WEATHER ALERT</span><br>' : ''}
+                    <span style="color:#64748b;font-size:11px;">Updated: ${m.fetched_at}</span>
+                </div>
+            `;
+
+            L.marker([m.lat, m.lng], { icon })
+                .addTo(markersGroup)
+                .bindPopup(popup, { maxWidth: 260 });
         });
+    };
 
-        const popup = `
-            <div class="weather-popup-title">${m.flag ? `<img src="${m.flag}" style="width:16px;height:11px;border-radius:2px;margin-right:4px;">` : ''}${m.name}</div>
-            <div class="weather-popup-metric">
-                🌡️ Temperature: <strong>${m.temp}°C</strong> (Feels ${m.feels_like}°C)<br>
-                💧 Humidity: <strong>${m.humidity}%</strong><br>
-                💨 Wind: <strong>${m.wind_speed} km/h</strong> (${m.wind_dir}°)<br>
-                🌧️ Precipitation: <strong>${m.precipitation} mm</strong><br>
-                ☀️ UV Index: <strong>${m.uv_index}</strong><br>
-                📡 Condition: <strong>${m.weather_desc}</strong><br>
-                ${isExtreme ? '<span style="color:#ef4444;font-weight:700;">⚠ EXTREME WEATHER ALERT</span><br>' : ''}
-                <span style="color:#64748b;font-size:11px;">Updated: ${m.fetched_at}</span>
-            </div>
-        `;
-
-        L.marker([m.lat, m.lng], { icon })
-            .addTo(map)
-            .bindPopup(popup, { maxWidth: 260 });
-    });
+    const markers = @json($mapMarkers);
+    window.updateWeatherMarkers(markers);
 });
 </script>
 @endpush

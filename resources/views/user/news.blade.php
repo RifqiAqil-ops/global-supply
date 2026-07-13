@@ -13,16 +13,16 @@
 <!-- Stats Row -->
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <x-stat-card title="Total Articles" :value="$totalArticles" icon="bi-newspaper" color="primary" />
+        <x-stat-card title="Total Articles" :value="$totalArticles" icon="bi-newspaper" color="primary" valueId="stat-news-total" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Negative Sentiment" :value="$negativeCount" icon="bi-emoji-frown" color="danger" />
+        <x-stat-card title="Negative Sentiment" :value="$negativeCount" icon="bi-emoji-frown" color="danger" valueId="stat-news-negative" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Positive Sentiment" :value="$positiveCount" icon="bi-emoji-smile" color="success" />
+        <x-stat-card title="Positive Sentiment" :value="$positiveCount" icon="bi-emoji-smile" color="success" valueId="stat-news-positive" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Neutral Sentiment" :value="$neutralCount" icon="bi-emoji-neutral" color="secondary" />
+        <x-stat-card title="Neutral Sentiment" :value="$neutralCount" icon="bi-emoji-neutral" color="secondary" valueId="stat-news-neutral" />
     </div>
 </div>
 
@@ -53,7 +53,7 @@
 </div>
 
 <!-- Articles Grid -->
-<div class="row g-4">
+<div class="row g-4" id="news-articles-grid">
     @forelse($articles as $article)
     <div class="col-md-6 col-lg-4">
         <div class="card card-premium border-0 h-100" style="transition: transform 0.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform='none'">
@@ -98,15 +98,40 @@
         </div>
     </div>
     @empty
-    <div class="col-12">
-        <div class="card card-premium border-0">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-newspaper display-4 text-muted d-block mb-3"></i>
-                <h5 class="text-white">No News Articles Found</h5>
-                <p class="text-muted small mb-0">News articles will appear here once the GNews API feed is configured and synced. Add <code>GNEWS_API_KEY</code> to your <code>.env</code> file.</p>
+        @if(empty(config('gscrip.api.gnews.key')))
+        <!-- News Empty State: Key Missing -->
+        <div class="col-12">
+            <div class="card card-premium border-0 p-5 text-center" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.01) 100%);">
+                <div class="card-body">
+                    <div class="display-4 text-warning mb-3">
+                        <i class="bi bi-key-fill"></i>
+                    </div>
+                    <h4 class="text-white fw-bold mb-2">GNews API Key Configuration Required</h4>
+                    <p class="text-muted small mx-auto mb-4" style="max-width: 480px;">
+                        The geopolitical and news intelligence feed relies on the GNews API to fetch live global logistics and macro articles. To configure this module, please register for a free API key and set it in your local environment.
+                    </p>
+                    <div class="p-3 rounded bg-dark border border-secondary border-opacity-20 mx-auto mb-4 text-start font-monospace small" style="max-width: 420px; font-size: 0.78rem;">
+                        <span class="text-muted"># Add this configuration parameter in your .env file:</span><br>
+                        <span class="text-warning">GNEWS_API_KEY</span>=<span class="text-success">"your_api_token_here"</span>
+                    </div>
+                    <a href="https://gnews.io/docs" target="_blank" rel="noopener noreferrer" class="btn btn-warning btn-sm px-4 py-2 fw-semibold">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> View GNews Documentation
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
+        @else
+        <!-- News Empty State: Key Present but No Data -->
+        <div class="col-12">
+            <div class="card card-premium border-0">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-newspaper display-4 text-muted d-block mb-3"></i>
+                    <h5 class="text-white">No News Articles Aggregated Yet</h5>
+                    <p class="text-muted small mb-0">The GNews API Key is configured correctly! Please run the command line sync task to retrieve news updates: <code>php artisan gscrip:sync-news</code></p>
+                </div>
+            </div>
+        </div>
+        @endif
     @endforelse
 </div>
 

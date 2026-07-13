@@ -195,4 +195,37 @@ class DashboardController extends Controller
 
         return redirect()->back()->with('success', 'Scoring weights updated successfully!');
     }
+
+    /**
+     * Show the User Manager database list.
+     */
+    public function users()
+    {
+        $users = \App\Models\User::orderBy('name')->paginate(10);
+        return view('admin.users_index', compact('users'));
+    }
+
+    /**
+     * Show the detailed API logs and health dashboard.
+     */
+    public function apiHealth()
+    {
+        $logs = ApiLog::orderByDesc('called_at')->paginate(15);
+        
+        $totalCalls = ApiLog::count();
+        $successfulCalls = ApiLog::where('is_success', true)->count();
+        $failedCalls = ApiLog::where('is_success', false)->count();
+        $avgLatency = round(ApiLog::avg('response_time') ?? 0);
+        
+        return view('admin.api_health_index', compact('logs', 'totalCalls', 'successfulCalls', 'failedCalls', 'avgLatency'));
+    }
+
+    /**
+     * Show the system audit trails logs.
+     */
+    public function auditTrails()
+    {
+        $logs = \App\Models\ActivityLog::with('user')->orderByDesc('created_at')->paginate(15);
+        return view('admin.audit_trails_index', compact('logs'));
+    }
 }

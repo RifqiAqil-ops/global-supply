@@ -1,5 +1,6 @@
 @props([
-    'headers' => []
+    'headers' => [],
+    'tbodyId' => null,
 ])
 
 <div class="table-responsive">
@@ -13,7 +14,7 @@
                 </tr>
             </thead>
         @endif
-        <tbody>
+        <tbody @if($tbodyId) id="{{ $tbodyId }}" @endif>
             {{ $slot }}
         </tbody>
     </table>

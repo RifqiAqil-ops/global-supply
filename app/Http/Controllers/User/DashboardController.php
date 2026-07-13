@@ -33,8 +33,18 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Get some countries with their indicators and weather
-        $watchlistCountries = Country::whereIn('iso2', ['US', 'CN', 'IN', 'PH'])
+        // Fetch actual watchlist countries from the database
+        $user = auth()->user();
+        $watchlist = \App\Models\Watchlist::firstOrCreate(['user_id' => $user->id, 'name' => 'Primary Watchlist']);
+        $watchlistCountryIds = $watchlist->items()->pluck('country_id')->toArray();
+        if (empty($watchlistCountryIds)) {
+            $defaultCountries = Country::whereIn('iso2', ['US', 'CN', 'IN', 'PH'])->get();
+            foreach ($defaultCountries as $c) {
+                $watchlist->items()->firstOrCreate(['country_id' => $c->id], ['alert_threshold' => 75.00]);
+            }
+            $watchlistCountryIds = $defaultCountries->pluck('id')->toArray();
+        }
+        $watchlistCountries = Country::whereIn('id', $watchlistCountryIds)
             ->with(['weatherData', 'latestRiskScore'])
             ->get();
 

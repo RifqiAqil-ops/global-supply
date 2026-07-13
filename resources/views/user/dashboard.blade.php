@@ -28,6 +28,7 @@
             changeType="neutral" 
             icon="bi-shield-exclamation" 
             iconColor="warning" 
+            valueId="stat-avg-risk"
         />
     </div>
     <div class="col-sm-6 col-xl-3">
@@ -38,6 +39,7 @@
             changeType="neutral" 
             icon="bi-globe" 
             iconColor="primary" 
+            valueId="stat-countries-count"
         />
     </div>
     <div class="col-sm-6 col-xl-3">
@@ -48,6 +50,7 @@
             changeType="up" 
             icon="bi-cloud-lightning-rain" 
             iconColor="danger" 
+            valueId="stat-extreme-weather"
         />
     </div>
     <div class="col-sm-6 col-xl-3">
@@ -58,6 +61,7 @@
             changeType="down" 
             icon="bi-currency-exchange" 
             iconColor="success" 
+            valueId="stat-currencies-count"
         />
     </div>
 </div>
@@ -94,7 +98,7 @@
     <!-- Top Risk Countries List -->
     <div class="col-lg-4">
         <x-card title="Top Risk Hotspots" icon="bi-exclamation-triangle">
-            <x-table :headers="['Country', 'Risk Index', 'Trend']">
+            <x-table :headers="['Country', 'Risk Index', 'Trend']" tbodyId="hotspots-tbody">
                 @forelse($topRiskCountries as $tr)
                 @php
                     $badgeType = 'success';
@@ -289,7 +293,7 @@
     <!-- Top 10 Highest Risk Countries -->
     <div class="col-lg-6">
         <x-card title="Top 10 Highest Risk Countries" icon="bi-shield-exclamation text-danger">
-            <x-table :headers="['Country', 'Composite Score', 'Risk Level']">
+            <x-table :headers="['Country', 'Composite Score', 'Risk Level']" tbodyId="highest-risk-tbody">
                 @forelse($topHighestRisk as $item)
                 @php
                     $level = $item->risk_level;
@@ -319,7 +323,7 @@
     <!-- Top 10 Lowest Risk Countries -->
     <div class="col-lg-6">
         <x-card title="Top 10 Lowest Risk Countries" icon="bi-shield-check text-success">
-            <x-table :headers="['Country', 'Composite Score', 'Risk Level']">
+            <x-table :headers="['Country', 'Composite Score', 'Risk Level']" tbodyId="lowest-risk-tbody">
                 @forelse($topLowestRisk as $item)
                 @php
                     $level = $item->risk_level;
@@ -352,7 +356,7 @@
     <!-- Recent Risk Changes -->
     <div class="col-lg-6">
         <x-card title="Recent Risk Changes" icon="bi-arrow-left-right text-primary">
-            <x-table :headers="['Country', 'Previous Score', 'New Score', 'Change']">
+            <x-table :headers="['Country', 'Previous Score', 'New Score', 'Change']" tbodyId="recent-changes-tbody">
                 @forelse($recentChanges as $item)
                 @php
                     $diff = $item->score_change;
@@ -387,7 +391,7 @@
     <!-- Recent Alerts -->
     <div class="col-lg-6">
         <x-card title="Recent System Alerts Log" icon="bi-bell-fill text-warning">
-            <div class="d-flex flex-column gap-2" style="max-height: 380px; overflow-y: auto;">
+            <div id="recent-alerts-list" class="d-flex flex-column gap-2" style="max-height: 380px; overflow-y: auto;">
                 @forelse($recentAlerts as $alert)
                 <div class="d-flex gap-3 align-items-start p-2.5 rounded border border-danger border-opacity-10" style="background-color: rgba(220, 53, 69, 0.02);">
                     <div class="text-danger mt-0.5"><i class="bi bi-exclamation-triangle-fill"></i></div>
