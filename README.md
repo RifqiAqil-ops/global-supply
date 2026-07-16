@@ -2,142 +2,142 @@
 
 Global Supply Chain Risk Intelligence Platform
 
-GSCRIP is a real-time risk intelligence platform designed to evaluate, monitor, and visualize supply chain vulnerabilities across global sourcing regions. By integrating macroeconomic indicators, extreme weather anomalies, foreign exchange stability, geopolitical news sentiments, and logistics hub coordinates, the platform calculates automated risk profiles to support strategic sourcing decisions.
+GSCRIP adalah platform intelijen risiko rantai pasok global real-time modern yang dirancang untuk mendeteksi, mengevaluasi, dan memvisualisasikan faktor risiko makroekonomi, cuaca ekstrem, fluktuasi valuta asing, sentimen geopolitik, dan infrastruktur pelabuhan secara terintegrasi. Platform ini menghitung indeks skor risiko komposit otomatis per negara untuk mendukung pengambilan keputusan sourcing yang strategis.
 
-## Features
+## Fitur Utama
 
-- Global Dashboard: Aggregates key risk indicators, news feeds, currency volatility, and weather conditions in a unified control panel.
-- Country Intelligence: Individual profiles displaying composite risk indexes, population, capital, and localized risk scores.
-- Weather Monitoring: Live meteorological tracking across key countries with automated alerts for extreme anomalies.
-- Currency Monitoring: Exchange rate tracking for 150+ international currencies against the USD base with daily volatility charts.
-- Risk Scoring Engine: Algorithmic risk calculations integrating economic, weather, geopolitical, and logistical categories.
-- Port Intelligence: Interactive cargo port locator containing UN/LOCODE, geographical coordinates, and regional details.
-- News Intelligence: Aggregated global news feed categorized with custom sentiment mapping (Positive, Neutral, Negative).
-- Watchlists: Sourcing watchlist profiles with customizable alert thresholds and notes.
-- Reports Console: Export executive summaries and data directly.
-- Universal Search: Keyboard-accessible search capsule (Ctrl+K) supporting fuzzy matching, ranking, history tracking, and shortcuts.
-- Admin Control Panel: Administrative dashboard to update risk scoring weights and diagnostic APIs.
-- REST API: Exposed endpoints returning JSON data models for ports, weather, and risk metrics.
-- PDF Export: Landscape A4 executive briefings formatted in Bahasa Indonesia.
-- Excel Export: Native Microsoft Excel spreadsheet (.xlsx) generation with proper data typing and auto-sized column widths.
+- Dasbor Global: Mengintegrasikan indikator risiko utama, feed berita geopolitik, volatilitas mata uang, dan kondisi cuaca ekstrem dalam satu panel kendali terpadu.
+- Intelijen Negara: Profil individu per negara yang menampilkan indeks risiko komposit, populasi, ibu kota, serta rincian skor risiko sektoral.
+- Pemantauan Cuaca: Pemantauan kondisi meteorologi secara langsung di berbagai negara dengan peringatan otomatis untuk anomali cuaca ekstrem.
+- Pemantauan Mata Uang: Pelacakan nilai tukar untuk 150+ mata uang internasional terhadap basis USD dilengkapi dengan grafik volatilitas harian.
+- Mesin Penghitung Risiko: Kalkulasi indeks risiko berbasis algoritma yang mengintegrasikan kategori ekonomi, cuaca, geopolitik, dan logistik.
+- Intelijen Pelabuhan: Peta interaktif pencari pelabuhan kargo logistik yang memuat kode UN/LOCODE, koordinat geografis, serta detail regional.
+- Intelijen Berita: Feed berita geopolitik dunia yang dikelompokkan berdasarkan peringkat sentimen (Positif, Netral, Negatif).
+- Sourcing Watchlist: Profil daftar pantau komoditas dengan batas ambang batas (alert threshold) peringatan dan catatan remarks yang dapat disesuaikan.
+- Konsol Laporan: Penyediaan preview laporan risiko dan pengunduhan instan dokumen.
+- Pencarian Universal: Bilah pencarian cepat (Ctrl+K) yang mendukung fuzzy matching, pembobotan skor kecocokan, riwayat pencarian, dan navigasi keyboard penuh.
+- Panel Admin: Dasbor khusus admin untuk memperbarui bobot perhitungan kalkulasi risiko dan melakukan diagnosis status API.
+- REST API: Menyediakan endpoint publik untuk data negara, skor risiko, pelabuhan kargo, berita, dan nilai mata uang.
+- Ekspor PDF: Laporan briefing eksekutif format A4 landscape yang telah dilokalisasi sepenuhnya ke dalam Bahasa Indonesia.
+- Ekspor Excel: Unduhan data spreadsheet Microsoft Excel (.xlsx) asli dengan tipe data angka yang presisi dan kolom yang otomatis menyesuaikan lebar data.
 
-## Technology
+## Teknologi
 
 - Framework: Laravel 12.x
-- Language: PHP 8.2+, JavaScript (ES6)
+- Bahasa: PHP 8.2+, JavaScript (ES6)
 - Frontend: Blade Engine, Vanilla CSS3, Bootstrap 5
-- Visualizations: Chart.js 4.x (trend graphing), Leaflet.js 1.9 (spatially-indexed map plots)
+- Visualisasi: Chart.js 4.x (tren grafik volatilitas), Leaflet.js 1.9 (pemetaan spasial interaktif)
 - Database: MySQL / MariaDB
-- Package Manager: Composer, NPM
+- Pengelola Dependensi: Composer, NPM
 
-## Installation
+## Panduan Instalasi
 
-Follow these steps to set up the project locally:
+Ikuti langkah-langkah berikut untuk menjalankan proyek ini di lingkungan lokal:
 
-1. Clone the repository and navigate to the project directory:
+1. Clone repositori dan masuk ke direktori proyek:
    ```bash
    git clone <repository-url>
    cd gscrip
    ```
 
-2. Install backend dependencies via Composer:
+2. Instal dependensi backend menggunakan Composer:
    ```bash
    composer install
    ```
 
-3. Install frontend assets via NPM:
+3. Instal aset frontend menggunakan NPM:
    ```bash
    npm install
    ```
 
-4. Create and configure the environment variables file:
+4. Buat dan konfigurasikan file environment variables:
    ```bash
    cp .env.example .env
    php artisan key:generate
    ```
 
-5. Run database migrations and seed default values:
+5. Jalankan migrasi database dan seed data awal:
    ```bash
    php artisan migrate --seed
    ```
 
-6. Compile frontend assets:
+6. Kompilasi aset frontend:
    ```bash
    npm run build
    ```
 
-7. Run the local development server:
+7. Jalankan server pengembangan lokal:
    ```bash
    php artisan serve
    ```
 
-## Screenshots
+## Dokumentasi Visual (Screenshots)
 
-*(Screenshots will be populated here during repository documentation)*
+*(Dokumentasi tangkapan layar akan dimuat di bagian ini selama rilis repositori)*
 
-## Project Structure
+## Struktur Proyek
 
 ```text
 app/
- ├── DTOs/                      # Data Transfer Objects for API integrations
- ├── Exports/                   # Maatwebsite Excel export structures
+ ├── DTOs/                      # Data Transfer Objects untuk integrasi API
+ ├── Exports/                   # Struktur ekspor data Microsoft Excel
  ├── Http/
- │    ├── Controllers/          # Page request and API endpoint controller classes
- │    └── Middleware/           # User authentication and admin guards
- ├── Models/                    # Eloquent database mapping models
- ├── Repositories/              # Database querying layers
- └── Services/                  # Business logic engines and API integrations
+ │    ├── Controllers/          # Class controller untuk request halaman & endpoint API
+ │    └── Middleware/           # Guard untuk autentikasi user dan admin
+ ├── Models/                    # Model pemetaan database Eloquent
+ ├── Repositories/              # Layer penulisan query database
+ └── Services/                  # Logika bisnis utama dan integrasi API eksternal
 database/
- ├── migrations/                # Database schema blueprints
- └── seeders/                   # Initial records population
+ ├── migrations/                # Blueprint skema database
+ └── seeders/                   # Pengisian records awal database
 resources/
- ├── css/                       # Custom styling sheets (app.css)
- ├── js/                        # Core JavaScript files
- └── views/                     # Blade page templates
+ ├── css/                       # Custom styling sheet (app.css)
+ ├── js/                        # File inti JavaScript
+ └── views/                     # Template tampilan halaman Blade
 routes/
- ├── web.php                    # Web browser route definitions
- └── api.php                    # Public REST API route definitions
+ ├── web.php                    # Definisi rute browser web
+ └── api.php                    # Definisi rute REST API publik
 ```
 
 ## REST API
 
-The platform provides a public API namespace to expose sourcing telemetry:
+Platform ini menyediakan namespace API publik untuk mengekspos data telemetri:
 
-### 1. Get Countries List
+### 1. Mendapatkan Daftar Negara
 - **Endpoint**: `/api/countries`
-- **Method**: `GET`
-- **Description**: Returns all registered countries with details and composite risk ratings.
+- **Metode**: `GET`
+- **Deskripsi**: Mengembalikan daftar semua negara yang terdaftar beserta detail rating risiko komposit.
 
-### 2. Get Country Risk Score
+### 2. Mendapatkan Skor Risiko
 - **Endpoint**: `/api/risk`
-- **Method**: `GET`
-- **Description**: Returns active risk score evaluations filtered by composite weight variables.
+- **Metode**: `GET`
+- **Deskripsi**: Mengembalikan evaluasi skor risiko aktif yang difilter berdasarkan parameter bobot komposit.
 
-### 3. Get Active Ports
+### 3. Mendapatkan Pelabuhan Aktif
 - **Endpoint**: `/api/ports`
-- **Method**: `GET`
-- **Description**: Returns cargo port coordinates, UN/LOCODE codes, and active statuses.
+- **Metode**: `GET`
+- **Deskripsi**: Mengembalikan koordinat geografis pelabuhan, kode UN/LOCODE, dan status keaktifan pelabuhan.
 
-### 4. Get Geopolitical News
+### 4. Mendapatkan Berita Geopolitik
 - **Endpoint**: `/api/news`
-- **Method**: `GET`
-- **Description**: Returns news article listings with title, description, and sentiment ratings.
+- **Metode**: `GET`
+- **Deskripsi**: Mengembalikan daftar artikel berita geopolitik lengkap dengan analisis sentimen.
 
-### 5. Get Exchange Rates
+### 5. Mendapatkan Nilai Tukar Mata Uang
 - **Endpoint**: `/api/currency`
-- **Method**: `GET`
-- **Description**: Returns live exchange rates against the USD base.
+- **Metode**: `GET`
+- **Deskripsi**: Mengembalikan nilai kurs mata uang global real-time terhadap basis USD.
 
-## Production Features
+## Fitur Tingkat Produksi
 
-- **API Cache**: Implements Cache Store integrations on external API client calls to minimize token depletion and network overhead.
-- **Scheduler**: Automates routine weather syncing, currency rate updates, and news aggregation.
-- **Risk Engine**: Automated calculations trigger on data update intervals.
-- **Universal Search**: Client-side localStorage caching holds port and country indices for instant queries.
-- **Responsive UI**: CSS variables enable responsive UI structures across phone, tablet, and desktop viewports.
-- **Export PDF**: Fully typeset report briefings localized in Bahasa Indonesia.
-- **Export Excel**: Uses native Excel spreadsheet structures preserving numeric column precision.
+- **API Cache**: Menerapkan integrasi Cache Store pada pemanggilan client API eksternal untuk menghemat kuota token API dan latensi jaringan.
+- **Scheduler**: Mengotomatiskan sinkronisasi cuaca harian, pembaruan kurs mata uang, dan agregasi berita secara berkala.
+- **Kalkulasi Otomatis**: Perhitungan bobot risiko baru otomatis berjalan setiap kali data eksternal berhasil disinkronisasikan.
+- **Pencarian Cepat**: Data pelabuhan dan profil negara disimpan di client-side localStorage untuk memberikan hasil instan saat diketik.
+- **Responsive UI**: Variabel CSS3 modern memastikan grid layout tetap rapi di smartphone, tablet, laptop, hingga layar desktop lebar.
+- **Ekspor PDF**: Format laporan A4 eksekutif terjemahan Bahasa Indonesia yang presisi.
+- **Ekspor Excel**: Pembuatan spreadsheet asli dengan ketepatan nilai desimal untuk analisis data lebih lanjut di Microsoft Excel.
 
-## License
+## Lisensi
 
-This project is licensed under the MIT License.
+Proyek ini dilisensikan di bawah Lisensi MIT.
