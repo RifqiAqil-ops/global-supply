@@ -2,9 +2,6 @@
     <div class="container-fluid d-flex align-items-center justify-content-between p-0">
         <!-- Left: Logo & Mobile Toggle Button -->
         <div class="d-flex align-items-center gap-3">
-            <button class="btn btn-link text-muted d-lg-none p-0 border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileOffcanvasNav" aria-controls="mobileOffcanvasNav">
-                <i class="bi bi-list fs-3"></i>
-            </button>
             <a href="{{ url('/') }}" class="text-decoration-none d-flex align-items-center gap-2">
                 <span class="text-primary fs-4 fw-extrabold" style="letter-spacing: 1.5px; font-family: var(--font-header);">
                     <i class="bi bi-globe-americas"></i> GSCRIP
@@ -256,118 +253,6 @@
     </div>
 </nav>
 
-<!-- Mobile/Tablet Offcanvas Drawer Navigation -->
-<div class="offcanvas offcanvas-start bg-white" tabindex="-1" id="mobileOffcanvasNav" aria-labelledby="mobileOffcanvasNavLabel" style="width: 280px; border-right: 1px solid #E5E7EB;">
-    <div class="offcanvas-header p-4 border-bottom" style="border-color: #E5E7EB !important;">
-        <span class="text-primary fs-4 fw-extrabold" id="mobileOffcanvasNavLabel" style="letter-spacing: 1.5px; font-family: var(--font-header);">
-            <i class="bi bi-globe-americas"></i> GSCRIP
-        </span>
-        <button type="button" class="btn-close text-reset shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body p-0 overflow-y-auto offcanvas-nav">
-        <ul class="nav flex-column py-3">
-            <!-- Dashboard Link -->
-            <li class="nav-item">
-                <a href="{{ route($dashboardRoute) }}" class="nav-link {{ Route::is($dashboardRoute) ? 'active' : '' }}">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-            </li>
-
-            <!-- Monitoring -->
-            <li class="mobile-section-title">Monitoring</li>
-            <li class="nav-item">
-                <a href="{{ route('countries.index') }}" class="nav-link {{ Route::is('countries.index') ? 'active' : '' }}">
-                    <i class="bi bi-flag"></i> Countries Index
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('ports.index') }}" class="nav-link {{ Route::is('ports.index') ? 'active' : '' }}">
-                    <i class="bi bi-anchor"></i> Ports & Logistics
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('weather.index') }}" class="nav-link {{ Route::is('weather.index') ? 'active' : '' }}">
-                    <i class="bi bi-cloud-lightning"></i> Weather Alerts
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('news.index') }}" class="nav-link {{ Route::is('news.index') ? 'active' : '' }}">
-                    <i class="bi bi-newspaper"></i> Geopolitical News
-                </a>
-            </li>
-
-            <!-- Analytics -->
-            <li class="mobile-section-title">Analytics</li>
-            <li class="nav-item">
-                <a href="{{ route('compare.index') }}" class="nav-link {{ Route::is('compare.index') ? 'active' : '' }}">
-                    <i class="bi bi-shuffle"></i> Country Compare
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('currency.index') }}" class="nav-link {{ Route::is('currency.index') ? 'active' : '' }}">
-                    <i class="bi bi-currency-exchange"></i> Currency Monitor
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('risk-history.index') }}" class="nav-link {{ Route::is('risk-history.index') ? 'active' : '' }}">
-                    <i class="bi bi-clock-history"></i> Risk History
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('watchlists.index') }}" class="nav-link {{ Route::is('watchlists.index') ? 'active' : '' }}">
-                    <i class="bi bi-eye"></i> Watchlists
-                </a>
-            </li>
-
-            <!-- Reports -->
-            <li class="mobile-section-title">Reports</li>
-            <li class="nav-item">
-                <a href="{{ route('reports.index') }}" class="nav-link {{ Route::is('reports.index') ? 'active' : '' }}">
-                    <i class="bi bi-file-earmark-bar-graph"></i> Sourcing Reports
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('articles.index') }}" class="nav-link {{ Route::is('articles.index') || Route::is('articles.show') ? 'active' : '' }}">
-                    <i class="bi bi-journal-richtext"></i> Analysis Reports
-                </a>
-            </li>
-
-            <!-- Administration -->
-            @if (Auth::user()->isAdmin())
-                <li class="mobile-section-title">Administration</li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.users.index') }}" class="nav-link {{ Route::is('admin.users.index') || Route::is('admin.users.create') || Route::is('admin.users.edit') ? 'active' : '' }}">
-                        <i class="bi bi-people"></i> User Manager
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.ports.index') }}" class="nav-link {{ Route::is('admin.ports.index') || Route::is('admin.ports.create') || Route::is('admin.ports.edit') ? 'active' : '' }}">
-                        <i class="bi bi-anchor"></i> Manage Ports
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.articles.index') }}" class="nav-link {{ Route::is('admin.articles.index') || Route::is('admin.articles.create') || Route::is('admin.articles.edit') ? 'active' : '' }}">
-                        <i class="bi bi-journal-text"></i> Manage Articles
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.weights.index') }}" class="nav-link {{ Route::is('admin.weights.index') ? 'active' : '' }}">
-                        <i class="bi bi-sliders"></i> Risk Weights
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.api-health.index') }}" class="nav-link {{ Route::is('admin.api-health.index') ? 'active' : '' }}">
-                        <i class="bi bi-cpu"></i> API Health
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.audit-trails.index') }}" class="nav-link {{ Route::is('admin.audit-trails.index') ? 'active' : '' }}">
-                        <i class="bi bi-journal-text"></i> Audit Trails
-                    </a>
-                </li>
-            @endif
-    </div>
-</div>
 
 <style>
 .global-search-dropdown {
