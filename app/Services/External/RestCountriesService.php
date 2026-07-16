@@ -15,6 +15,29 @@ use Throwable;
 
 class RestCountriesService extends BaseApiClient implements CountryServiceInterface
 {
+    private const SOVEREIGN_ISO3 = [
+        "AFG", "ALB", "DZA", "AND", "AGO", "ATG", "ARG", "ARM", "AUS", "AUT",
+        "AZE", "BHS", "BHR", "BGD", "BRB", "BLR", "BEL", "BLZ", "BEN", "BTN",
+        "BOL", "BIH", "BWA", "BRA", "BRN", "BGR", "BFA", "BDI", "CPV", "KHM",
+        "CMR", "CAN", "CAF", "TCD", "CHL", "CHN", "COL", "COM", "COD", "COG",
+        "CRI", "CIV", "HRV", "CUB", "CYP", "CZE", "DNK", "DJI", "DMA", "DOM",
+        "ECU", "EGY", "SLV", "GNQ", "ERI", "EST", "SWZ", "ETH", "FJI", "FIN",
+        "FRA", "GAB", "GMB", "GEO", "DEU", "GHA", "GRC", "GRD", "GTM", "GIN",
+        "GNB", "GUY", "HTI", "HND", "HUN", "ISL", "IND", "IDN", "IRN", "IRQ",
+        "IRL", "ISR", "ITA", "JAM", "JPN", "JOR", "KAZ", "KEN", "KIR", "KWT",
+        "KGZ", "LAO", "LVA", "LBN", "LSO", "LBR", "LBY", "LIE", "LTU", "LUX",
+        "MDG", "MWI", "MYS", "MDV", "MLI", "MLT", "MHL", "MRT", "MUS", "MEX",
+        "FSM", "MDA", "MCO", "MNG", "MNE", "MAR", "MOZ", "MMR", "NAM", "NRU",
+        "NPL", "NLD", "NZL", "NIC", "NER", "NGA", "PRK", "MKD", "NOR", "OMN",
+        "PAK", "PLW", "PSE", "PAN", "PNG", "PRY", "PER", "PHL", "POL", "PRT",
+        "QAT", "ROU", "RUS", "RWA", "KNA", "LCA", "VCT", "WSM", "SMR", "STP",
+        "SAU", "SEN", "SRB", "SYC", "SLE", "SGP", "SVK", "SVN", "SLB", "SOM",
+        "ZAF", "KOR", "SSD", "ESP", "LKA", "SDN", "SUR", "SWE", "CHE", "SYR",
+        "TJK", "TZA", "THA", "TLS", "TGO", "TON", "TTO", "TUN", "TUR", "TKM",
+        "TUV", "UGA", "UKR", "ARE", "GBR", "USA", "URY", "UZB", "VUT", "VAT",
+        "VEN", "VNM", "YEM", "ZMB", "ZWE"
+    ];
+
     protected CountryRepositoryInterface $countryRepository;
 
     public function __construct(CountryRepositoryInterface $countryRepository)
@@ -73,6 +96,11 @@ class RestCountriesService extends BaseApiClient implements CountryServiceInterf
 
             foreach ($data as $item) {
                 try {
+                    $iso3 = strtoupper($item['cca3'] ?? '');
+                    if (!in_array($iso3, self::SOVEREIGN_ISO3)) {
+                        continue; // Skip non-sovereign territories
+                    }
+
                     $parsed = $this->parseCountryData($item);
                     if (!$parsed) {
                         $summary['failed']++;
@@ -95,6 +123,9 @@ class RestCountriesService extends BaseApiClient implements CountryServiceInterf
                     Log::error("Failed to parse and store country: " . ($item['name']['common'] ?? 'Unknown') . " - " . $e->getMessage());
                 }
             }
+
+            // Remove any non-sovereign countries from database
+            Country::whereNotIn('iso3', self::SOVEREIGN_ISO3)->delete();
 
             // Flush the full country list cache
             Cache::forget('countries.all');
@@ -171,6 +202,11 @@ class RestCountriesService extends BaseApiClient implements CountryServiceInterf
             throw new \Exception("Country code '{$code}' not found on REST Countries API.");
         }
 
+        $iso3 = strtoupper($match['cca3'] ?? '');
+        if (!in_array($iso3, self::SOVEREIGN_ISO3)) {
+            throw new \Exception("Non-sovereign territory '{$code}' is not supported.");
+        }
+
         $parsed = $this->parseCountryData($match);
 
         if (!$parsed) {
@@ -221,7 +257,7 @@ class RestCountriesService extends BaseApiClient implements CountryServiceInterf
             $callingCode = $item['idd']['root'] . $suffix;
         }
 
-        return [
+        $data = [
             'iso2' => strtoupper($iso2),
             'iso3' => strtoupper($iso3),
             'name' => $name,
@@ -245,6 +281,12 @@ class RestCountriesService extends BaseApiClient implements CountryServiceInterf
             'is_independent' => (bool) ($item['independent'] ?? true),
             'is_un_member' => (bool) ($item['unMember'] ?? false),
         ];
+
+        if (isset($item['population'])) {
+            $data['population'] = (int) $item['population'];
+        }
+
+        return $data;
     }
 
     /**

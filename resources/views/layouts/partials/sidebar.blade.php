@@ -4,7 +4,7 @@
 <!-- Sidebar Layout Container -->
 <div class="sidebar d-flex flex-column flex-shrink-0 vh-100 position-sticky top-0" id="sidebarMenu">
     <!-- Brand / Logo Area -->
-    <div class="p-4 border-bottom d-flex align-items-center justify-content-between" style="border-color: var(--color-border) !important;">
+    <div class="p-4 d-flex align-items-center justify-content-between">
         <a href="{{ url('/') }}" class="text-decoration-none d-flex align-items-center gap-2">
             <span class="text-primary fs-4 fw-extrabold" style="letter-spacing: 1.5px; font-family: var(--font-header);">
                 <i class="bi bi-globe-americas"></i> GSCRIP
@@ -17,98 +17,129 @@
     </div>
 
     <!-- Navigation Menu Items -->
-    <div class="overflow-y-auto flex-grow-1 py-3">
+    <div class="overflow-y-auto flex-grow-1 py-2">
         <ul class="nav nav-pills flex-column mb-auto">
-            <!-- GENERAL SECTION -->
-            <li class="px-4 mb-2 text-muted text-uppercase small fw-bold" style="font-size: 0.65rem; letter-spacing: 1.5px;">
-                Main
+            <!-- OVERVIEW SECTION -->
+            <li class="sidebar-heading">
+                OVERVIEW
             </li>
-            
             <li>
                 @php
                     $dashboardRoute = Auth::user()->isAdmin() ? 'admin.dashboard' : 'user.dashboard';
                 @endphp
                 <a href="{{ route($dashboardRoute) }}" class="nav-link {{ Route::is($dashboardRoute) ? 'active' : '' }}">
-                    <span class="d-flex align-items-center gap-2">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </span>
+                    <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
 
-            <!-- SOURCING & RISK SECTION (Collapsible menu mockup) -->
-            <li class="px-4 mt-4 mb-2 text-muted text-uppercase small fw-bold" style="font-size: 0.65rem; letter-spacing: 1.5px;">
-                Risk Intelligence
+            <!-- MONITORING SECTION -->
+            <li class="sidebar-heading">
+                MONITORING
             </li>
-
             <li>
-                <a class="nav-link {{ Route::is(['countries.index', 'ports.index', 'watchlists.index', 'risk-history.index']) ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuSourcing" role="button" aria-expanded="{{ Route::is(['countries.index', 'ports.index', 'watchlists.index', 'risk-history.index']) ? 'true' : 'false' }}" aria-controls="menuSourcing">
-                    <span class="d-flex align-items-center gap-2">
-                        <i class="bi bi-shield-check"></i> Sourcing Monitor
-                    </span>
-                    <i class="bi bi-chevron-down small menu-arrow"></i>
+                <a href="{{ route('countries.index') }}" class="nav-link {{ Route::is('countries.index') ? 'active' : '' }}">
+                    <i class="bi bi-flag"></i> Countries Index
                 </a>
-                <div class="collapse {{ Route::is(['countries.index', 'ports.index', 'watchlists.index', 'risk-history.index']) ? 'show' : '' }}" id="menuSourcing">
-                    <ul class="submenu">
-                        <li><a href="{{ route('countries.index') }}" class="nav-link {{ Route::is('countries.index') ? 'active' : '' }}"><i class="bi bi-flag"></i> Countries Index</a></li>
-                        <li><a href="{{ route('ports.index') }}" class="nav-link {{ Route::is('ports.index') ? 'active' : '' }}"><i class="bi bi-anchor"></i> Ports & Logistics</a></li>
-                        <li><a href="{{ route('watchlists.index') }}" class="nav-link {{ Route::is('watchlists.index') ? 'active' : '' }}"><i class="bi bi-eye"></i> Watchlists</a></li>
-                        <li><a href="{{ route('risk-history.index') }}" class="nav-link {{ Route::is('risk-history.index') ? 'active' : '' }}"><i class="bi bi-clock-history"></i> Risk History</a></li>
-                    </ul>
-                </div>
             </li>
-
             <li>
-                <a class="nav-link {{ Route::is(['compare.index', 'currency.index', 'weather.index', 'news.index', 'reports.index']) ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuAnalytics" role="button" aria-expanded="{{ Route::is(['compare.index', 'currency.index', 'weather.index', 'news.index', 'reports.index']) ? 'true' : 'false' }}" aria-controls="menuAnalytics">
-                    <span class="d-flex align-items-center gap-2">
-                        <i class="bi bi-bar-chart-line"></i> Risk Analytics
-                    </span>
-                    <i class="bi bi-chevron-down small menu-arrow"></i>
+                <a href="{{ route('ports.index') }}" class="nav-link {{ Route::is('ports.index') ? 'active' : '' }}">
+                    <i class="bi bi-anchor"></i> Ports & Logistics
                 </a>
-                <div class="collapse {{ Route::is(['compare.index', 'currency.index', 'weather.index', 'news.index', 'reports.index']) ? 'show' : '' }}" id="menuAnalytics">
-                    <ul class="submenu">
-                        <li><a href="{{ route('compare.index') }}" class="nav-link {{ Route::is('compare.index') ? 'active' : '' }}"><i class="bi bi-shuffle"></i> Country Compare</a></li>
-                        <li><a href="{{ route('currency.index') }}" class="nav-link {{ Route::is('currency.index') ? 'active' : '' }}"><i class="bi bi-currency-exchange"></i> Currency Monitor</a></li>
-                        <li><a href="{{ route('weather.index') }}" class="nav-link {{ Route::is('weather.index') ? 'active' : '' }}"><i class="bi bi-cloud-lightning"></i> Weather Alerts</a></li>
-                        <li><a href="{{ route('news.index') }}" class="nav-link {{ Route::is('news.index') ? 'active' : '' }}"><i class="bi bi-newspaper"></i> Geopolitical News</a></li>
-                        <li><a href="{{ route('reports.index') }}" class="nav-link {{ Route::is('reports.index') ? 'active' : '' }}"><i class="bi bi-file-earmark-bar-graph"></i> Sourcing Reports</a></li>
-                    </ul>
-                </div>
+            </li>
+            <li>
+                <a href="{{ route('watchlists.index') }}" class="nav-link {{ Route::is('watchlists.index') ? 'active' : '' }}">
+                    <i class="bi bi-eye"></i> Watchlists
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('risk-history.index') }}" class="nav-link {{ Route::is('risk-history.index') ? 'active' : '' }}">
+                    <i class="bi bi-clock-history"></i> Risk History
+                </a>
             </li>
 
-            <!-- ADMIN SECTION -->
+            <!-- ANALYTICS SECTION -->
+            <li class="sidebar-heading">
+                ANALYTICS
+            </li>
+            <li>
+                <a href="{{ route('compare.index') }}" class="nav-link {{ Route::is('compare.index') ? 'active' : '' }}">
+                    <i class="bi bi-shuffle"></i> Country Compare
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('currency.index') }}" class="nav-link {{ Route::is('currency.index') ? 'active' : '' }}">
+                    <i class="bi bi-currency-exchange"></i> Currency Monitor
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('weather.index') }}" class="nav-link {{ Route::is('weather.index') ? 'active' : '' }}">
+                    <i class="bi bi-cloud-lightning"></i> Weather Alerts
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('news.index') }}" class="nav-link {{ Route::is('news.index') ? 'active' : '' }}">
+                    <i class="bi bi-newspaper"></i> Geopolitical News
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('reports.index') }}" class="nav-link {{ Route::is('reports.index') ? 'active' : '' }}">
+                    <i class="bi bi-file-earmark-bar-graph"></i> Sourcing Reports
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('articles.index') }}" class="nav-link {{ Route::is('articles.index') || Route::is('articles.show') ? 'active' : '' }}">
+                    <i class="bi bi-journal-richtext"></i> Analysis Reports
+                </a>
+            </li>
+
+            <!-- ADMINISTRATION SECTION -->
             @if (Auth::user()->isAdmin())
-                <li class="px-4 mt-4 mb-2 text-muted text-uppercase small fw-bold" style="font-size: 0.65rem; letter-spacing: 1.5px;">
-                    Administration
+                <li class="sidebar-heading">
+                    ADMINISTRATION
                 </li>
                 <li>
-                    <a class="nav-link {{ Route::is(['admin.users.index', 'admin.weights.index', 'admin.api-health.index', 'admin.audit-trails.index']) ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuAdmin" role="button" aria-expanded="{{ Route::is(['admin.users.index', 'admin.weights.index', 'admin.api-health.index', 'admin.audit-trails.index']) ? 'true' : 'false' }}" aria-controls="menuAdmin">
-                        <span class="d-flex align-items-center gap-2">
-                            <i class="bi bi-gear-wide-connected"></i> System Settings
-                        </span>
-                        <i class="bi bi-chevron-down small menu-arrow"></i>
+                    <a href="{{ route('admin.users.index') }}" class="nav-link {{ Route::is('admin.users.index') || Route::is('admin.users.create') || Route::is('admin.users.edit') ? 'active' : '' }}">
+                        <i class="bi bi-people"></i> User Manager
                     </a>
-                    <div class="collapse {{ Route::is(['admin.users.index', 'admin.weights.index', 'admin.api-health.index', 'admin.audit-trails.index']) ? 'show' : '' }}" id="menuAdmin">
-                        <ul class="submenu">
-                            <li><a href="{{ route('admin.users.index') }}" class="nav-link {{ Route::is('admin.users.index') ? 'active' : '' }}"><i class="bi bi-people"></i> User Manager</a></li>
-                            <li><a href="{{ route('admin.weights.index') }}" class="nav-link {{ Route::is('admin.weights.index') ? 'active' : '' }}"><i class="bi bi-sliders"></i> Risk Weights</a></li>
-                            <li><a href="{{ route('admin.api-health.index') }}" class="nav-link {{ Route::is('admin.api-health.index') ? 'active' : '' }}"><i class="bi bi-cpu"></i> API Health</a></li>
-                            <li><a href="{{ route('admin.audit-trails.index') }}" class="nav-link {{ Route::is('admin.audit-trails.index') ? 'active' : '' }}"><i class="bi bi-journal-text"></i> Audit Trails</a></li>
-                        </ul>
-                    </div>
+                </li>
+                <li>
+                    <a href="{{ route('admin.ports.index') }}" class="nav-link {{ Route::is('admin.ports.index') || Route::is('admin.ports.create') || Route::is('admin.ports.edit') ? 'active' : '' }}">
+                        <i class="bi bi-anchor"></i> Manage Ports
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.articles.index') }}" class="nav-link {{ Route::is('admin.articles.index') || Route::is('admin.articles.create') || Route::is('admin.articles.edit') ? 'active' : '' }}">
+                        <i class="bi bi-journal-text"></i> Manage Articles
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.weights.index') }}" class="nav-link {{ Route::is('admin.weights.index') ? 'active' : '' }}">
+                        <i class="bi bi-sliders"></i> Risk Weights
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.api-health.index') }}" class="nav-link {{ Route::is('admin.api-health.index') ? 'active' : '' }}">
+                        <i class="bi bi-cpu"></i> API Health
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.audit-trails.index') }}" class="nav-link {{ Route::is('admin.audit-trails.index') ? 'active' : '' }}">
+                        <i class="bi bi-journal-text"></i> Audit Trails
+                    </a>
                 </li>
             @endif
         </ul>
     </div>
 
     <!-- User Profile Footer Area -->
-    <div class="p-3 border-top mt-auto" style="border-color: var(--color-border) !important; background-color: rgba(0, 0, 0, 0.1);">
-        <div class="d-flex align-items-center gap-2 px-2 py-1">
-            <div class="rounded-circle bg-primary bg-opacity-20 text-primary border border-primary border-opacity-30 d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 38px; height: 38px; font-size: 0.9rem;">
+    <div class="p-4 border-top mt-auto" style="border-color: #E5E7EB !important; background-color: #F8FAFC;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 40px; height: 40px; font-size: 0.95rem; flex-shrink: 0;">
                 {{ substr(Auth::user()->name, 0, 1) }}
             </div>
-            <div class="overflow-hidden flex-grow-1">
-                <div class="fw-semibold text-white text-truncate small" style="max-width: 140px;">{{ Auth::user()->name }}</div>
-                <span class="badge bg-secondary-subtle text-secondary small py-0.5 px-2" style="font-size: 0.65rem;">{{ strtoupper(Auth::user()->role) }}</span>
+            <div class="overflow-hidden flex-grow-1" style="line-height: 1.25;">
+                <div class="fw-bold text-dark text-truncate small">{{ Auth::user()->name }}</div>
+                <span class="text-muted small" style="font-size: 0.72rem;">{{ ucfirst(Auth::user()->role) }}</span>
             </div>
             <!-- Logout Button -->
             <form method="POST" action="{{ route('logout') }}" class="m-0">

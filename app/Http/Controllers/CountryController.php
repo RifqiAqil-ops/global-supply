@@ -94,25 +94,29 @@ class CountryController extends Controller
             abort(404, "Country '{$code}' not found.");
         }
 
-        $isOffline = false;
+        $wbOffline = false;
+        $rcOffline = false;
+        $weatherOffline = false;
+        $rateOffline = false;
+        $newsOffline = false;
 
         // 1. Fetch World Bank indicators live (to sync population data to master record first)
         try {
             $indicators = $this->worldBankService->getLatestIndicators($countryModel->id);
-            if ($indicators->first() && $indicators->first()->isCached) {
-                $isOffline = true;
+            if ($indicators->isEmpty() || ($indicators->first() && $indicators->first()->isCached)) {
+                $wbOffline = true;
             }
         } catch (Throwable $e) {
             Log::warning("Country details failed to load live indicators: " . $e->getMessage());
             $indicators = collect();
-            $isOffline = true;
+            $wbOffline = true;
         }
 
         // 2. Fetch REST Countries live data (reads updated population from DB)
         try {
             $countryDTO = $this->countryService->fetchByIso($code);
             if ($countryDTO->isCached) {
-                $isOffline = true;
+                $rcOffline = true;
             }
         } catch (Throwable $e) {
             Log::error("Failed to load live country details: " . $e->getMessage());
@@ -122,13 +126,13 @@ class CountryController extends Controller
         // 3. Fetch Weather live
         try {
             $weather = $this->openMeteoService->getLatestWeather($countryModel->id);
-            if ($weather && $weather->isCached) {
-                $isOffline = true;
+            if (!$weather || $weather->isCached) {
+                $weatherOffline = true;
             }
         } catch (Throwable $e) {
             Log::warning("Country details failed to load live weather: " . $e->getMessage());
             $weather = null;
-            $isOffline = true;
+            $weatherOffline = true;
         }
 
         // 4. Fetch Exchange Rate live
@@ -136,26 +140,29 @@ class CountryController extends Controller
             $exchangeRate = $countryDTO->currencyCode 
                 ? $this->exchangeRateService->getLatestRate($countryDTO->currencyCode)
                 : null;
-            if ($exchangeRate && $exchangeRate->isCached) {
-                $isOffline = true;
+            if (!$exchangeRate || $exchangeRate->isCached) {
+                $rateOffline = true;
             }
         } catch (Throwable $e) {
             Log::warning("Country details failed to load live exchange rate: " . $e->getMessage());
             $exchangeRate = null;
-            $isOffline = true;
+            $rateOffline = true;
         }
 
         // 5. Fetch News live
         try {
             $news = $this->gnewsService->getCountryNews($countryModel->id);
-            if ($news->first() && $news->first()->isCached) {
-                $isOffline = true;
+            if ($news->isEmpty() || ($news->first() && $news->first()->isCached)) {
+                $newsOffline = true;
             }
         } catch (Throwable $e) {
             Log::warning("Country details failed to load live news: " . $e->getMessage());
             $news = collect();
-            $isOffline = true;
+            $newsOffline = true;
         }
+
+        // Offline alert shows only if ALL services are offline/cached
+        $isOffline = ($wbOffline && $rcOffline && $weatherOffline && $rateOffline && $newsOffline);
 
         // 6. Recalculate latest risk score from current API feeds
         try {

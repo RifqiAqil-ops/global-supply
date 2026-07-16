@@ -21,6 +21,14 @@ class RiskScoringEngine implements RiskScoringEngineInterface
     {
         $scoreDate = $date ?? Carbon::now()->toDateString();
 
+        // Optimization: return cached score if calculated in the last 5 minutes to prevent redundant DB writes
+        $latest = CountryRiskScore::where('country_id', $countryId)
+            ->where('score_date', $scoreDate)
+            ->first();
+        if ($latest && $latest->calculated_at && $latest->calculated_at->diffInSeconds(Carbon::now()) < 300) {
+            return $latest;
+        }
+
         // Retrieve country with eager loaded details to prevent N+1
         $country = Country::with(['latestWeather', 'ports', 'economicIndicators', 'newsArticles'])->find($countryId);
         if (!$country) {

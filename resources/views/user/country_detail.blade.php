@@ -118,6 +118,30 @@
                         </div>
                     </div>
 
+                    <!-- Mini Charts Sparkline Card -->
+                    <div class="row g-4 mb-4 animate-fade-in">
+                        <div class="col-md-6">
+                            <div class="card card-premium border-0">
+                                <div class="card-body p-3">
+                                    <span class="text-muted small fw-bold text-uppercase d-block mb-2"><i class="bi bi-graph-up text-primary me-1"></i>GDP Trend (5 Years)</span>
+                                    <div style="height: 100px; position: relative;">
+                                        <canvas id="miniGdpChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card card-premium border-0">
+                                <div class="card-body p-3">
+                                    <span class="text-muted small fw-bold text-uppercase d-block mb-2"><i class="bi bi-graph-down text-accent me-1"></i>Inflation Trend (5 Years)</span>
+                                    <div style="height: 100px; position: relative;">
+                                        <canvas id="miniInflationChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Risk Breakdown Card -->
                     @if($countryModel->latestRiskScore)
                     @php
@@ -151,8 +175,8 @@
                                             (Weighted: <strong class="score-weighted">{{ number_format($weighted, 2) }}</strong>)
                                         </span>
                                     </div>
-                                    <div class="progress" style="height: 10px; background-color: var(--color-border);">
-                                        <div class="progress-bar {{ $meta['color'] }}" role="progressbar" style="width: {{ $val }}%" aria-valuenow="{{ $val }}" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress" style="height: 10px; background-color: rgba(226, 232, 240, 0.4); border-radius: 9999px;">
+                                        <div class="progress-bar-animated {{ $meta['color'] }}" role="progressbar" data-target="{{ $val }}" style="width: 0%; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 9999px;">
                                         </div>
                                     </div>
                                 </div>
@@ -178,7 +202,15 @@
                                     <td><strong>{{ $ind->indicator_name }}</strong></td>
                                     <td>{{ $ind->year }}</td>
                                     <td>{{ number_format($ind->value, 2) }}</td>
-                                    <td class="small text-muted">{{ $ind->unit ?? 'USD' }}</td>
+                                    <td class="small text-muted">
+                                        @if($ind->indicator_code === 'FP.CPI.TOTL.ZG')
+                                            %
+                                        @elseif($ind->indicator_code === 'SP.POP.TOTL')
+                                            People
+                                        @else
+                                            {{ $ind->unit ?? 'USD' }}
+                                        @endif
+                                    </td>
                                     <td><x-badge type="success">{{ $ind->source }}</x-badge></td>
                                 </tr>
                                 @empty
@@ -207,8 +239,13 @@
                                         <span class="text-muted small d-block">Relative Exchange Value</span>
                                         <div class="d-flex flex-column gap-1 mt-2">
                                             <div class="d-flex justify-content-between">
-                                                <span class="text-muted small">1 {{ $countryDTO->currencyCode }} =</span>
-                                                <span class="text-white fw-semibold">{{ $exchangeRate ? round($exchangeRate->rate_to_usd, 6) . ' USD' : 'N/A' }}</span>
+                                                @if($exchangeRate && (float)$exchangeRate->rate_to_usd < 0.01)
+                                                    <span class="text-muted small">1 USD =</span>
+                                                    <span class="text-white fw-semibold">{{ number_format(1 / (float)$exchangeRate->rate_to_usd, 4) }} {{ $countryDTO->currencyCode }}</span>
+                                                @else
+                                                    <span class="text-muted small">1 {{ $countryDTO->currencyCode }} =</span>
+                                                    <span class="text-white fw-semibold">{{ $exchangeRate ? round($exchangeRate->rate_to_usd, 6) . ' USD' : 'N/A' }}</span>
+                                                @endif
                                             </div>
                                             <div class="d-flex justify-content-between">
                                                 <span class="text-muted small">1 {{ $countryDTO->currencyCode }} =</span>
@@ -306,6 +343,72 @@
                 </div>
             </div>
 
+            <!-- Telemetry & Operations Timeline -->
+            <div class="card card-premium border-0 mb-4 shadow-sm">
+                <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
+                    <h5 class="card-title text-white mb-0 fs-6 fw-semibold"><i class="bi bi-clock-history me-2 text-primary"></i>Operational Telemetry Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <div class="position-relative ps-4 border-start border-secondary border-opacity-20 ms-2 py-1">
+                        <!-- Node 1: Weather -->
+                        <div class="position-relative mb-4">
+                            <div class="position-absolute start-0 translate-middle-x rounded-circle bg-warning d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; left: -25px; margin-top: 2px;">
+                                <i class="bi bi-cloud-sun text-dark" style="font-size: 0.65rem;"></i>
+                            </div>
+                            <span class="text-muted small d-block">Weather Telemetry</span>
+                            <span class="text-white fw-semibold small">
+                                @if($weather)
+                                    Temperature recorded at {{ number_format($weather->temperature, 1) }}°C ({{ $weather->weather_description }})
+                                @else
+                                    No live weather telemetry received.
+                                @endif
+                            </span>
+                        </div>
+                        
+                        <!-- Node 2: Exchange Rate -->
+                        <div class="position-relative mb-4">
+                            <div class="position-absolute start-0 translate-middle-x rounded-circle bg-success d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; left: -25px; margin-top: 2px;">
+                                <i class="bi bi-currency-exchange text-white" style="font-size: 0.65rem;"></i>
+                            </div>
+                            <span class="text-muted small d-block">Forex Indices Check</span>
+                            <span class="text-white fw-semibold small">
+                                @if($exchangeRate)
+                                    @if((float)$exchangeRate->rate_to_usd >= 0.01)
+                                        Exchange rate validated at {{ number_format($exchangeRate->rate_to_usd, 4) }} USD per {{ $countryDTO->currencyCode }}.
+                                    @else
+                                        Exchange rate validated at {{ number_format(1 / (float)$exchangeRate->rate_to_usd, 2) }} {{ $countryDTO->currencyCode }} per USD.
+                                    @endif
+                                @else
+                                    Currency index validation offline.
+                                @endif
+                            </span>
+                        </div>
+
+                        <!-- Node 3: Ports & Logistics -->
+                        <div class="position-relative mb-4">
+                            <div class="position-absolute start-0 translate-middle-x rounded-circle bg-primary d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; left: -25px; margin-top: 2px;">
+                                <i class="bi bi-anchor text-white" style="font-size: 0.65rem;"></i>
+                            </div>
+                            <span class="text-muted small d-block">Logistics Corridor</span>
+                            <span class="text-white fw-semibold small">
+                                {{ $countryModel->ports->count() }} active commercial port hubs mapped on Leaflet Directory.
+                            </span>
+                        </div>
+
+                        <!-- Node 4: Risk scoring -->
+                        <div class="position-relative">
+                            <div class="position-absolute start-0 translate-middle-x rounded-circle bg-info d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; left: -25px; margin-top: 2px;">
+                                <i class="bi bi-shield-check text-white" style="font-size: 0.65rem;"></i>
+                            </div>
+                            <span class="text-muted small d-block">Risk Matrix Recalculation</span>
+                            <span class="text-white fw-semibold small">
+                                {{ $countryModel->latestRiskScore ? 'Risk factors computed ' . $countryModel->latestRiskScore->calculated_at->diffForHumans() : 'Never' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- News Feed Card -->
             <div class="card card-premium border-0">
                 <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
@@ -377,4 +480,96 @@
     border-bottom: 2px solid var(--bs-primary, #0d6efd) !important;
 }
 </style>
+
+@php
+    $gdpHistory = \App\Models\EconomicIndicator::where('country_id', $countryModel->id)
+        ->where('indicator_code', 'NY.GDP.MKTP.CD')
+        ->orderBy('year')
+        ->get(['year', 'value']);
+
+    $inflationHistory = \App\Models\EconomicIndicator::where('country_id', $countryModel->id)
+        ->where('indicator_code', 'FP.CPI.TOTL.ZG')
+        ->orderBy('year')
+        ->get(['year', 'value']);
+        
+    $gdpYears = $gdpHistory->pluck('year')->toArray();
+    $gdpValues = $gdpHistory->pluck('value')->map(fn($v) => round((float)$v / 1e9, 2))->toArray();
+    
+    $infYears = $inflationHistory->pluck('year')->toArray();
+    $infValues = $inflationHistory->pluck('value')->map(fn($v) => round((float)$v, 2))->toArray();
+@endphp
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Progress bar animation
+    setTimeout(function() {
+        document.querySelectorAll('.progress-bar-animated').forEach(bar => {
+            bar.style.width = bar.getAttribute('data-target') + '%';
+        });
+    }, 150);
+
+    // 2. Mini GDP sparkline chart
+    const gdpCtx = document.getElementById('miniGdpChart');
+    if (gdpCtx) {
+        new Chart(gdpCtx, {
+            type: 'line',
+            data: {
+                labels: @json($gdpYears),
+                datasets: [{
+                    data: @json($gdpValues),
+                    borderColor: '#2563EB',
+                    backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                }
+            }
+        });
+    }
+
+    // 3. Mini Inflation sparkline chart
+    const infCtx = document.getElementById('miniInflationChart');
+    if (infCtx) {
+        new Chart(infCtx, {
+            type: 'line',
+            data: {
+                labels: @json($infYears),
+                datasets: [{
+                    data: @json($infValues),
+                    borderColor: '#7C3AED',
+                    backgroundColor: 'rgba(124, 58, 237, 0.05)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                }
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

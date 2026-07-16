@@ -205,45 +205,47 @@ class LiveUpdateController extends Controller
             $latestRates = ExchangeRate::with('country')
                 ->select('exchange_rates.*')
                 ->join(
-                    \DB::raw('(SELECT MAX(id) as max_id FROM exchange_rates GROUP BY country_id) as latest'),
-                    'exchange_rates.id', '=', 'latest.max_id'
+                    \DB::raw('(SELECT currency_code, MAX(rate_date) as max_date FROM exchange_rates GROUP BY currency_code) as latest'),
+                    function($join) {
+                        $join->on('exchange_rates.currency_code', '=', 'latest.currency_code')
+                             ->on('exchange_rates.rate_date', '=', 'latest.max_date');
+                    }
                 )
                 ->orderBy('currency_code')
                 ->get();
 
-            $topGainers = ExchangeRate::with('country')
-                ->whereNotNull('change_percent')
-                ->where('change_percent', '>', 0)
-                ->orderByDesc('change_percent')
-                ->limit(10)
-                ->get();
+            $ratesWithChange = $latestRates->whereNotNull('change_percent');
 
-            $topLosers = ExchangeRate::with('country')
-                ->whereNotNull('change_percent')
-                ->where('change_percent', '<', 0)
-                ->orderBy('change_percent')
-                ->limit(10)
-                ->get();
+            $topGainers = $ratesWithChange->where('change_percent', '>', 0)
+                ->sortByDesc('change_percent')
+                ->take(5);
+
+            $topLosers = $ratesWithChange->where('change_percent', '<', 0)
+                ->sortBy('change_percent')
+                ->take(5);
+
+            $avgChangeVal = $ratesWithChange->isEmpty() ? null : $ratesWithChange->avg('change_percent');
+            $avgChangeStr = $avgChangeVal !== null ? number_format($avgChangeVal, 2) . '%' : 'Awaiting Historical Data';
 
             return response()->json([
                 'status' => 'success',
                 'data' => [
                     'totalCurrencies' => $latestRates->unique('currency_code')->count(),
-                    'avgChange' => number_format($latestRates->avg('change_percent') ?? 0, 2) . '%',
+                    'avgChange' => $avgChangeStr,
                     'topGainers' => $topGainers->map(function ($g) {
                         return [
                             'currency_code' => $g->currency_code,
                             'country_flag' => $g->country->flag_url ?? '',
                             'change_percent' => number_format((float)$g->change_percent, 2),
                         ];
-                    }),
+                    })->values()->toArray(),
                     'topLosers' => $topLosers->map(function ($l) {
                         return [
                             'currency_code' => $l->currency_code,
                             'country_flag' => $l->country->flag_url ?? '',
                             'change_percent' => number_format((float)$l->change_percent, 2),
                         ];
-                    }),
+                    })->values()->toArray(),
                     'rates' => $latestRates->map(function ($r) {
                         return [
                             'currency_code' => $r->currency_code,

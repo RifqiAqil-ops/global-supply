@@ -71,11 +71,12 @@ class ExchangeRateService extends BaseApiClient
             return $summary;
         }
 
-        // Get previous day's IDR rate for change_percent calculation
-        $previousDate = now()->subDay()->toDateString();
-
-        // Pre-load previous rates for change_percent computation (keyed by currency_code)
-        $previousRates = ExchangeRate::where('rate_date', $previousDate)
+        // Pre-load the latest rates before $rateDate for change_percent computation (keyed by currency_code)
+        $previousRates = ExchangeRate::select('exchange_rates.currency_code', 'exchange_rates.rate_to_usd')
+            ->join(\DB::raw('(SELECT currency_code, MAX(rate_date) as max_date FROM exchange_rates WHERE rate_date < \'' . $rateDate . '\' GROUP BY currency_code) as prev_latest'), function($join) {
+                $join->on('exchange_rates.currency_code', '=', 'prev_latest.currency_code')
+                     ->on('exchange_rates.rate_date', '=', 'prev_latest.max_date');
+            })
             ->pluck('rate_to_usd', 'currency_code')
             ->toArray();
 
@@ -195,6 +196,15 @@ class ExchangeRateService extends BaseApiClient
             $rateToUsd = $apiRate > 0 ? round(1 / $apiRate, 10) : 0.0;
             $rateToIdr = ($idrRate && $apiRate > 0) ? round($idrRate / $apiRate, 4) : null;
 
+            $prevRate = ExchangeRate::where('currency_code', $currencyCode)
+                ->where('rate_date', '<', $rateDate)
+                ->orderByDesc('rate_date')
+                ->first();
+            $changePercent = null;
+            if ($prevRate && (float)$prevRate->rate_to_usd > 0) {
+                $changePercent = round((($rateToUsd - (float)$prevRate->rate_to_usd) / (float)$prevRate->rate_to_usd) * 100, 4);
+            }
+
             $record = ExchangeRate::updateOrCreate(
                 ['currency_code' => $currencyCode, 'rate_date' => $rateDate],
                 [
@@ -202,7 +212,7 @@ class ExchangeRateService extends BaseApiClient
                     'currency_name'  => $country ? $country->currency_name : null,
                     'rate_to_usd'    => $rateToUsd,
                     'rate_to_idr'    => $rateToIdr,
-                    'change_percent' => null,
+                    'change_percent' => $changePercent,
                     'source'         => 'ExchangeRate API',
                 ]
             );
@@ -268,6 +278,15 @@ class ExchangeRateService extends BaseApiClient
         $rateToUsd = $apiRate > 0 ? round(1 / $apiRate, 10) : 0.0;
         $rateToIdr = ($idrRate && $apiRate > 0) ? round($idrRate / $apiRate, 4) : null;
 
+        $prevRate = ExchangeRate::where('currency_code', $currencyCode)
+            ->where('rate_date', '<', $rateDate)
+            ->orderByDesc('rate_date')
+            ->first();
+        $changePercent = null;
+        if ($prevRate && (float)$prevRate->rate_to_usd > 0) {
+            $changePercent = round((($rateToUsd - (float)$prevRate->rate_to_usd) / (float)$prevRate->rate_to_usd) * 100, 4);
+        }
+
         $record = ExchangeRate::updateOrCreate(
             ['currency_code' => $currencyCode, 'rate_date' => $rateDate],
             [
@@ -275,7 +294,7 @@ class ExchangeRateService extends BaseApiClient
                 'currency_name'  => $country->currency_name,
                 'rate_to_usd'    => $rateToUsd,
                 'rate_to_idr'    => $rateToIdr,
-                'change_percent' => null,
+                'change_percent' => $changePercent,
                 'source'         => 'ExchangeRate API',
             ]
         );

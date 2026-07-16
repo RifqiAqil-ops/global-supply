@@ -15,5 +15,5 @@ interface PortServiceInterface
     /**
      * Get all active ports for mapping coordinates.
      */
-    public function getActivePortsForMap(): Collection;
+    public function getActivePortsForMap(array $filters = []): Collection;
 }

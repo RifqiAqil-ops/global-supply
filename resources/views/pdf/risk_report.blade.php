@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Sourcing Risk Intelligence Report</title>
+    <title>Laporan Risiko Rantai Pasok</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -116,12 +116,12 @@
         <table>
             <tr>
                 <td>
-                    <div class="title">GLOBAL SUPPLY CHAIN RISK INTELLIGENCE</div>
-                    <div class="subtitle">Sourcing & Risk Intelligence Platform (GSCRIP)</div>
+                    <div class="title">LAPORAN RISIKO RANTAI PASOK GLOBAL</div>
+                    <div class="subtitle">Platform Sourcing & Intelijen Risiko (GSCRIP)</div>
                 </td>
                 <td class="meta-text">
-                    Generated on: {{ $generatedAt }}<br>
-                    Format: Executive PDF Briefing
+                    Tanggal Cetak: {{ $generatedAt }}<br>
+                    Format: Ringkasan Eksekutif PDF
                 </td>
             </tr>
         </table>
@@ -131,15 +131,15 @@
         <table>
             <tr>
                 <td>
-                    <div class="summary-title">Total Countries Evaluated</div>
+                    <div class="summary-title">Total Negara Dievaluasi</div>
                     <div class="summary-value">{{ $scores->count() }}</div>
                 </td>
                 <td>
-                    <div class="summary-title">System Average Risk Index</div>
+                    <div class="summary-title">Rata-rata Indeks Risiko Sistem</div>
                     <div class="summary-value">{{ number_format($scores->avg('composite_score'), 2) }}</div>
                 </td>
                 <td>
-                    <div class="summary-title">High Risk Hotspots</div>
+                    <div class="summary-title">Negara Risiko Tinggi</div>
                     <div class="summary-value">{{ $scores->where('risk_level', 'high')->count() }}</div>
                 </td>
             </tr>
@@ -150,14 +150,14 @@
         <thead>
             <tr>
                 <th style="width: 8%">ISO3</th>
-                <th style="width: 22%">Country Name</th>
-                <th style="width: 12%">Composite Score</th>
-                <th style="width: 12%">Risk Level</th>
-                <th style="width: 9%">Economic</th>
-                <th style="width: 9%">Weather</th>
-                <th style="width: 9%">Currency</th>
-                <th style="width: 9%">Geopolitical</th>
-                <th style="width: 10%">Logistics</th>
+                <th style="width: 22%">Negara</th>
+                <th style="width: 12%">Skor Risiko</th>
+                <th style="width: 12%">Tingkat Risiko</th>
+                <th style="width: 9%">Ekonomi</th>
+                <th style="width: 9%">Cuaca</th>
+                <th style="width: 9%">Mata Uang</th>
+                <th style="width: 9%">Geopolitik</th>
+                <th style="width: 10%">Logistik</th>
             </tr>
         </thead>
         <tbody>
@@ -165,9 +165,17 @@
             @php
                 $details = $item->details->keyBy('riskCategory.slug');
                 $level = $item->risk_level;
+                
                 $badgeClass = 'badge-low';
-                if ($level === 'high' || $level === 'critical') $badgeClass = 'badge-high';
-                elseif ($level === 'medium') $badgeClass = 'badge-medium';
+                $levelText = 'Risiko Rendah';
+                
+                if ($level === 'high' || $level === 'critical') {
+                    $badgeClass = 'badge-high';
+                    $levelText = 'Risiko Tinggi';
+                } elseif ($level === 'medium') {
+                    $badgeClass = 'badge-medium';
+                    $levelText = 'Risiko Sedang';
+                }
             @endphp
             <tr>
                 <td><strong>{{ $item->country->iso3 }}</strong></td>
@@ -175,7 +183,7 @@
                 <td><strong>{{ number_format($item->composite_score, 2) }}</strong></td>
                 <td>
                     <span class="badge {{ $badgeClass }}">
-                        {{ strtoupper($level) }}
+                        {{ strtoupper($levelText) }}
                     </span>
                 </td>
                 <td>{{ $details->has('economic-risk') ? number_format($details->get('economic-risk')->category_score, 1) : 'N/A' }}</td>
@@ -189,7 +197,7 @@
     </table>
 
     <div class="footer">
-        GSCRIP Sourcing Intelligence Platform &bull; Page 1 of 1 &bull; Confidential
+        GSCRIP Platform Intelijen Rantai Pasok &bull; Halaman 1 dari 1 &bull; Rahasia
     </div>
 
 </body>

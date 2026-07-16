@@ -91,7 +91,7 @@ Route::middleware('auth')->group(function () {
     Route::get('risk-history', [\App\Http\Controllers\User\RiskHistoryController::class, 'index'])->name('risk-history.index');
     Route::get('reports', [\App\Http\Controllers\User\ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/export/pdf', [\App\Http\Controllers\User\ReportController::class, 'exportPdf'])->name('reports.export.pdf');
-    Route::get('reports/export/csv', [\App\Http\Controllers\User\ReportController::class, 'exportCsv'])->name('reports.export.csv');
+    Route::get('reports/export/excel', [\App\Http\Controllers\User\ReportController::class, 'exportExcel'])->name('reports.export.excel');
 
     Route::prefix('live-api')->name('live-api.')->group(function () {
         Route::get('dashboard-metrics', [\App\Http\Controllers\User\LiveUpdateController::class, 'dashboardMetrics'])->name('dashboard-metrics');
@@ -113,9 +113,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('news', [\App\Http\Controllers\User\NewsController::class, 'index'])->name('news.index');
 
+    Route::get('articles', [\App\Http\Controllers\User\ArticleController::class, 'index'])->name('articles.index');
+    Route::get('articles/{slug}', [\App\Http\Controllers\User\ArticleController::class, 'show'])->name('articles.show');
+
     // Admin settings
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('users', [\App\Http\Controllers\Admin\DashboardController::class, 'users'])->name('users.index');
+        Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['show']);
+        Route::resource('ports', \App\Http\Controllers\Admin\PortController::class)->except(['show']);
+        Route::resource('articles', \App\Http\Controllers\Admin\ArticleController::class)->except(['show']);
 
         Route::get('weights', function () {
             return view('placeholders.module', ['title' => 'Risk Weights', 'icon' => 'bi-sliders']);

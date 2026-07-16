@@ -13,6 +13,6 @@
     };
 @endphp
 
-<span class="badge py-1.5 px-2.5 rounded-3 fw-semibold small {{ $bgClass }}">
+<span class="badge py-1 px-2.5 rounded-pill fw-semibold text-uppercase tracking-wider {{ $bgClass }}" style="font-size: 0.65rem; letter-spacing: 0.5px;">
     {{ $slot }}
 </span>

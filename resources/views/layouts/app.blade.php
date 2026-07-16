@@ -10,30 +10,24 @@
 </head>
 <body style="background-color: var(--color-bg); color: var(--color-text-main);">
 
-    <div class="main-wrapper">
-        <!-- Sidebar Navigation -->
-        @include('layouts.partials.sidebar')
+    <!-- Top Navbar -->
+    @include('layouts.partials.navbar')
 
-        <!-- Content Area Wrapper -->
-        <div class="content-container">
-            <!-- Top Navbar -->
-            @include('layouts.partials.navbar')
+    <!-- Main Content Area with offset for fixed top nav -->
+    <div class="content-wrapper-offset">
+        <main class="flex-grow-1 p-4">
+            <!-- Breadcrumb Section -->
+            @include('layouts.partials.breadcrumbs')
 
-            <!-- Main Content Area -->
-            <main class="flex-grow-1 p-4">
-                <!-- Breadcrumb Section -->
-                @include('layouts.partials.breadcrumbs')
+            <!-- Flash Status Alert Banner -->
+            @include('layouts.partials.flash')
 
-                <!-- Flash Status Alert Banner -->
-                @include('layouts.partials.flash')
+            <!-- Dynamic Page Yield -->
+            @yield('content')
+        </main>
 
-                <!-- Dynamic Page Yield -->
-                @yield('content')
-            </main>
-
-            <!-- Sticky Footer Area -->
-            @include('layouts.partials.footer')
-        </div>
+        <!-- Sticky Footer Area -->
+        @include('layouts.partials.footer')
     </div>
 
     <!-- Global AJAX Polling & Live Auto Refresh Script -->
@@ -378,6 +372,17 @@
                                                </span>`
                                             : '<span class="text-muted">—</span>';
                                         
+                                        const rawNum = parseFloat(rate.rate_to_usd.replace(/,/g, ''));
+                                        let displayRate = rate.rate_to_usd;
+                                        if (rawNum > 0) {
+                                            if (rawNum >= 0.01) {
+                                                displayRate = rawNum.toFixed(4) + ' USD';
+                                            } else {
+                                                const formattedInverse = (1 / rawNum).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                                displayRate = `1 USD = ${formattedInverse} ${rate.currency_code}`;
+                                            }
+                                        }
+
                                         html += `
                                             <tr>
                                                 <td><strong class="text-white">${rate.currency_code}</strong> <span class="text-muted small">${rate.currency_name}</span></td>
@@ -388,7 +393,7 @@
                                                         ${rate.country_name}
                                                     </div>` : '<span class="text-muted small">—</span>'}
                                                 </td>
-                                                <td class="text-white fw-semibold">${rate.rate_to_usd}</td>
+                                                <td class="text-white fw-semibold">${displayRate}</td>
                                                 <td class="text-muted">${rate.rate_to_idr}</td>
                                                 <td>${changeHtml}</td>
                                                 <td class="text-muted small">${rate.rate_date}</td>

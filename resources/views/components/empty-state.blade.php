@@ -4,11 +4,13 @@
     'icon' => 'bi-folder-x'
 ])
 
-<div class="text-center py-5 px-4 rounded-3 border border-secondary border-opacity-10" style="background-color: rgba(255, 255, 255, 0.01);">
-    <div class="display-6 text-muted mb-3">
+<div class="empty-state-card card-premium mb-4 text-center d-flex flex-column align-items-center justify-content-center p-5">
+    <div class="empty-state-icon mb-3">
         <i class="bi {{ $icon }}"></i>
     </div>
-    <h3 class="h5 text-white mb-2">{{ $title }}</h3>
-    <p class="text-muted small mx-auto mb-4" style="max-width: 320px;">{{ $description }}</p>
-    {{ $slot }}
+    <h3 class="empty-state-title h5 mb-2">{{ $title }}</h3>
+    <p class="empty-state-desc small mx-auto mb-4">{{ $description }}</p>
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        {{ $slot }}
+    </div>
 </div>

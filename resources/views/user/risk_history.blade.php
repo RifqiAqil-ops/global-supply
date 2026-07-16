@@ -89,10 +89,10 @@
                                 $detail = $details->get($slug);
                             @endphp
                             @if($detail)
-                            <div class="px-2 py-1 rounded bg-dark border border-secondary border-opacity-20 d-flex flex-column align-items-center" style="min-width: 65px; line-height: 1.1;">
-                                <span class="text-muted" style="font-size: 0.65rem;">{{ $label }}</span>
-                                <span class="text-white fw-bold mt-0.5" style="font-size: 0.75rem;">{{ number_format($detail->category_score, 1) }}</span>
-                                <span class="text-muted small mt-0.5" style="font-size: 0.62rem;">w: {{ $getWeightPercent($slug) }}</span>
+                            <div class="px-2.5 py-1.5 rounded-3 d-flex flex-column align-items-center" style="min-width: 68px; line-height: 1.25; background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                <span class="text-secondary fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.5px; text-transform: uppercase;">{{ $label }}</span>
+                                <span class="fw-extrabold my-0.5" style="font-size: 0.8rem; color: #0F172A;">{{ number_format($detail->category_score, 1) }}</span>
+                                <span class="text-muted" style="font-size: 0.62rem;">w: {{ $getWeightPercent($slug) }}</span>
                             </div>
                             @endif
                         @endforeach
@@ -117,7 +117,7 @@
     
     @if($history->hasPages())
     <div class="mt-4 border-top border-secondary border-opacity-10 pt-3">
-        {{ $history->links() }}
+        {{ $history->appends(request()->query())->links('pagination::bootstrap-5') }}
     </div>
     @endif
 </x-card>

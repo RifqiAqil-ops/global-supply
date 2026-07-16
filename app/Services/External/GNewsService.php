@@ -291,8 +291,21 @@ class GNewsService extends BaseApiClient
     {
         $text = strtolower($text);
 
-        $positiveKeywords = ['growth', 'increase', 'improved', 'recovery', 'surge', 'boom', 'agreement', 'deal', 'cooperation', 'reform', 'investment', 'expand'];
-        $negativeKeywords = ['war', 'conflict', 'crisis', 'recession', 'inflation', 'sanctions', 'tariff', 'disruption', 'decline', 'collapse', 'protest', 'instability', 'ban', 'shortage'];
+        try {
+            $positiveKeywords = \App\Models\PositiveWord::pluck('word')->toArray();
+            $negativeKeywords = \App\Models\NegativeWord::pluck('word')->toArray();
+        } catch (\Throwable $e) {
+            // Fallback keywords if tables do not exist yet
+            $positiveKeywords = ['growth', 'increase', 'improved', 'recovery', 'surge', 'boom', 'agreement', 'deal', 'cooperation', 'reform', 'investment', 'expand'];
+            $negativeKeywords = ['war', 'conflict', 'crisis', 'recession', 'inflation', 'sanctions', 'tariff', 'disruption', 'decline', 'collapse', 'protest', 'instability', 'ban', 'shortage'];
+        }
+
+        if (empty($positiveKeywords)) {
+            $positiveKeywords = ['growth', 'increase', 'improved', 'recovery', 'surge', 'boom', 'agreement', 'deal', 'cooperation', 'reform', 'investment', 'expand'];
+        }
+        if (empty($negativeKeywords)) {
+            $negativeKeywords = ['war', 'conflict', 'crisis', 'recession', 'inflation', 'sanctions', 'tariff', 'disruption', 'decline', 'collapse', 'protest', 'instability', 'ban', 'shortage'];
+        }
 
         $positiveCount = 0;
         $negativeCount = 0;

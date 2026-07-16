@@ -25,15 +25,15 @@
         </div>
     </div>
 
-    <!-- CSV Export Option Card -->
+    <!-- Excel Export Option Card -->
     <div class="col-md-6">
         <div class="card card-premium border-0 h-100 p-3" style="background: linear-gradient(135deg, rgba(25, 135, 84, 0.05) 0%, rgba(25, 135, 84, 0.01) 100%);">
             <div class="card-body d-flex flex-column align-items-start">
-                <div class="text-success fs-3 mb-2"><i class="bi bi-file-earmark-spreadsheet-fill"></i></div>
-                <h5 class="text-white fw-bold mb-1">Raw CSV Data Spreadsheet</h5>
-                <p class="text-muted small mb-4">Download comma-separated values of the complete risk scoring database. Contains ISO codes, scores, individual category indexes, and timestamp details suited for Excel or BI tooling import.</p>
-                <a href="{{ route('reports.export.csv') }}" class="btn btn-success btn-sm mt-auto fw-bold px-4 py-2">
-                    <i class="bi bi-download me-1"></i> Export Data CSV
+                <div class="text-success fs-3 mb-2"><i class="bi bi-file-earmark-excel-fill"></i></div>
+                <h5 class="text-white fw-bold mb-1">Native Excel Spreadsheet</h5>
+                <p class="text-muted small mb-4">Download the complete risk scoring database in native Microsoft Excel (.xlsx) format. Contains ISO codes, scores, individual category indexes, and timestamp details.</p>
+                <a href="{{ route('reports.export.excel') }}" class="btn btn-success btn-sm mt-auto fw-bold px-4 py-2">
+                    <i class="bi bi-download me-1"></i> Export Excel (.xlsx)
                 </a>
             </div>
         </div>

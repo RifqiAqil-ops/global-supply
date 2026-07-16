@@ -16,13 +16,13 @@
         <x-stat-card title="Tracked Currencies" :value="$totalCurrencies" icon="bi-currency-exchange" color="primary" valueId="stat-currency-tracked" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Average Daily Change" :value="number_format($avgChange, 2) . '%'" icon="bi-graph-up-arrow" color="{{ $avgChange >= 0 ? 'success' : 'danger' }}" valueId="stat-currency-avg-change" />
+        <x-stat-card title="Average Daily Change" :value="$avgChange !== null ? number_format($avgChange, 2) . '%' : 'Awaiting Historical Data'" icon="bi-graph-up-arrow" color="{{ $avgChange !== null ? ($avgChange >= 0 ? 'success' : 'danger') : 'primary' }}" valueId="stat-currency-avg-change" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Top Gainers" :value="$topGainers->count()" icon="bi-arrow-up-circle" color="success" valueId="stat-currency-gainers" />
+        <x-stat-card title="Top Gainers" :value="$avgChange !== null ? $topGainers->count() : 'Awaiting Historical Data'" icon="bi-arrow-up-circle" color="{{ $avgChange !== null ? 'success' : 'primary' }}" valueId="stat-currency-gainers" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Top Losers" :value="$topLosers->count()" icon="bi-arrow-down-circle" color="danger" valueId="stat-currency-losers" />
+        <x-stat-card title="Top Losers" :value="$avgChange !== null ? $topLosers->count() : 'Awaiting Historical Data'" icon="bi-arrow-down-circle" color="{{ $avgChange !== null ? 'danger' : 'primary' }}" valueId="stat-currency-losers" />
     </div>
 </div>
 
@@ -94,7 +94,17 @@
                         <span class="text-muted small">—</span>
                     @endif
                 </td>
-                <td class="text-white fw-semibold">{{ number_format((float)$rate->rate_to_usd, 6) }}</td>
+                <td class="text-white fw-semibold">
+                    @if((float)$rate->rate_to_usd > 0)
+                        @if((float)$rate->rate_to_usd >= 0.01)
+                            {{ number_format((float)$rate->rate_to_usd, 4) }} USD
+                        @else
+                            1 USD = {{ number_format(1 / (float)$rate->rate_to_usd, 2) }} {{ $rate->currency_code }}
+                        @endif
+                    @else
+                        N/A
+                    @endif
+                </td>
                 <td class="text-muted">{{ $rate->rate_to_idr ? number_format((float)$rate->rate_to_idr, 2) : '—' }}</td>
                 <td>
                     @if($rate->change_percent !== null)
