@@ -114,38 +114,6 @@
                         </form>
                     </div>
                 </td>
-            </tr>
-
-            <!-- Edit Watchlist Item Modal -->
-            <div class="modal fade" id="modalEditWatchlist-{{ $item->id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content bg-dark border-secondary border-opacity-35 text-white">
-                        <div class="modal-header border-bottom border-secondary border-opacity-15">
-                            <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Watchlist Threshold: {{ $item->country->name }}</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <form action="{{ route('watchlists.update', $item->id) }}" method="POST">
-                            @csrf
-                            @method('PUT')
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label text-muted small fw-semibold">Alert Threshold Score (0 - 100)</label>
-                                    <input type="number" step="0.1" min="0" max="100" name="alert_threshold" class="form-control bg-dark border-secondary text-white" value="{{ (float)$item->alert_threshold }}" required>
-                                    <div class="form-text text-muted small">You will receive system alerts if the country's composite risk score exceeds this value.</div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label text-muted small fw-semibold">Sourcing Notes & Remarks</label>
-                                    <textarea name="notes" class="form-control bg-dark border-secondary text-white" rows="3" placeholder="Add sourcing remarks, supplier lists, port hubs...">{{ $item->notes }}</textarea>
-                                </div>
-                            </div>
-                            <div class="modal-footer border-top border-secondary border-opacity-15">
-                                <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-sm btn-primary px-3 fw-semibold">Save Changes</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
             @endforeach
         </x-table>
     </div>
@@ -172,17 +140,17 @@
 <!-- Add Watchlist Item Modal -->
 <div class="modal fade" id="modalAddWatchlist" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-secondary border-opacity-35 text-white">
-            <div class="modal-header border-bottom border-secondary border-opacity-15">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-plus-circle me-2 text-primary"></i>Add Country to Sourcing Watchlist</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ route('watchlists.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-semibold">Select Country</label>
-                        <select name="country_id" class="form-select bg-dark border-secondary text-white" required>
+                        <select name="country_id" class="form-select" required>
                             <option value="">-- Select Country --</option>
                             @foreach($allCountries as $c)
                             <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->iso3 }})</option>
@@ -191,15 +159,15 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-semibold">Alert Threshold Score (0 - 100)</label>
-                        <input type="number" step="0.1" min="0" max="100" name="alert_threshold" class="form-control bg-dark border-secondary text-white" value="75.0" required>
+                        <input type="number" step="0.1" min="0" max="100" name="alert_threshold" class="form-control" value="75.0" required>
                         <div class="form-text text-muted small">You will receive system alerts if the country's composite risk score exceeds this value.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-semibold">Sourcing Notes & Remarks</label>
-                        <textarea name="notes" class="form-control bg-dark border-secondary text-white" rows="3" placeholder="Add sourcing remarks, supplier lists, port hubs..."></textarea>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Add sourcing remarks, supplier lists, port hubs..."></textarea>
                     </div>
                 </div>
-                <div class="modal-footer border-top border-secondary border-opacity-15">
+                <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-sm btn-primary px-3 fw-semibold">Add Country</button>
                 </div>
@@ -207,4 +175,39 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Watchlist Item Modals (Placed outside table to prevent browser DOM rendering glitches) -->
+@if($items->count() > 0)
+    @foreach($items as $item)
+    <div class="modal fade" id="modalEditWatchlist-{{ $item->id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fs-6 fw-bold"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Watchlist Threshold: {{ $item->country->name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('watchlists.update', $item->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">Alert Threshold Score (0 - 100)</label>
+                            <input type="number" step="0.1" min="0" max="100" name="alert_threshold" class="form-control" value="{{ (float)$item->alert_threshold }}" required>
+                            <div class="form-text text-muted small">You will receive system alerts if the country's composite risk score exceeds this value.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">Sourcing Notes & Remarks</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Add sourcing remarks, supplier lists, port hubs...">{{ $item->notes }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-primary px-3 fw-semibold">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endforeach
+@endif
 @endsection
