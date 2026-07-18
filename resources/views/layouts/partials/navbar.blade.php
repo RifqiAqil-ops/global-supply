@@ -3,22 +3,8 @@
         <!-- Left: Logo & Mobile Toggle Button -->
         <div class="d-flex align-items-center gap-3">
             <a href="{{ url('/') }}" class="text-decoration-none d-flex align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" fill="none" class="me-2" style="flex-shrink: 0;">
-                    <path d="M 24 8 L 16 4 L 8 8 L 4 16 L 8 24 L 16 28 L 24 24 L 24 16 L 16 16" stroke="#2563EB" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M 16 4 L 16 16" stroke="#2563EB" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M 4 16 L 16 16" stroke="#2563EB" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M 16 28 L 16 16" stroke="#2563EB" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
-                    <circle cx="24" cy="8" r="2.2" fill="#2563EB" />
-                    <circle cx="16" cy="4" r="2.2" fill="#2563EB" />
-                    <circle cx="8" cy="8" r="2.2" fill="#2563EB" />
-                    <circle cx="4" cy="16" r="2.2" fill="#2563EB" />
-                    <circle cx="8" cy="24" r="2.2" fill="#2563EB" />
-                    <circle cx="16" cy="28" r="2.2" fill="#2563EB" />
-                    <circle cx="24" cy="24" r="2.2" fill="#2563EB" />
-                    <circle cx="24" cy="16" r="2.2" fill="#2563EB" />
-                    <circle cx="16" cy="16" r="3.2" fill="#2563EB" stroke="#FFFFFF" stroke-width="1.2" />
-                </svg>
-                <span class="text-primary fs-4 fw-extrabold" style="letter-spacing: 0.5px; font-family: 'Outfit', sans-serif;">
+                <img src="{{ asset('images/logo.png') }}" alt="GSCRIP Logo" class="me-2" style="height: 28px; width: auto; flex-shrink: 0; object-fit: contain;">
+                <span class="text-primary fs-4 fw-bold" style="letter-spacing: 0.5px; font-family: 'Inter', sans-serif;">
                     GSCRIP
                 </span>
             </a>
