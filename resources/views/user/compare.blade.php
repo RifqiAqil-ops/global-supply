@@ -416,7 +416,7 @@
                         @endphp
                         <span class="fw-semibold text-dark">{{ $ports1 }} Ports</span>
                         @if($ports1 > $ports2)
-                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-20 ms-2" style="font-size: 0.68rem;"><i class="bi bi-anchor me-1"></i>LARGER HUB</span>
+                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-20 ms-2" style="font-size: 0.68rem;"><i class="bi bi-compass me-1"></i>LARGER HUB</span>
                         @endif
                     </div>
                     <div class="col-2 text-center compare-row-label">Ports Count</div>
@@ -426,7 +426,7 @@
                             $ports1 = $c1['country']->ports->count();
                         @endphp
                         @if($ports2 > $ports1)
-                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-20 me-2" style="font-size: 0.68rem;"><i class="bi bi-anchor me-1"></i>LARGER HUB</span>
+                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-20 me-2" style="font-size: 0.68rem;"><i class="bi bi-compass me-1"></i>LARGER HUB</span>
                         @endif
                         <span class="fw-semibold text-dark">{{ $ports2 }} Ports</span>
                     </div>

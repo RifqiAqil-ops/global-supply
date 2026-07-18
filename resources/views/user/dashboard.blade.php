@@ -275,7 +275,7 @@
             </div>
             <div class="col-6 col-sm-4 col-md-2">
                 <a href="{{ route('ports.index') }}" class="btn btn-secondary-saas w-100 d-flex flex-column align-items-center justify-content-center py-3 gap-2 border text-decoration-none shadow-none" style="border-radius: 16px;">
-                    <i class="bi bi-anchor fs-4 text-purple" style="color: #7C3AED;"></i>
+                    <i class="bi bi-compass fs-4 text-purple" style="color: #7C3AED;"></i>
                     <span class="small fw-semibold">Ports Hub</span>
                 </a>
             </div>

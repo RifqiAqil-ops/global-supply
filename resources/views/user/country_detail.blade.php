@@ -61,7 +61,7 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="ports-tab" data-bs-toggle="tab" data-bs-target="#ports-pane" type="button" role="tab" aria-controls="ports-pane" aria-selected="false">
-                        <i class="bi bi-anchor me-1"></i> Ports & Logistics <span class="badge bg-primary bg-opacity-20 text-primary ms-1" style="font-size: 0.72rem; vertical-align: middle;">{{ $countryModel->ports->count() }}</span>
+                        <i class="bi bi-compass me-1"></i> Ports & Logistics <span class="badge bg-primary bg-opacity-20 text-primary ms-1" style="font-size: 0.72rem; vertical-align: middle;">{{ $countryModel->ports->count() }}</span>
                     </button>
                 </li>
             </ul>
@@ -265,7 +265,7 @@
                         <div class="card-header bg-transparent border-bottom py-3" style="border-color: var(--color-border) !important;">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="card-title text-white mb-0 fs-6 fw-semibold">
-                                    <i class="bi bi-anchor me-2 text-primary"></i>Shipping Ports & Logistics Directory
+                                    <i class="bi bi-compass me-2 text-primary"></i>Shipping Ports & Logistics Directory
                                 </h5>
                                 <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-2.5 py-1 small fw-bold">
                                     Total Ports: {{ $countryModel->ports->count() }}
@@ -387,7 +387,7 @@
                         <!-- Node 3: Ports & Logistics -->
                         <div class="position-relative mb-4">
                             <div class="position-absolute start-0 translate-middle-x rounded-circle bg-primary d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; left: -25px; margin-top: 2px;">
-                                <i class="bi bi-anchor text-white" style="font-size: 0.65rem;"></i>
+                                <i class="bi bi-compass text-white" style="font-size: 0.65rem;"></i>
                             </div>
                             <span class="text-muted small d-block">Logistics Corridor</span>
                             <span class="text-white fw-semibold small">

@@ -321,7 +321,7 @@
         <div class="col-6 col-lg-3">
             <div class="metric-card-premium p-4 d-flex align-items-center gap-3">
                 <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; flex-shrink: 0;">
-                    <i class="bi bi-anchor fs-4"></i>
+                    <i class="bi bi-compass fs-4"></i>
                 </div>
                 <div>
                     <span class="text-muted small d-block">Total Global Ports</span>
