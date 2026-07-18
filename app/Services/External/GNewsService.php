@@ -68,6 +68,8 @@ class GNewsService extends BaseApiClient
 
         foreach ($this->topicQueries as $category => $queries) {
             foreach ($queries as $queryString) {
+                // Sleep 1 second to avoid GNews API concurrent request limits (429)
+                sleep(1);
                 try {
                     $params = [
                         'query' => [
