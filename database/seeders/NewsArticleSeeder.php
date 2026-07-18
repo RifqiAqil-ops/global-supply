@@ -10,6 +10,12 @@ class NewsArticleSeeder extends Seeder
 {
     public function run(): void
     {
+        $gnewsService = app(\App\Services\External\GNewsService::class);
+        if ($gnewsService->hasApiKey()) {
+            $gnewsService->syncAllNews();
+            return;
+        }
+
         $countries = Country::all();
         $indonesia = Country::where('iso2', 'ID')->first();
 
