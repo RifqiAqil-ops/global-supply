@@ -158,7 +158,7 @@
             </div>
         </div>
         <div class="card-body p-0">
-            <x-table :headers="['Country', 'Population', 'GDP (Billions)', 'GDP/Capita', 'Inflation', 'Currency', 'Weather Snapshot', 'Risk Score', 'Action']">
+            <x-table :headers="['Country', 'Population', 'GDP (Billions)', 'GDP/Capita', 'Inflation', 'Currency', 'Weather Snapshot', 'Risk Score']">
                 @forelse($countries as $c)
                 @php
                     $gdpRecord = $c->economicIndicators->firstWhere('indicator_code', 'NY.GDP.MKTP.CD');
@@ -222,15 +222,10 @@
                             <span class="text-muted small">N/A</span>
                         @endif
                     </td>
-                    <td class="align-middle text-end">
-                        <a href="{{ route('countries.show', $c->iso2) }}" class="btn-action-saas" title="View Details">
-                            <i class="bi bi-eye-fill"></i>
-                        </a>
-                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" class="text-center py-5">
+                    <td colspan="8" class="text-center py-5">
                         <div class="empty-state-icon"><i class="bi bi-globe2"></i></div>
                         <h5 class="empty-state-title">No Countries Match Your Filter</h5>
                         <p class="empty-state-desc">Try clearing or tweaking your search queries and filter options above.</p>
