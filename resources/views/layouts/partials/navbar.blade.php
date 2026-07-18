@@ -37,7 +37,7 @@
                         </li>
                         <li>
                             <a class="dropdown-item {{ Route::is('ports.index') ? 'active' : '' }}" href="{{ route('ports.index') }}">
-                                <i class="bi bi-anchor"></i> Ports & Logistics
+                                <i class="bi bi-compass"></i> Ports & Logistics
                             </a>
                         </li>
                         <li>
@@ -115,7 +115,7 @@
                         </li>
                         <li>
                             <a class="dropdown-item {{ Route::is('admin.ports.index') ? 'active' : '' }}" href="{{ route('admin.ports.index') }}">
-                                <i class="bi bi-anchor"></i> Manage Ports
+                                <i class="bi bi-compass"></i> Manage Ports
                             </a>
                         </li>
                         <li>
