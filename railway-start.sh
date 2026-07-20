@@ -2,6 +2,13 @@
 
 echo "Initializing Railway Laravel Environment..."
 
+# Ensure APP_KEY exists to prevent MissingAppKeyException
+if [ -z "$APP_KEY" ]; then
+    echo "Warning: APP_KEY environment variable is empty. Generating key for session..."
+    export APP_KEY=$(php artisan key:generate --show)
+    echo "Generated APP_KEY: $APP_KEY"
+fi
+
 # Ensure required storage and cache directories exist and are writable
 mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions storage/logs bootstrap/cache
 chmod -R 777 storage bootstrap/cache
