@@ -21,7 +21,7 @@ class AutoBootstrapMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip for static assets, health checks, or console
+        // Skip for console commands, static assets, build files, or health checks
         if (app()->runningInConsole() || $request->is('up', 'build/*', 'images/*')) {
             return $next($request);
         }
@@ -34,17 +34,38 @@ class AutoBootstrapMiddleware
         $isInitialized = SystemConfig::getByKey('system_initialized', false);
         $hasCountries = Country::count() > 0;
 
-        if ($isInitialized && $hasCountries) {
+        // Fast-path: If database already has country data or initialized flag is true
+        if ($isInitialized || $hasCountries) {
+            if (!$isInitialized && $hasCountries) {
+                SystemConfig::updateOrCreate(
+                    ['key' => 'system_initialized'],
+                    ['value' => 'true', 'type' => 'boolean', 'group' => 'system']
+                );
+            }
+            Cache::forget('system_initialization_running');
             View::share('isSystemInitializing', false);
             return $next($request);
         }
 
-        // System needs initialization - Check Atomic Lock
+        // System needs initial setup - Prevent duplicate triggers
         $isAlreadyRunning = Cache::has('system_initialization_running');
 
         if (!$isAlreadyRunning) {
-            // Acquire lock and dispatch background bootstrap job
             Cache::put('system_initialization_running', true, 600);
+
+            // Local DX: In local environment or sync queue, execute bootstrap synchronously without requiring a queue worker
+            if (app()->environment('local') || config('queue.default') === 'sync') {
+                try {
+                    InitialSystemBootstrapJob::dispatchSync();
+                } catch (\Throwable $e) {
+                    // Fail gracefully
+                }
+                Cache::forget('system_initialization_running');
+                View::share('isSystemInitializing', false);
+                return $next($request);
+            }
+
+            // Production: Dispatch to background queue worker
             InitialSystemBootstrapJob::dispatch();
         }
 

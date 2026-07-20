@@ -90,6 +90,13 @@ class SetupWaypointCommand extends Command
         Artisan::call('gscrip:recalculate-risk');
         $this->line(Artisan::output());
 
+        // Mark system as initialized
+        \App\Models\SystemConfig::updateOrCreate(
+            ['key' => 'system_initialized'],
+            ['value' => 'true', 'type' => 'boolean', 'group' => 'system']
+        );
+        \Illuminate\Support\Facades\Cache::forget('system_initialization_running');
+
         // Cache optimization
         $this->info("Optimizing application route and configuration caches...");
         Artisan::call('optimize:clear');
