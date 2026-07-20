@@ -1,8 +1,8 @@
-# GSCRIP
+# Waypoint
 
-Global Supply Chain Risk Intelligence Platform
+Global Supply Chain Intelligence
 
-GSCRIP adalah platform intelijen risiko rantai pasok global real-time modern yang dirancang untuk mendeteksi, mengevaluasi, dan memvisualisasikan faktor risiko makroekonomi, cuaca ekstrem, fluktuasi valuta asing, sentimen geopolitik, dan infrastruktur pelabuhan secara terintegrasi. Platform ini menghitung indeks skor risiko komposit otomatis per negara untuk mendukung pengambilan keputusan sourcing yang strategis.
+Waypoint adalah platform intelijen risiko rantai pasok global real-time modern yang dirancang untuk mengevaluasi faktor risiko makroekonomi, cuaca ekstrem, fluktuasi valuta asing, sentimen geopolitik, dan infrastruktur pelabuhan secara terintegrasi. Platform ini menghitung indeks skor risiko komposit otomatis per negara untuk mendukung pengambilan keputusan sourcing yang strategis.
 
 ## Fitur Utama
 

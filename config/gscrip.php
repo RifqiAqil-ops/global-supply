@@ -26,7 +26,7 @@ return [
         'timeout' => (int) env('API_TIMEOUT_SECONDS', 10),
         'retry' => (int) env('API_RETRY_ATTEMPTS', 3),
         'retry_delay' => (int) env('API_RETRY_DELAY_MS', 100),
-        'user_agent' => env('API_USER_AGENT', 'GSCRIP-Client/1.0.0 (Global Supply Chain Risk Dashboard)'),
+        'user_agent' => env('API_USER_AGENT', 'Waypoint-Client/1.0.0 (Global Supply Chain Intelligence)'),
     ],
 
     /*

@@ -29,7 +29,7 @@
 
             <div class="mb-3">
                 <label for="email" class="form-label text-dark fw-semibold small">Email Address</label>
-                <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="operator@gscrip.com" required>
+                <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="operator@waypoint.com" required>
                 @error('email')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror

@@ -3,9 +3,9 @@
         <!-- Left: Logo & Mobile Toggle Button -->
         <div class="d-flex align-items-center gap-3">
             <a href="{{ url('/') }}" class="text-decoration-none d-flex align-items-center">
-                <img src="{{ asset('images/logo.png') }}" alt="GSCRIP Logo" class="me-2" style="height: 28px; width: auto; flex-shrink: 0; object-fit: contain;">
+                <img src="{{ asset('images/logo.png') }}" alt="Waypoint Logo" class="me-2" style="height: 28px; width: auto; flex-shrink: 0; object-fit: contain;">
                 <span class="text-primary fs-4 fw-bold" style="letter-spacing: 0.5px; font-family: 'Inter', sans-serif;">
-                    GSCRIP
+                    Waypoint
                 </span>
             </a>
         </div>

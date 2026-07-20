@@ -62,7 +62,7 @@
 
         <!-- Register Link -->
         <div class="text-center">
-            <span class="text-muted small">New to GSCRIP?</span>
+            <span class="text-muted small">New to Waypoint?</span>
             <a href="{{ route('register') }}" class="text-primary small text-decoration-none fw-semibold ms-1">Create an account</a>
         </div>
     </form>
