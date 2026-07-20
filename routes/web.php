@@ -80,6 +80,18 @@ Route::middleware('auth')->group(function () {
         Route::get('sync', [\App\Http\Controllers\Admin\SyncController::class, 'index'])->name('sync.index');
         Route::post('sync/run', [\App\Http\Controllers\Admin\SyncController::class, 'runSync'])->name('sync.run');
         Route::post('sync/run-all', [\App\Http\Controllers\Admin\SyncController::class, 'runAllSync'])->name('sync.run-all');
+
+        // Operations Center & System Health
+        Route::get('operations', [\App\Http\Controllers\Admin\OperationsController::class, 'index'])->name('operations.index');
+        Route::get('health', [\App\Http\Controllers\Admin\OperationsController::class, 'health'])->name('health.index');
+        Route::get('api-monitoring', [\App\Http\Controllers\Admin\OperationsController::class, 'apiMonitoring'])->name('api-monitoring.index');
+
+        // Failed Jobs Management
+        Route::get('failed-jobs', [\App\Http\Controllers\Admin\FailedJobsController::class, 'index'])->name('failed-jobs.index');
+        Route::post('failed-jobs/retry/{id}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retry'])->name('failed-jobs.retry');
+        Route::post('failed-jobs/retry-all', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retryAll'])->name('failed-jobs.retry-all');
+        Route::delete('failed-jobs/{id}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'destroy'])->name('failed-jobs.destroy');
+        Route::post('failed-jobs/flush', [\App\Http\Controllers\Admin\FailedJobsController::class, 'flush'])->name('failed-jobs.flush');
     });
 
     /*

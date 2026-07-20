@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Models\SystemConfig;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class SyncTracker
@@ -21,6 +20,11 @@ class SyncTracker
             'next_scheduled_at' => static::calculateNextScheduled($service),
             'records_updated' => 0,
             'duration_seconds' => 0,
+            'memory_usage_mb' => static::getMemoryUsage(),
+            'peak_memory_mb' => static::getPeakMemory(),
+            'http_status' => 200,
+            'api_latency_ms' => 0,
+            'retry_count' => 0,
             'error_message' => null,
         ];
 
@@ -32,9 +36,10 @@ class SyncTracker
     /**
      * Record a successful sync completion.
      */
-    public static function success(string $service, float $startTime, int $recordsUpdated = 0): array
+    public static function success(string $service, float $startTime, int $recordsUpdated = 0, int $httpStatus = 200): array
     {
         $duration = round(microtime(true) - $startTime, 2);
+        $latencyMs = round($duration * 1000, 2);
 
         $info = [
             'service' => $service,
@@ -43,6 +48,11 @@ class SyncTracker
             'next_scheduled_at' => static::calculateNextScheduled($service),
             'records_updated' => $recordsUpdated,
             'duration_seconds' => $duration,
+            'memory_usage_mb' => static::getMemoryUsage(),
+            'peak_memory_mb' => static::getPeakMemory(),
+            'http_status' => $httpStatus,
+            'api_latency_ms' => $latencyMs,
+            'retry_count' => 0,
             'error_message' => null,
         ];
 
@@ -56,9 +66,10 @@ class SyncTracker
     /**
      * Record a failed sync attempt.
      */
-    public static function fail(string $service, float $startTime, \Throwable|string $error): array
+    public static function fail(string $service, float $startTime, \Throwable|string $error, int $httpStatus = 500): array
     {
         $duration = round(microtime(true) - $startTime, 2);
+        $latencyMs = round($duration * 1000, 2);
         $errorMessage = is_string($error) ? $error : $error->getMessage();
 
         $info = [
@@ -68,6 +79,11 @@ class SyncTracker
             'next_scheduled_at' => static::calculateNextScheduled($service),
             'records_updated' => 0,
             'duration_seconds' => $duration,
+            'memory_usage_mb' => static::getMemoryUsage(),
+            'peak_memory_mb' => static::getPeakMemory(),
+            'http_status' => $httpStatus,
+            'api_latency_ms' => $latencyMs,
+            'retry_count' => 1,
             'error_message' => $errorMessage,
         ];
 
@@ -87,13 +103,13 @@ class SyncTracker
         $raw = SystemConfig::getByKey($key);
 
         if (is_array($raw)) {
-            return $raw;
+            return static::normalizeInfo($service, $raw);
         }
 
         if (is_string($raw)) {
             $decoded = json_decode($raw, true);
             if (is_array($decoded)) {
-                return $decoded;
+                return static::normalizeInfo($service, $decoded);
             }
         }
 
@@ -104,6 +120,11 @@ class SyncTracker
             'next_scheduled_at' => static::calculateNextScheduled($service),
             'records_updated' => 0,
             'duration_seconds' => 0,
+            'memory_usage_mb' => 0,
+            'peak_memory_mb' => 0,
+            'http_status' => 200,
+            'api_latency_ms' => 0,
+            'retry_count' => 0,
             'error_message' => null,
         ];
     }
@@ -143,9 +164,24 @@ class SyncTracker
         );
     }
 
-    /**
-     * Calculate next scheduled sync string.
-     */
+    protected static function normalizeInfo(string $service, array $info): array
+    {
+        return array_merge([
+            'service' => $service,
+            'status' => 'pending',
+            'last_sync_at' => null,
+            'next_scheduled_at' => static::calculateNextScheduled($service),
+            'records_updated' => 0,
+            'duration_seconds' => 0,
+            'memory_usage_mb' => static::getMemoryUsage(),
+            'peak_memory_mb' => static::getPeakMemory(),
+            'http_status' => 200,
+            'api_latency_ms' => 0,
+            'retry_count' => 0,
+            'error_message' => null,
+        ], $info);
+    }
+
     public static function calculateNextScheduled(string $service): string
     {
         $now = now();
@@ -159,5 +195,15 @@ class SyncTracker
             'risk' => $now->addHour()->toDateTimeString(),
             default => $now->addHour()->toDateTimeString(),
         };
+    }
+
+    protected static function getMemoryUsage(): float
+    {
+        return round(memory_get_usage(true) / 1024 / 1024, 2);
+    }
+
+    protected static function getPeakMemory(): float
+    {
+        return round(memory_get_peak_usage(true) / 1024 / 1024, 2);
     }
 }

@@ -103,6 +103,26 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.operations.index') }}" class="nav-link {{ Route::is('admin.operations.index') ? 'active' : '' }}">
+                        <i class="bi bi-cpu"></i> Operations Center
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.health.index') }}" class="nav-link {{ Route::is('admin.health.index') ? 'active' : '' }}">
+                        <i class="bi bi-heart-pulse"></i> System Health
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.failed-jobs.index') }}" class="nav-link {{ Route::is('admin.failed-jobs.index') ? 'active' : '' }}">
+                        <i class="bi bi-exclamation-octagon"></i> Failed Queue Jobs
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.api-monitoring.index') }}" class="nav-link {{ Route::is('admin.api-monitoring.index') ? 'active' : '' }}">
+                        <i class="bi bi-activity"></i> API Monitoring
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('admin.sync.index') }}" class="nav-link {{ Route::is('admin.sync.index') ? 'active' : '' }}">
                         <i class="bi bi-arrow-repeat"></i> Data Sync Manager
                     </a>
