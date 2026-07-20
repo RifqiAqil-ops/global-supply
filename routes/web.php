@@ -24,6 +24,15 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/dashboard', function () {
+    if (Auth::check()) {
+        return Auth::user()->isAdmin() 
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('user.dashboard');
+    }
+    return redirect()->route('login');
+})->name('dashboard');
+
 /*
 |--------------------------------------------------------------------------
 | Authentication Routes (Guest)

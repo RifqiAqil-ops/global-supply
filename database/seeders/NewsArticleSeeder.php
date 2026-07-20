@@ -5,19 +5,25 @@ namespace Database\Seeders;
 use App\Models\NewsArticle;
 use App\Models\Country;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Log;
 
 class NewsArticleSeeder extends Seeder
 {
     public function run(): void
     {
         $gnewsService = app(\App\Services\External\GNewsService::class);
+        
+        // Attempt live API sync if key is configured
         if ($gnewsService->hasApiKey()) {
-            $gnewsService->syncAllNews();
-            return;
+            try {
+                $gnewsService->syncAllNews();
+            } catch (\Throwable $e) {
+                Log::warning("NewsArticleSeeder: GNews live API sync failed, seeding fallback news: " . $e->getMessage());
+            }
         }
 
+        // Always ensure fallback static news articles exist if database is empty
         $countries = Country::all();
-        $indonesia = Country::where('iso2', 'ID')->first();
 
         $news = [
             [
@@ -62,7 +68,7 @@ class NewsArticleSeeder extends Seeder
             );
         }
 
-        // Specific mock news for countries to ensure detail page has news
+        // Specific mock news for countries to ensure detail pages always display news
         foreach ($countries as $c) {
             $countryNews = [
                 [

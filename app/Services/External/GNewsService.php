@@ -8,6 +8,7 @@ use App\Models\Country;
 use App\Models\NewsArticle;
 use App\Repositories\Contracts\NewsRepositoryInterface;
 use Carbon\Carbon;
+use Database\Seeders\NewsArticleSeeder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -30,10 +31,20 @@ class GNewsService extends BaseApiClient
     public function __construct(NewsRepositoryInterface $newsRepository)
     {
         parent::__construct(
-            config('gscrip.api.gnews.base_url', 'https://gnews.io/api/v4'),
+            config('gscrip.api.gnews.base_url', config('services.gnews.base_url', 'https://gnews.io/api/v4')),
             'GNews'
         );
         $this->newsRepository = $newsRepository;
+    }
+
+    /**
+     * Retrieve GNews API key from configuration or environment.
+     */
+    public function getApiKey(): ?string
+    {
+        return config('gscrip.api.gnews.key')
+            ?: (config('services.gnews.key')
+            ?: env('GNEWS_API_KEY'));
     }
 
     /**
@@ -41,7 +52,7 @@ class GNewsService extends BaseApiClient
      */
     public function hasApiKey(): bool
     {
-        return !empty(config('gscrip.api.gnews.key'));
+        return !empty($this->getApiKey());
     }
 
     /**
@@ -60,15 +71,15 @@ class GNewsService extends BaseApiClient
         ];
 
         if (!$this->hasApiKey()) {
-            Log::warning("GNews API key is not configured. Skipping news sync.");
+            Log::warning("GNews API key is not configured. Skipping live news sync.");
             return $summary;
         }
 
-        $apiKey = config('gscrip.api.gnews.key');
+        $apiKey = $this->getApiKey();
 
         foreach ($this->topicQueries as $category => $queries) {
             foreach ($queries as $queryString) {
-                // Sleep 1 second to avoid GNews API concurrent request limits (429)
+                // Sleep 1 second to avoid GNews API rate limits (429)
                 sleep(1);
                 try {
                     $params = [
@@ -76,6 +87,7 @@ class GNewsService extends BaseApiClient
                             'q'      => $queryString,
                             'lang'   => 'en',
                             'max'    => 10,
+                            'apikey' => $apiKey,
                             'token'  => $apiKey,
                             'sortby' => 'publishedAt',
                         ]
@@ -148,7 +160,7 @@ class GNewsService extends BaseApiClient
             return $summary;
         }
 
-        $apiKey = config('gscrip.api.gnews.key');
+        $apiKey = $this->getApiKey();
         $queryString = $country->name . ' economy trade';
 
         try {
@@ -157,6 +169,7 @@ class GNewsService extends BaseApiClient
                     'q'      => $queryString,
                     'lang'   => 'en',
                     'max'    => 5,
+                    'apikey' => $apiKey,
                     'token'  => $apiKey,
                     'sortby' => 'publishedAt',
                 ]
@@ -192,10 +205,7 @@ class GNewsService extends BaseApiClient
     }
 
     /**
-     * Get latest news articles with 1-hour TTL caching.
-     */
-    /**
-     * Get the latest news articles. Always attempts real-time fetch first, falls back to DB cache if API fails.
+     * Get the latest news articles. Returns existing database records first to guarantee instant response times, syncing in background if needed.
      */
     public function getLatestArticles(int $limit = 20, ?string $category = null, bool $forceRefresh = false): EloquentCollection
     {
@@ -206,38 +216,52 @@ class GNewsService extends BaseApiClient
             Cache::forget($cacheKey);
         }
 
-        // Try API first if configured
+        // 1. Read existing articles from database first
+        $articles = $this->newsRepository->latestArticles($limit, $category);
+
+        if ($articles->isNotEmpty() && !$forceRefresh) {
+            foreach ($articles as $art) {
+                $art->isCached = true;
+            }
+            return $articles;
+        }
+
+        // 2. If database is empty or forceRefresh, attempt live API sync
         try {
             if ($this->hasApiKey()) {
                 $this->syncAllNews();
-                
                 $articles = $this->newsRepository->latestArticles($limit, $category);
                 foreach ($articles as $art) {
                     $art->isCached = false;
                 }
-
-                Cache::put($cacheKey, $articles, $ttl);
-                return $articles;
-            } else {
-                throw new \Exception("GNews API Key not configured.");
+                if ($articles->isNotEmpty()) {
+                    Cache::put($cacheKey, $articles, $ttl);
+                    return $articles;
+                }
             }
         } catch (Throwable $e) {
-            Log::warning("GNews API call failed, falling back to database: " . $e->getMessage());
-
-            $articles = Cache::remember($cacheKey, $ttl, function () use ($limit, $category) {
-                return $this->newsRepository->latestArticles($limit, $category);
-            });
-
-            foreach ($articles as $art) {
-                $art->isCached = true;
-            }
-
-            return $articles;
+            Log::warning("GNews API call failed: " . $e->getMessage());
         }
+
+        // 3. Fallback: Seeder fallback if database has zero news articles
+        if ($articles->isEmpty()) {
+            try {
+                (new NewsArticleSeeder())->run();
+                $articles = $this->newsRepository->latestArticles($limit, $category);
+            } catch (Throwable $e) {
+                Log::error("Failed to seed fallback news: " . $e->getMessage());
+            }
+        }
+
+        foreach ($articles as $art) {
+            $art->isCached = true;
+        }
+
+        return $articles;
     }
 
     /**
-     * Get news for a country. Always attempts real-time fetch first, falls back to DB cache if API fails.
+     * Get news for a country. Returns database records first, attempts live sync if empty.
      */
     public function getCountryNews(int $countryId, int $limit = 10, bool $forceRefresh = false): EloquentCollection
     {
@@ -248,34 +272,48 @@ class GNewsService extends BaseApiClient
             Cache::forget($cacheKey);
         }
 
-        // Try API first if configured
+        // 1. Read existing articles from database first
+        $articles = $this->newsRepository->articlesByCountry($countryId, $limit);
+
+        if ($articles->isNotEmpty() && !$forceRefresh) {
+            foreach ($articles as $art) {
+                $art->isCached = true;
+            }
+            return $articles;
+        }
+
+        // 2. If empty, attempt live API sync
         try {
             if ($this->hasApiKey()) {
                 $this->syncCountryNews($countryId);
-
                 $articles = $this->newsRepository->articlesByCountry($countryId, $limit);
                 foreach ($articles as $art) {
                     $art->isCached = false;
                 }
-
-                Cache::put($cacheKey, $articles, $ttl);
-                return $articles;
-            } else {
-                throw new \Exception("GNews API Key not configured.");
+                if ($articles->isNotEmpty()) {
+                    Cache::put($cacheKey, $articles, $ttl);
+                    return $articles;
+                }
             }
         } catch (Throwable $e) {
-            Log::warning("GNews country API call failed for ID '{$countryId}', falling back to database: " . $e->getMessage());
-
-            $articles = Cache::remember($cacheKey, $ttl, function () use ($countryId, $limit) {
-                return $this->newsRepository->articlesByCountry($countryId, $limit);
-            });
-
-            foreach ($articles as $art) {
-                $art->isCached = true;
-            }
-
-            return $articles;
+            Log::warning("GNews country API call failed for ID '{$countryId}': " . $e->getMessage());
         }
+
+        // 3. Fallback: Seeder fallback if database has zero news articles for this country
+        if ($articles->isEmpty()) {
+            try {
+                (new NewsArticleSeeder())->run();
+                $articles = $this->newsRepository->articlesByCountry($countryId, $limit);
+            } catch (Throwable $e) {
+                Log::error("Failed to seed fallback country news: " . $e->getMessage());
+            }
+        }
+
+        foreach ($articles as $art) {
+            $art->isCached = true;
+        }
+
+        return $articles;
     }
 
     /**
@@ -297,7 +335,6 @@ class GNewsService extends BaseApiClient
             $positiveKeywords = \App\Models\PositiveWord::pluck('word')->toArray();
             $negativeKeywords = \App\Models\NegativeWord::pluck('word')->toArray();
         } catch (\Throwable $e) {
-            // Fallback keywords if tables do not exist yet
             $positiveKeywords = ['growth', 'increase', 'improved', 'recovery', 'surge', 'boom', 'agreement', 'deal', 'cooperation', 'reform', 'investment', 'expand'];
             $negativeKeywords = ['war', 'conflict', 'crisis', 'recession', 'inflation', 'sanctions', 'tariff', 'disruption', 'decline', 'collapse', 'protest', 'instability', 'ban', 'shortage'];
         }
