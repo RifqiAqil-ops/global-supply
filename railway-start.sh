@@ -1,39 +1,54 @@
 #!/bin/sh
 
-# Ensure storage folder is linked
+echo "Initializing Railway Laravel Environment..."
+
+# Ensure required storage and cache directories exist and are writable
+mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions storage/logs bootstrap/cache
+chmod -R 777 storage bootstrap/cache
+
+# Create storage symlink
 php artisan storage:link --no-interaction
 
-# Run migrations (idempotent, safe to run on boot)
+# Execute database migrations
 php artisan migrate --force
 
-# Check if seeding is needed by checking if any users exist in the database
+# Check if database has initial records using Laravel 11 autoloader
 php -r '
-  require "bootstrap/autoload.php";
+  require "vendor/autoload.php";
   $app = require_once "bootstrap/app.php";
-  $app->make("Illuminate\Contracts\Console\Kernel")->bootstrap();
-  if (\App\Models\User::count() === 0) {
+  $kernel = $app->make("Illuminate\Contracts\Console\Kernel");
+  $kernel->bootstrap();
+  try {
+      if (\App\Models\User::count() === 0) {
+          exit(1);
+      }
+      exit(0);
+  } catch (\Throwable $e) {
       exit(1);
   }
-  exit(0);
 '
 STATUS=$?
 
 if [ $STATUS -eq 1 ]; then
-    echo "Database is empty. Seeding initial records..."
+    echo "Database is unseeded. Running initial seed sequence..."
     php artisan db:seed --force
-    echo "Syncing country listings from API..."
+    echo "Syncing country dataset..."
     php artisan gscrip:sync-countries
-    echo "Seeding global port mappings..."
+    echo "Seeding world ports dataset..."
     php artisan db:seed --class=WorldPortSeeder
-    echo "Recalculating score indexes..."
+    echo "Recalculating risk score indexes..."
     php artisan gscrip:recalculate-risk
-    echo "Seeding completed successfully."
+    echo "Initial seeding completed successfully."
 else
-    echo "Database already seeded. Skipping initialization block."
+    echo "Database already seeded. Skipping initial seed sequence."
 fi
 
-# Run caching and optimization commands
-php artisan optimize
+# Clear old caches and generate fresh production caches
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
-# Start application server
+# Start Laravel production web server
+echo "Starting application web server on port $PORT..."
 php artisan serve --host 0.0.0.0 --port $PORT
