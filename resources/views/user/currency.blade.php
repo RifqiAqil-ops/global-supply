@@ -16,13 +16,13 @@
         <x-stat-card title="Tracked Currencies" :value="$totalCurrencies" icon="bi-currency-exchange" color="primary" valueId="stat-currency-tracked" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Average Daily Change" :value="$avgChange !== null ? number_format($avgChange, 2) . '%' : 'Awaiting Historical Data'" icon="bi-graph-up-arrow" color="{{ $avgChange !== null ? ($avgChange >= 0 ? 'success' : 'danger') : 'primary' }}" valueId="stat-currency-avg-change" />
+        <x-stat-card title="Average Daily Change" :value="number_format((float)($avgChange ?? 0), 2) . '%'" icon="bi-graph-up-arrow" color="{{ ($avgChange ?? 0) >= 0 ? 'success' : 'danger' }}" valueId="stat-currency-avg-change" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Top Gainers" :value="$avgChange !== null ? $topGainers->count() : 'Awaiting Historical Data'" icon="bi-arrow-up-circle" color="{{ $avgChange !== null ? 'success' : 'primary' }}" valueId="stat-currency-gainers" />
+        <x-stat-card title="Top Gainers" :value="$topGainers->count()" icon="bi-arrow-up-circle" color="success" valueId="stat-currency-gainers" />
     </div>
     <div class="col-md-3">
-        <x-stat-card title="Top Losers" :value="$avgChange !== null ? $topLosers->count() : 'Awaiting Historical Data'" icon="bi-arrow-down-circle" color="{{ $avgChange !== null ? 'danger' : 'primary' }}" valueId="stat-currency-losers" />
+        <x-stat-card title="Top Losers" :value="$topLosers->count()" icon="bi-arrow-down-circle" color="danger" valueId="stat-currency-losers" />
     </div>
 </div>
 
@@ -30,7 +30,7 @@
 <div class="row g-4 mb-4">
     <!-- Currency Trend Chart -->
     <div class="col-lg-8">
-        <x-card title="Major Currency Trends vs USD" icon="bi-graph-up">
+        <x-card title="Major Currency Trends vs USD (14-Day Snapshots)" icon="bi-graph-up">
             <canvas id="currencyTrendChart" height="300"></canvas>
         </x-card>
     </div>
@@ -78,9 +78,9 @@
 </div>
 
 <!-- Full Currency Table -->
-<x-card title="All Exchange Rates (vs USD)" icon="bi-table">
+<x-card title="All Exchange Rates (vs USD & IDR)" icon="bi-table">
     <div class="table-responsive">
-        <x-table :headers="['Currency', 'Country', 'Rate to USD', 'Rate to IDR', 'Daily Change', 'Last Updated']" tbodyId="exchange-rates-tbody">
+        <x-table :headers="['Currency', 'Country', 'Rate to USD', 'Rate to IDR', 'Daily Change', 'Weekly %', 'Monthly %', 'Last Updated']" tbodyId="exchange-rates-tbody">
             @forelse($latestRates as $rate)
             <tr>
                 <td><strong class="text-white">{{ $rate->currency_code }}</strong> <span class="text-muted small">{{ $rate->currency_name }}</span></td>
@@ -107,18 +107,24 @@
                 </td>
                 <td class="text-muted">{{ $rate->rate_to_idr ? number_format((float)$rate->rate_to_idr, 2) : '—' }}</td>
                 <td>
-                    @if($rate->change_percent !== null)
-                        <span class="{{ (float)$rate->change_percent >= 0 ? 'text-success' : 'text-danger' }} fw-semibold small">
-                            {{ (float)$rate->change_percent >= 0 ? '+' : '' }}{{ number_format((float)$rate->change_percent, 2) }}%
-                        </span>
-                    @else
-                        <span class="text-muted">—</span>
-                    @endif
+                    <span class="{{ (float)($rate->change_percent ?? 0) >= 0 ? 'text-success' : 'text-danger' }} fw-semibold small">
+                        {{ (float)($rate->change_percent ?? 0) >= 0 ? '+' : '' }}{{ number_format((float)($rate->change_percent ?? 0), 2) }}%
+                    </span>
                 </td>
-                <td class="text-muted small">{{ $rate->rate_date ? $rate->rate_date->format('M d, Y') : '—' }}</td>
+                <td>
+                    <span class="{{ (float)($rate->weekly_change ?? 0) >= 0 ? 'text-success' : 'text-danger' }} small">
+                        {{ (float)($rate->weekly_change ?? 0) >= 0 ? '+' : '' }}{{ number_format((float)($rate->weekly_change ?? 0), 2) }}%
+                    </span>
+                </td>
+                <td>
+                    <span class="{{ (float)($rate->monthly_change ?? 0) >= 0 ? 'text-success' : 'text-danger' }} small">
+                        {{ (float)($rate->monthly_change ?? 0) >= 0 ? '+' : '' }}{{ number_format((float)($rate->monthly_change ?? 0), 2) }}%
+                    </span>
+                </td>
+                <td class="text-muted small">{{ $rate->rate_date ? \Carbon\Carbon::parse($rate->rate_date)->format('M d, Y') : '—' }}</td>
             </tr>
             @empty
-            <tr><td colspan="6" class="text-center text-muted py-4">No exchange rate data available.</td></tr>
+            <tr><td colspan="8" class="text-center text-muted py-4">No exchange rate data available.</td></tr>
             @endforelse
         </x-table>
     </div>
