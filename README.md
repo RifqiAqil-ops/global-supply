@@ -14,12 +14,9 @@ GSCRIP adalah platform intelijen risiko rantai pasok global real-time modern yan
 - Intelijen Pelabuhan: Peta interaktif pencari pelabuhan kargo logistik yang memuat kode UN/LOCODE, koordinat geografis, serta detail regional.
 - Intelijen Berita: Feed berita geopolitik dunia yang dikelompokkan berdasarkan peringkat sentimen (Positif, Netral, Negatif).
 - Sourcing Watchlist: Profil daftar pantau komoditas dengan batas ambang batas (alert threshold) peringatan dan catatan remarks yang dapat disesuaikan.
-- Konsol Laporan: Penyediaan preview laporan risiko dan pengunduhan instan dokumen.
-- Pencarian Universal: Bilah pencarian cepat (Ctrl+K) yang mendukung fuzzy matching, pembobotan skor kecocokan, riwayat pencarian, dan navigasi keyboard penuh.
+- Pencarian Universal: Bilah pencarian cepat (Ctrl+K) yang mendukung fuzzy matching, pembobotan skor kecocokan, dan navigasi keyboard penuh.
 - Panel Admin: Dasbor khusus admin untuk memperbarui bobot perhitungan kalkulasi risiko dan melakukan diagnosis status API.
 - REST API: Menyediakan endpoint publik untuk data negara, skor risiko, pelabuhan kargo, berita, dan nilai mata uang.
-- Ekspor PDF: Laporan briefing eksekutif format A4 landscape yang telah dilokalisasi sepenuhnya ke dalam Bahasa Indonesia.
-- Ekspor Excel: Unduhan data spreadsheet Microsoft Excel (.xlsx) asli dengan tipe data angka yang presisi dan kolom yang otomatis menyesuaikan lebar data.
 
 ## Teknologi
 
@@ -80,7 +77,6 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini di lingkungan lokal:
 ```text
 app/
  ├── DTOs/                      # Data Transfer Objects untuk integrasi API
- ├── Exports/                   # Struktur ekspor data Microsoft Excel
  ├── Http/
  │    ├── Controllers/          # Class controller untuk request halaman & endpoint API
  │    └── Middleware/           # Guard untuk autentikasi user dan admin
@@ -135,8 +131,6 @@ Platform ini menyediakan namespace API publik untuk mengekspos data telemetri:
 - **Kalkulasi Otomatis**: Perhitungan bobot risiko baru otomatis berjalan setiap kali data eksternal berhasil disinkronisasikan.
 - **Pencarian Cepat**: Data pelabuhan dan profil negara disimpan di client-side localStorage untuk memberikan hasil instan saat diketik.
 - **Responsive UI**: Variabel CSS3 modern memastikan grid layout tetap rapi di smartphone, tablet, laptop, hingga layar desktop lebar.
-- **Ekspor PDF**: Format laporan A4 eksekutif terjemahan Bahasa Indonesia yang presisi.
-- **Ekspor Excel**: Pembuatan spreadsheet asli dengan ketepatan nilai desimal untuk analisis data lebih lanjut di Microsoft Excel.
 
 ## Lisensi
 
