@@ -83,29 +83,12 @@
                     </ul>
                 </li>
 
-                <!-- Reports Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link-premium dropdown-toggle {{ Route::is('reports.index') || Route::is('articles.index') || Route::is('articles.show') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Reports
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-premium">
-                        <li>
-                            <a class="dropdown-item {{ Route::is('reports.index') ? 'active' : '' }}" href="{{ route('reports.index') }}">
-                                <i class="bi bi-file-earmark-bar-graph"></i> Sourcing Reports
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item {{ Route::is('articles.index') || Route::is('articles.show') ? 'active' : '' }}" href="{{ route('articles.index') }}">
-                                <i class="bi bi-journal-richtext"></i> Analysis Reports
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+
 
                 <!-- Admin Dropdown -->
                 @if (Auth::user()->isAdmin())
                 <li class="nav-item dropdown">
-                    <a class="nav-link-premium dropdown-toggle {{ Route::is('admin.users.index') || Route::is('admin.ports.index') || Route::is('admin.articles.index') || Route::is('admin.weights.index') || Route::is('admin.api-health.index') || Route::is('admin.audit-trails.index') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link-premium dropdown-toggle {{ Route::is('admin.users.index') || Route::is('admin.ports.index') || Route::is('admin.articles.index') || Route::is('admin.weights.index') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Admin
                     </a>
                     <ul class="dropdown-menu dropdown-menu-premium">
@@ -127,16 +110,6 @@
                         <li>
                             <a class="dropdown-item {{ Route::is('admin.weights.index') ? 'active' : '' }}" href="{{ route('admin.weights.index') }}">
                                 <i class="bi bi-sliders"></i> Risk Weights
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item {{ Route::is('admin.api-health.index') ? 'active' : '' }}" href="{{ route('admin.api-health.index') }}">
-                                <i class="bi bi-cpu"></i> API Health
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item {{ Route::is('admin.audit-trails.index') ? 'active' : '' }}" href="{{ route('admin.audit-trails.index') }}">
-                                <i class="bi bi-journal-text"></i> Audit Trails
                             </a>
                         </li>
                     </ul>
@@ -322,25 +295,7 @@
     border-radius: 8px;
     margin-bottom: 6px;
 }
-.search-chip-item {
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 6px 10px;
-    background-color: #F8FAFC;
-    color: #475569;
-    border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.12s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-.search-chip-item:hover {
-    background-color: #EFF6FF;
-    color: #2563EB;
-    border-color: #BFDBFE;
-}
+
 .search-action-btn {
     font-size: 0.75rem;
     font-weight: 600;
@@ -554,89 +509,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function saveToHistory(query) {
-        const trimmed = query.trim();
-        if (!trimmed) return;
-        
-        let history = [];
-        try {
-            const stored = localStorage.getItem('gscrip_search_history');
-            if (stored) {
-                history = JSON.parse(stored);
-            }
-        } catch (e) {}
-
-        history = history.filter(item => item.toLowerCase() !== trimmed.toLowerCase());
-        history.unshift(trimmed);
-        history = history.slice(0, 10);
-        
-        localStorage.setItem('gscrip_search_history', JSON.stringify(history));
-    }
-
-    function renderHistoryAndPopular(dropdown) {
-        let history = [];
-        try {
-            const stored = localStorage.getItem('gscrip_search_history');
-            if (stored) {
-                history = JSON.parse(stored);
-            }
-        } catch (e) {}
-
-        let html = '';
-        if (history.length > 0) {
-            html += `
-                <div class="p-2">
-                    <div class="d-flex justify-content-between align-items-center mb-2 px-2">
-                        <span class="search-group-title p-0" style="font-size: 0.65rem;">Recent Searches</span>
-                        <button class="btn btn-sm btn-link text-muted p-0 text-decoration-none clear-history-btn" style="font-size: 0.65rem; font-weight: 600;">Clear</button>
-                    </div>
-                    <div class="d-flex flex-wrap gap-2 px-2 pb-2">
-            `;
-            history.forEach(term => {
-                html += `
-                    <span class="search-chip-item" data-term="${term}">
-                        <i class="bi bi-clock-history text-muted" style="font-size: 0.7rem;"></i>
-                        ${term}
-                    </span>
-                `;
-            });
-            html += `
-                    </div>
-                </div>
-            `;
-        } else {
-            const popular = ['Indonesia', 'United States', 'China', 'Singapore', 'USD', 'Belawan'];
-            html += `
-                <div class="p-2">
-                    <div class="px-2 mb-2">
-                        <span class="search-group-title p-0" style="font-size: 0.65rem;">Popular Searches</span>
-                    </div>
-                    <div class="d-flex flex-wrap gap-2 px-2 pb-2">
-            `;
-            popular.forEach(term => {
-                html += `
-                    <span class="search-chip-item" data-term="${term}">
-                        <i class="bi bi-graph-up text-muted" style="font-size: 0.7rem;"></i>
-                        ${term}
-                    </span>
-                `;
-            });
-            html += `
-                    </div>
-                </div>
-            `;
-        }
-
-        dropdown.innerHTML = html;
-        dropdown.style.display = 'block';
-    }
-
     function handleSearchInput(input, dropdown) {
         const query = input.value.trim();
 
         if (!query) {
             activeIndex = -1;
-            renderHistoryAndPopular(dropdown);
+            dropdown.style.display = 'none';
             return;
         }
 
@@ -805,10 +683,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchDynamicResults(query, dropdown, signal) {
         const queryEscaped = encodeURIComponent(query);
         try {
-            const [newsJson, articlesHtml, riskJson, watchlistHtml] = await Promise.all([
+            const [newsJson, articlesHtml, watchlistHtml] = await Promise.all([
                 fetch('/api/news', { signal }).then(res => res.json()).catch(() => ({ success: false })),
                 fetch(`/articles?search=${queryEscaped}`, { signal }).then(res => res.text()).catch(() => ''),
-                fetch('/api/risk', { signal }).then(res => res.json()).catch(() => ({ success: false })),
                 fetch(`/watchlists?search=${queryEscaped}`, { signal }).then(res => res.text()).catch(() => '')
             ]);
 
@@ -888,38 +765,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // Reports parsing
-            if (riskJson && riskJson.success && Array.isArray(riskJson.data)) {
-                riskJson.data.forEach(item => {
-                    const countryName = item.country ? item.country.name : '';
-                    const region = item.country && item.country.region ? item.country.region : '';
-                    const scoreVal = parseFloat(item.composite_score) || 0.0;
-                    const level = item.risk_level || 'low';
-                    
-                    const countryClean = cleanString(countryName);
-                    const regionClean = cleanString(region);
-                    const q = cleanString(query);
-                    
-                    let score = 0;
-                    if (countryClean === q) score = 650;
-                    else if (countryClean.includes(q)) score = 600;
-                    else if (regionClean.includes(q)) score = 550;
-                    
-                    if (score > 0) {
-                        parsedDynamicResults.push({
-                            category: 'Reports',
-                            icon: 'bi-file-earmark-bar-graph',
-                            title: `${countryName} Sourcing Risk Report`,
-                            subtitle: `Composite Score: ${scoreVal.toFixed(1)} (${level.toUpperCase()})`,
-                            highlightedTitle: highlightText(`${countryName} Sourcing Risk Report`, query),
-                            highlightedSubtitle: highlightText(`Composite Score: ${scoreVal.toFixed(1)} (${level.toUpperCase()})`, query),
-                            url: `/reports`,
-                            score: score
-                        });
-                    }
-                });
-            }
-
             // Watchlists parsing
             if (watchlistHtml) {
                 const parser = new DOMParser();
@@ -986,7 +831,6 @@ document.addEventListener('DOMContentLoaded', () => {
             Weather: { title: "🌦 Weather", items: [], maxScore: 0 },
             News: { title: "📰 News", items: [], maxScore: 0 },
             Articles: { title: "📝 Articles", items: [], maxScore: 0 },
-            Reports: { title: "📄 Reports", items: [], maxScore: 0 },
             Watchlists: { title: "⭐ Watchlists", items: [], maxScore: 0 }
         };
 
@@ -996,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const sortedKeys = Object.keys(categories).filter(key => {
-            return categories[key].items.length > 0 || (isFetchingDynamic && ['News', 'Articles', 'Reports', 'Watchlists'].includes(key));
+            return categories[key].items.length > 0 || (isFetchingDynamic && ['News', 'Articles', 'Watchlists'].includes(key));
         }).sort((a, b) => {
             const scoreA = categories[a].items.length > 0 ? categories[a].maxScore : 100;
             const scoreB = categories[b].items.length > 0 ? categories[b].maxScore : 100;
@@ -1067,8 +911,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const query = val.trim();
         if (!query) return;
 
-        saveToHistory(query);
-
         const allItems = [...localResults, ...dynamicResults];
         
         if (allItems.length === 1) {
@@ -1101,7 +943,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (input.value.trim().length > 0) {
                 handleSearchInput(input, dropdown);
             } else {
-                renderHistoryAndPopular(dropdown);
+                dropdown.style.display = 'none';
             }
         });
 
@@ -1159,28 +1001,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dropdown.addEventListener('click', (e) => {
             const item = e.target.closest('.search-item-premium');
             if (item) {
-                if (input.value.trim()) {
-                    saveToHistory(input.value.trim());
-                }
                 return;
-            }
-
-            const chip = e.target.closest('.search-chip-item');
-            if (chip) {
-                e.preventDefault();
-                e.stopPropagation();
-                const term = chip.getAttribute('data-term');
-                input.value = term;
-                input.focus();
-                handleSearchInput(input, dropdown);
-                return;
-            }
-
-            if (e.target.classList.contains('clear-history-btn')) {
-                e.preventDefault();
-                e.stopPropagation();
-                localStorage.removeItem('gscrip_search_history');
-                renderHistoryAndPopular(dropdown);
             }
         });
     });

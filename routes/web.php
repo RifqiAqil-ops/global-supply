@@ -89,9 +89,6 @@ Route::middleware('auth')->group(function () {
     Route::get('ports', [\App\Http\Controllers\PortController::class, 'index'])->name('ports.index');
 
     Route::get('risk-history', [\App\Http\Controllers\User\RiskHistoryController::class, 'index'])->name('risk-history.index');
-    Route::get('reports', [\App\Http\Controllers\User\ReportController::class, 'index'])->name('reports.index');
-    Route::get('reports/export/pdf', [\App\Http\Controllers\User\ReportController::class, 'exportPdf'])->name('reports.export.pdf');
-    Route::get('reports/export/excel', [\App\Http\Controllers\User\ReportController::class, 'exportExcel'])->name('reports.export.excel');
 
     Route::prefix('live-api')->name('live-api.')->group(function () {
         Route::get('dashboard-metrics', [\App\Http\Controllers\User\LiveUpdateController::class, 'dashboardMetrics'])->name('dashboard-metrics');
@@ -125,9 +122,5 @@ Route::middleware('auth')->group(function () {
         Route::get('weights', function () {
             return view('placeholders.module', ['title' => 'Risk Weights', 'icon' => 'bi-sliders']);
         })->name('weights.index');
-
-        Route::get('api-health', [\App\Http\Controllers\Admin\DashboardController::class, 'apiHealth'])->name('api-health.index');
-
-        Route::get('audit-trails', [\App\Http\Controllers\Admin\DashboardController::class, 'auditTrails'])->name('audit-trails.index');
     });
 });

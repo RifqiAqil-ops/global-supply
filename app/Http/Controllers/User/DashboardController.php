@@ -73,10 +73,23 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Fetch all active risk scores for Sourcing Risk Overview preview
+        $scores = \App\Models\CountryRiskScore::with(['country', 'details.riskCategory'])
+            ->orderByDesc('composite_score')
+            ->get();
+
+        // Fetch latest articles for Analysis Insights section
+        $insights = \App\Models\Article::with('author')
+            ->where('status', 'published')
+            ->orderByDesc('published_at')
+            ->limit(3)
+            ->get();
+
         return view('user.dashboard', compact(
             'countriesMonitored', 'extremeWeatherCount', 'currenciesCount', 
             'watchlistCountries', 'avgRisk', 'topRiskCountries',
-            'topHighestRisk', 'topLowestRisk', 'recentChanges', 'recentAlerts'
+            'topHighestRisk', 'topLowestRisk', 'recentChanges', 'recentAlerts',
+            'scores', 'insights'
         ));
     }
 

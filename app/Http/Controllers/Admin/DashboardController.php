@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ApiLog;
 use App\Models\RiskWeight;
 use App\Services\Contracts\RiskScoringEngineInterface;
 use Illuminate\Http\Request;
@@ -22,42 +21,6 @@ class DashboardController extends Controller
         
         // Sum of registered users
         $totalUsers = \App\Models\User::count();
-        
-        // API Calls in last 24h
-        $apiCallsCount = ApiLog::where('called_at', '>=', now()->subDay())->count();
-        $successfulCalls = ApiLog::where('called_at', '>=', now()->subDay())->where('is_success', true)->count();
-        $successRate = $apiCallsCount > 0 ? round(($successfulCalls / $apiCallsCount) * 100, 1) : 100;
-        
-        // Avg Response Latency
-        $avgLatency = round(ApiLog::where('called_at', '>=', now()->subDay())->avg('response_time') ?? 0);
-
-        // Recent Audit Actions
-        $recentActions = [
-            [
-                'type' => 'warning',
-                'icon' => 'bi-pencil-square',
-                'title' => 'Adjusted System Configurations',
-                'description' => 'Key risk_score_high_max modified from 80.00 to 75.00.',
-                'time' => 'Today, 11:20 AM',
-                'ip' => '127.0.0.1'
-            ],
-            [
-                'type' => 'success',
-                'icon' => 'bi-person-check',
-                'title' => 'Activated User Account',
-                'description' => 'Admin verified and activated operator account procurement@gscrip.com.',
-                'time' => 'Yesterday, 3:45 PM',
-                'ip' => '127.0.0.1'
-            ],
-            [
-                'type' => 'danger',
-                'icon' => 'bi-trash',
-                'title' => 'Purged Log History',
-                'description' => 'Executed automatic database table cleanup for api_logs older than 3 months.',
-                'time' => '28 Jun 2026, 12:00 AM',
-                'ip' => 'System Command'
-            ]
-        ];
 
         // Fetch recent risk alerts dynamically
         $recentAlerts = \App\Models\ActivityLog::where('action', 'risk_alert')
@@ -65,7 +28,7 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        return view('admin.dashboard', compact('weights', 'totalUsers', 'apiCallsCount', 'successRate', 'avgLatency', 'recentActions', 'recentAlerts'));
+        return view('admin.dashboard', compact('weights', 'totalUsers', 'recentAlerts'));
     }
 
     /**
@@ -203,29 +166,5 @@ class DashboardController extends Controller
     {
         $users = \App\Models\User::orderBy('name')->paginate(10);
         return view('admin.users_index', compact('users'));
-    }
-
-    /**
-     * Show the detailed API logs and health dashboard.
-     */
-    public function apiHealth()
-    {
-        $logs = ApiLog::orderByDesc('called_at')->paginate(15);
-        
-        $totalCalls = ApiLog::count();
-        $successfulCalls = ApiLog::where('is_success', true)->count();
-        $failedCalls = ApiLog::where('is_success', false)->count();
-        $avgLatency = round(ApiLog::avg('response_time') ?? 0);
-        
-        return view('admin.api_health_index', compact('logs', 'totalCalls', 'successfulCalls', 'failedCalls', 'avgLatency'));
-    }
-
-    /**
-     * Show the system audit trails logs.
-     */
-    public function auditTrails()
-    {
-        $logs = \App\Models\ActivityLog::with('user')->orderByDesc('created_at')->paginate(15);
-        return view('admin.audit_trails_index', compact('logs'));
     }
 }

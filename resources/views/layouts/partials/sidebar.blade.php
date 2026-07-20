@@ -82,17 +82,6 @@
                     <i class="bi bi-newspaper"></i> Geopolitical News
                 </a>
             </li>
-            <li>
-                <a href="{{ route('reports.index') }}" class="nav-link {{ Route::is('reports.index') ? 'active' : '' }}">
-                    <i class="bi bi-file-earmark-bar-graph"></i> Sourcing Reports
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('articles.index') }}" class="nav-link {{ Route::is('articles.index') || Route::is('articles.show') ? 'active' : '' }}">
-                    <i class="bi bi-journal-richtext"></i> Analysis Reports
-                </a>
-            </li>
-
             <!-- ADMINISTRATION SECTION -->
             @if (Auth::user()->isAdmin())
                 <li class="sidebar-heading">
@@ -116,16 +105,6 @@
                 <li>
                     <a href="{{ route('admin.weights.index') }}" class="nav-link {{ Route::is('admin.weights.index') ? 'active' : '' }}">
                         <i class="bi bi-sliders"></i> Risk Weights
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('admin.api-health.index') }}" class="nav-link {{ Route::is('admin.api-health.index') ? 'active' : '' }}">
-                        <i class="bi bi-cpu"></i> API Health
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('admin.audit-trails.index') }}" class="nav-link {{ Route::is('admin.audit-trails.index') ? 'active' : '' }}">
-                        <i class="bi bi-journal-text"></i> Audit Trails
                     </a>
                 </li>
             @endif

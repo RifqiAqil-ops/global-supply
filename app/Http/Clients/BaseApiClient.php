@@ -82,6 +82,9 @@ abstract class BaseApiClient
             $statusCode = $response->status();
             $responseBody = $response->body();
             $responseSize = strlen($responseBody);
+
+            // Log entire response API
+            Log::info("API Response [{$this->providerName}]: Status={$statusCode}, URL={$url}, Body={$responseBody}");
             
             // Evaluate status
             if ($response->successful()) {
@@ -99,6 +102,9 @@ abstract class BaseApiClient
                 
                 return $decoded ?? [];
             }
+
+            // Log failed request details
+            Log::error("API Request Failed [{$this->providerName}]: Status={$statusCode}, URL={$url}, Body={$responseBody}");
 
             // Handle API Errors based on HTTP Status Codes
             $this->handleHttpError($statusCode, $responseBody);
@@ -151,23 +157,24 @@ abstract class BaseApiClient
     private function handleHttpError(int $statusCode, string $responseBody): void
     {
         $data = json_decode($responseBody, true) ?? [];
-        $message = $data['message'] ?? $data['error'] ?? "API request failed with status code: {$statusCode}";
+        $message = $data['message'] ?? $data['error'] ?? "API request failed";
+        $fullMsg = "[HTTP Status: {$statusCode}] Message: {$message}. Response Body: {$responseBody}";
 
         match ($statusCode) {
             429 => throw new RateLimitException(
-                message: "API Rate Limit Exceeded: " . $message,
+                message: "API Rate Limit Exceeded: " . $fullMsg,
                 provider: $this->providerName,
                 statusCode: $statusCode,
                 context: ['response' => $data]
             ),
             503, 504 => throw new ServiceUnavailableException(
-                message: "External Service Temporary Down: " . $message,
+                message: "External Service Temporary Down: " . $fullMsg,
                 provider: $this->providerName,
                 statusCode: $statusCode,
                 context: ['response' => $data]
             ),
             default => throw new ApiException(
-                message: "API error response: " . $message,
+                message: "API error response: " . $fullMsg,
                 provider: $this->providerName,
                 statusCode: $statusCode,
                 context: ['response' => $data]

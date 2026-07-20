@@ -17,7 +17,7 @@
 
 <!-- Operations Stats -->
 <div class="row g-4 mb-4">
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-md-6">
         <x-stat-card 
             title="Total Users Registered" 
             value="{{ $totalUsers }}" 
@@ -27,17 +27,7 @@
             iconColor="primary" 
         />
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <x-stat-card 
-            title="API Calls (Last 24h)" 
-            value="{{ number_format($apiCallsCount) }}" 
-            change="{{ $successRate }}% Success Rate" 
-            changeType="neutral" 
-            icon="bi-cpu" 
-            iconColor="success" 
-        />
-    </div>
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-md-6">
         <x-stat-card 
             title="Failed Jobs / Errors" 
             value="0" 
@@ -45,16 +35,6 @@
             changeType="neutral" 
             icon="bi-bug" 
             iconColor="success" 
-        />
-    </div>
-    <div class="col-sm-6 col-xl-3">
-        <x-stat-card 
-            title="Avg Response Latency" 
-            value="{{ $avgLatency }}ms" 
-            change="Optimized" 
-            changeType="down" 
-            icon="bi-speedometer" 
-            iconColor="info" 
         />
     </div>
 </div>
@@ -144,10 +124,10 @@
     </div>
 </div>
 
-<!-- Audit Trails & System Configuration Quick Links -->
+<!-- System Configuration Quick Links -->
 <div class="row g-4">
     <!-- System Configs -->
-    <div class="col-lg-6">
+    <div class="col-12">
         <x-card title="Active Cache & System Configs" icon="bi-sliders2">
             <x-table :headers="['Configuration Key', 'Scope', 'Value']">
                 <tr>
@@ -171,24 +151,6 @@
                     <td>4 countries</td>
                 </tr>
             </x-table>
-        </x-card>
-    </div>
-
-    <!-- Admin Activity Audit Logs -->
-    <div class="col-lg-6">
-        <x-card title="Recent Administrator Actions Log" icon="bi-journal-text">
-            <div class="d-flex flex-column gap-3">
-                @foreach($recentActions as $action)
-                <div class="d-flex gap-2 align-items-start">
-                    <div class="text-{{ $action['type'] }} mt-0.5"><i class="bi {{ $action['icon'] }}"></i></div>
-                    <div>
-                        <span class="text-white small fw-semibold">{{ $action['title'] }}</span>
-                        <p class="text-muted small mb-0" style="font-size: 0.75rem;">{{ $action['description'] }}</p>
-                        <span class="text-muted small" style="font-size: 0.7rem;">{{ $action['time'] }} &bull; IP: {{ $action['ip'] }}</span>
-                    </div>
-                </div>
-                @endforeach
-            </div>
         </x-card>
     </div>
 </div>

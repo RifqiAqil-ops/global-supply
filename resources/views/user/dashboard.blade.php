@@ -256,7 +256,7 @@
                 </a>
             </div>
             <div class="col-6 col-sm-4 col-md-2">
-                <a href="{{ route('reports.index') }}" class="btn btn-secondary-saas w-100 d-flex flex-column align-items-center justify-content-center py-3 gap-2 border text-decoration-none shadow-none" style="border-radius: 16px;">
+                <a href="#risk-scoring-overview-section" class="btn btn-secondary-saas w-100 d-flex flex-column align-items-center justify-content-center py-3 gap-2 border text-decoration-none shadow-none" style="border-radius: 16px;">
                     <i class="bi bi-file-earmark-bar-graph fs-4 text-warning"></i>
                     <span class="small fw-semibold">Reports</span>
                 </a>
@@ -633,6 +633,98 @@
                     <p class="small mb-0">No active system alerts recorded.</p>
                 </div>
                 @endforelse
+            </div>
+        </x-card>
+    </div>
+</div>
+
+<!-- Analysis Insights -->
+<div class="row g-4 mb-4" id="analysis-insights-section">
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-3 mt-2">
+            <h5 class="text-dark fw-bold mb-0" style="font-size: 1.1rem; letter-spacing: -0.01em;">
+                <i class="bi bi-journal-richtext text-primary me-2"></i>Analysis Insights
+            </h5>
+            <a href="{{ route('articles.index') }}" class="btn btn-sm btn-outline-primary shadow-none" style="border-radius: 8px;">
+                View All Insights <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row g-4">
+            @forelse($insights as $article)
+            <div class="col-md-4">
+                <div class="card border border-secondary border-opacity-10 h-100 shadow-sm" style="border-radius: 16px; background: #ffffff;">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 small">Insight</span>
+                            <span class="text-muted small" style="font-size: 0.72rem;">{{ $article->published_at ? $article->published_at->format('M d, Y') : $article->created_at->format('M d, Y') }}</span>
+                        </div>
+                        <h6 class="card-title fw-bold text-dark mb-2" style="font-size: 0.95rem; line-height: 1.4;">
+                            <a href="{{ route('articles.show', $article->slug) }}" class="text-dark text-decoration-none hover-primary">
+                                {{ $article->title }}
+                            </a>
+                        </h6>
+                        <p class="text-muted small mb-4 flex-grow-1" style="font-size: 0.8rem; line-height: 1.5;">
+                            {{ Str::limit($article->summary, 120) }}
+                        </p>
+                        <div class="d-flex align-items-center gap-2 pt-3 border-top mt-auto" style="border-color: #f1f5f9 !important;">
+                            <div class="rounded-circle bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-20 d-flex align-items-center justify-content-center fw-bold text-uppercase" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                {{ substr($article->author->name ?? 'A', 0, 1) }}
+                            </div>
+                            <span class="text-dark small fw-semibold" style="font-size: 0.75rem;">{{ $article->author->name ?? 'System' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="col-12">
+                <div class="text-center text-muted py-5 border border-dashed rounded-3" style="border-radius: 16px;">
+                    <i class="bi bi-journal-x display-6 d-block mb-2 text-muted"></i>
+                    <p class="small mb-0">No analysis articles are currently available.</p>
+                </div>
+            </div>
+            @endforelse
+        </div>
+    </div>
+</div>
+
+<!-- Risk Scoring Overview -->
+<div class="row g-4 mb-4" id="risk-scoring-overview-section">
+    <div class="col-12">
+        <x-card title="Risk Scoring Overview" icon="bi-table">
+            <div class="table-responsive">
+                <x-table :headers="['Country Code', 'Country Name', 'Composite Score', 'Risk Level', 'Econ', 'Weather', 'Currency', 'Geo', 'Logistics', 'Last Calculated']">
+                    @forelse($scores as $item)
+                    @php
+                        $level = $item->risk_level;
+                        $badgeType = 'success';
+                        if ($level === 'high' || $level === 'critical') $badgeType = 'danger';
+                        elseif ($level === 'medium') $badgeType = 'warning';
+
+                        $details = $item->details->keyBy('riskCategory.slug');
+                    @endphp
+                    <tr>
+                        <td><strong>{{ $item->country->iso3 }}</strong></td>
+                        <td>
+                            <a href="{{ route('countries.show', $item->country->iso2) }}" class="d-flex align-items-center gap-2 small text-dark text-decoration-none hover-primary">
+                                <img src="{{ $item->country->flag_url }}" alt="{{ $item->country->name }} Flag" class="rounded border border-secondary border-opacity-10" style="width: 20px; height: 13px; object-fit: cover;">
+                                {{ $item->country->name }}
+                            </a>
+                        </td>
+                        <td><strong class="text-dark">{{ number_format($item->composite_score, 2) }}</strong></td>
+                        <td><x-badge type="{{ $badgeType }}">{{ ucfirst($level) }}</x-badge></td>
+                        <td><span class="small text-muted">{{ $details->has('economic-risk') ? number_format($details->get('economic-risk')->category_score, 1) : 'N/A' }}</span></td>
+                        <td><span class="small text-muted">{{ $details->has('weather-risk') ? number_format($details->get('weather-risk')->category_score, 1) : 'N/A' }}</span></td>
+                        <td><span class="small text-muted">{{ $details->has('currency-stability-risk') ? number_format($details->get('currency-stability-risk')->category_score, 1) : 'N/A' }}</span></td>
+                        <td><span class="small text-muted">{{ $details->has('geopolitical-risk') ? number_format($details->get('geopolitical-risk')->category_score, 1) : 'N/A' }}</span></td>
+                        <td><span class="small text-muted">{{ $details->has('logistics-risk') ? number_format($details->get('logistics-risk')->category_score, 1) : 'N/A' }}</span></td>
+                        <td class="small text-muted">{{ $item->calculated_at->diffForHumans() }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-4">No risk score entries available to preview.</td>
+                    </tr>
+                    @endforelse
+                </x-table>
             </div>
         </x-card>
     </div>
