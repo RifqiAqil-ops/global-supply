@@ -118,6 +118,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.observability.index') }}" class="nav-link {{ Route::is('admin.observability.index') ? 'active' : '' }}">
+                        <i class="bi bi-speedometer"></i> Observability Center
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('admin.api-monitoring.index') }}" class="nav-link {{ Route::is('admin.api-monitoring.index') ? 'active' : '' }}">
                         <i class="bi bi-activity"></i> API Monitoring
                     </a>

@@ -85,6 +85,7 @@ Route::middleware('auth')->group(function () {
         Route::get('operations', [\App\Http\Controllers\Admin\OperationsController::class, 'index'])->name('operations.index');
         Route::get('health', [\App\Http\Controllers\Admin\OperationsController::class, 'health'])->name('health.index');
         Route::get('api-monitoring', [\App\Http\Controllers\Admin\OperationsController::class, 'apiMonitoring'])->name('api-monitoring.index');
+        Route::get('observability', [\App\Http\Controllers\Admin\ObservabilityController::class, 'index'])->name('observability.index');
 
         // Failed Jobs Management
         Route::get('failed-jobs', [\App\Http\Controllers\Admin\FailedJobsController::class, 'index'])->name('failed-jobs.index');
