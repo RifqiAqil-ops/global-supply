@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\External\RestCountriesService;
+use App\Support\SyncTracker;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -36,6 +37,7 @@ class SyncCountriesCommand extends Command
         $this->info("Fetching data from REST Countries API (this may take a few seconds)...");
         
         $startTime = microtime(true);
+        SyncTracker::start('countries');
 
         try {
             $summary = $service->syncAllCountries();
@@ -45,6 +47,9 @@ class SyncCountriesCommand extends Command
 
             $endTime = microtime(true);
             $duration = round($endTime - $startTime, 2);
+            $totalCount = \App\Models\Country::count();
+
+            SyncTracker::success('countries', $startTime, $totalCount);
 
             $this->line("");
             $this->info("Synchronization completed in {$duration} seconds!");
@@ -55,11 +60,12 @@ class SyncCountriesCommand extends Command
                     ['New Countries Added', $summary['new']],
                     ['Countries Updated', $summary['updated']],
                     ['Failed Sync Attempts', $summary['failed']],
-                    ['Total Countries in Database', \App\Models\Country::count()]
+                    ['Total Countries in Database', $totalCount]
                 ]
             );
 
         } catch (Throwable $e) {
+            SyncTracker::fail('countries', $startTime, $e);
             $this->error("Failed to run country synchronization: " . $e->getMessage());
             return Command::FAILURE;
         }

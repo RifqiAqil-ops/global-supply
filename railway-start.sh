@@ -37,17 +37,11 @@ php -r '
 STATUS=$?
 
 if [ $STATUS -eq 1 ]; then
-    echo "Database is unseeded. Running initial seed sequence..."
-    php artisan db:seed --force
-    echo "Syncing country dataset..."
-    php artisan gscrip:sync-countries
-    echo "Seeding world ports dataset..."
-    php artisan db:seed --class=WorldPortSeeder
-    echo "Recalculating risk score indexes..."
-    php artisan gscrip:recalculate-risk
-    echo "Initial seeding completed successfully."
+    echo "Database is unseeded. Running Waypoint automated setup..."
+    php artisan waypoint:setup
+    echo "Initial setup completed successfully."
 else
-    echo "Database already seeded. Skipping initial seed sequence."
+    echo "Database already seeded. Skipping initial setup sequence."
 fi
 
 # Clear old caches and generate fresh production caches

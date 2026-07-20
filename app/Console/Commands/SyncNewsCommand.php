@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\External\GNewsService;
+use App\Support\SyncTracker;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -38,17 +39,22 @@ class SyncNewsCommand extends Command
             $this->warn("GNews API key is not configured. Real-time news fetch skipped.");
             $this->line("Please add GNEWS_API_KEY to your .env file to enable live feeds.");
             $this->line("Existing database articles remain available.");
+            SyncTracker::success('news', microtime(true), 0);
             return Command::SUCCESS;
         }
 
         $this->info("Fetching articles for economic, geopolitical, and logistics topics...");
         $startTime = microtime(true);
+        SyncTracker::start('news');
 
         try {
             $summary = $service->syncAllNews();
 
             $endTime = microtime(true);
             $duration = round($endTime - $startTime, 2);
+            $saved = $summary['saved'] ?? 0;
+
+            SyncTracker::success('news', $startTime, $saved);
 
             $this->line("");
             $this->info("News synchronization completed in {$duration} seconds!");
@@ -65,6 +71,7 @@ class SyncNewsCommand extends Command
             );
 
         } catch (Throwable $e) {
+            SyncTracker::fail('news', $startTime, $e);
             $this->error("Failed to run news synchronization: " . $e->getMessage());
             return Command::FAILURE;
         }

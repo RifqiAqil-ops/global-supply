@@ -103,6 +103,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.sync.index') }}" class="nav-link {{ Route::is('admin.sync.index') ? 'active' : '' }}">
+                        <i class="bi bi-arrow-repeat"></i> Data Sync Manager
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('admin.weights.index') }}" class="nav-link {{ Route::is('admin.weights.index') ? 'active' : '' }}">
                         <i class="bi bi-sliders"></i> Risk Weights
                     </a>

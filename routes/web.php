@@ -75,6 +75,11 @@ Route::middleware('auth')->group(function () {
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('diagnose-api', [AdminDashboardController::class, 'diagnoseApi'])->name('diagnose-api');
         Route::post('weights/update', [AdminDashboardController::class, 'updateWeights'])->name('weights.update');
+
+        // Automated Data Sync Manager
+        Route::get('sync', [\App\Http\Controllers\Admin\SyncController::class, 'index'])->name('sync.index');
+        Route::post('sync/run', [\App\Http\Controllers\Admin\SyncController::class, 'runSync'])->name('sync.run');
+        Route::post('sync/run-all', [\App\Http\Controllers\Admin\SyncController::class, 'runAllSync'])->name('sync.run-all');
     });
 
     /*

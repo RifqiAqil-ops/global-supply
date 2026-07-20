@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Country;
 use App\Services\Contracts\RiskScoringEngineInterface;
+use App\Support\SyncTracker;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -29,12 +30,15 @@ class RecalculateRiskCommand extends Command
     public function handle(RiskScoringEngineInterface $engine)
     {
         $countryCode = $this->option('country');
+        $startTime = microtime(true);
+        SyncTracker::start('risk');
 
         if ($countryCode) {
             $code = strtoupper(trim($countryCode));
             $country = Country::where('iso2', $code)->orWhere('iso3', $code)->first();
             
             if (!$country) {
+                SyncTracker::fail('risk', $startTime, "Country with code '{$code}' not found.");
                 $this->error("Country with code '{$code}' not found.");
                 return Command::FAILURE;
             }
@@ -42,22 +46,27 @@ class RecalculateRiskCommand extends Command
             $this->info("Recalculating composite risk score for {$country->name}...");
             try {
                 $score = $engine->calculateCountryScore($country->id);
+                SyncTracker::success('risk', $startTime, 1);
                 $this->info("Success! {$country->name} composite score: {$score->composite_score} ({$score->risk_level})");
             } catch (Throwable $e) {
+                SyncTracker::fail('risk', $startTime, $e);
                 $this->error("Error calculating score: " . $e->getMessage());
                 return Command::FAILURE;
             }
         } else {
             $this->info("Recalculating composite risk scores for all countries...");
-            $startTime = microtime(true);
 
             try {
                 $engine->recalculateAllCountries();
                 $endTime = microtime(true);
                 $duration = round($endTime - $startTime, 2);
+                $totalCountries = Country::count();
+
+                SyncTracker::success('risk', $startTime, $totalCountries);
 
                 $this->info("Recalculation completed successfully in {$duration} seconds!");
             } catch (Throwable $e) {
+                SyncTracker::fail('risk', $startTime, $e);
                 $this->error("Failed to run composite risk recalculation: " . $e->getMessage());
                 return Command::FAILURE;
             }

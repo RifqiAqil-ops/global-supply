@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\External\WorldBankService;
+use App\Support\SyncTracker;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -39,12 +40,16 @@ class SyncWorldBankCommand extends Command
 
         $this->info("Syncing indicators for years {$startYear} to {$endYear}...");
         $startTime = microtime(true);
+        SyncTracker::start('worldbank');
 
         try {
             $summary = $service->syncEconomicIndicators($startYear, $endYear);
 
             $endTime = microtime(true);
             $duration = round($endTime - $startTime, 2);
+            $processed = $summary['countries_processed'] ?? 0;
+
+            SyncTracker::success('worldbank', $startTime, $processed);
 
             $this->line("");
             $this->info("Synchronization completed in {$duration} seconds!");
@@ -61,6 +66,7 @@ class SyncWorldBankCommand extends Command
             );
 
         } catch (Throwable $e) {
+            SyncTracker::fail('worldbank', $startTime, $e);
             $this->error("Failed to run World Bank indicators synchronization: " . $e->getMessage());
             return Command::FAILURE;
         }

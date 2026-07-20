@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\External\ExchangeRateService;
+use App\Support\SyncTracker;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -36,12 +37,16 @@ class SyncExchangeCommand extends Command
 
         $this->info("Fetching latest USD rates (single API request)...");
         $startTime = microtime(true);
+        SyncTracker::start('exchange');
 
         try {
             $summary = $service->syncAllRates();
 
             $endTime = microtime(true);
             $duration = round($endTime - $startTime, 2);
+            $totalProcessed = $summary['currencies_processed'] ?? 0;
+
+            SyncTracker::success('exchange', $startTime, $totalProcessed);
 
             $this->line("");
             $this->info("Exchange rate synchronization completed in {$duration} seconds!");
@@ -58,6 +63,7 @@ class SyncExchangeCommand extends Command
             );
 
         } catch (Throwable $e) {
+            SyncTracker::fail('exchange', $startTime, $e);
             $this->error("Failed to run exchange rate synchronization: " . $e->getMessage());
             return Command::FAILURE;
         }
