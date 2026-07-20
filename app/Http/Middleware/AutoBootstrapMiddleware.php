@@ -47,26 +47,21 @@ class AutoBootstrapMiddleware
             return $next($request);
         }
 
-        // System needs initial setup - Prevent duplicate triggers
+        // System needs initial setup - Execute synchronous fallback to guarantee data population
         $isAlreadyRunning = Cache::has('system_initialization_running');
 
         if (!$isAlreadyRunning) {
             Cache::put('system_initialization_running', true, 600);
 
-            // Local DX: In local environment or sync queue, execute bootstrap synchronously without requiring a queue worker
-            if (app()->environment('local') || config('queue.default') === 'sync') {
-                try {
-                    InitialSystemBootstrapJob::dispatchSync();
-                } catch (\Throwable $e) {
-                    // Fail gracefully
-                }
-                Cache::forget('system_initialization_running');
-                View::share('isSystemInitializing', false);
-                return $next($request);
+            try {
+                InitialSystemBootstrapJob::dispatchSync();
+            } catch (\Throwable $e) {
+                // Log and continue
             }
 
-            // Production: Dispatch to background queue worker
-            InitialSystemBootstrapJob::dispatch();
+            Cache::forget('system_initialization_running');
+            View::share('isSystemInitializing', false);
+            return $next($request);
         }
 
         View::share('isSystemInitializing', true);

@@ -19,14 +19,16 @@ php artisan storage:link --no-interaction
 # Execute database migrations
 php artisan migrate --force
 
-# Check if database has initial records using Laravel 11 autoloader
+# Check if master country dataset and initialization flag exist
 php -r '
   require "vendor/autoload.php";
   $app = require_once "bootstrap/app.php";
   $kernel = $app->make("Illuminate\Contracts\Console\Kernel");
   $kernel->bootstrap();
   try {
-      if (\App\Models\User::count() === 0) {
+      $isInitialized = \App\Models\SystemConfig::getByKey("system_initialized", false);
+      $hasCountries = \App\Models\Country::count() > 0;
+      if (!$isInitialized || !$hasCountries) {
           exit(1);
       }
       exit(0);
@@ -37,11 +39,11 @@ php -r '
 STATUS=$?
 
 if [ $STATUS -eq 1 ]; then
-    echo "Database is unseeded. Running Waypoint automated setup..."
+    echo "Database master datasets unpopulated. Running Waypoint automated setup..."
     php artisan waypoint:setup
     echo "Initial setup completed successfully."
 else
-    echo "Database already seeded. Skipping initial setup sequence."
+    echo "Database master datasets already populated. Skipping setup sequence."
 fi
 
 # Clear old caches and generate fresh production caches
