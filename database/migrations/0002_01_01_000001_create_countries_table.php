@@ -38,7 +38,7 @@ return new class extends Migration
             $table->boolean('is_un_member')->default(false);
             $table->timestamps();
 
-            $table->fullText(['name', 'official_name']);
+            $table->index(['name', 'official_name']);
         });
     }
 

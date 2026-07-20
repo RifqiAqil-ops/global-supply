@@ -31,7 +31,7 @@ return new class extends Migration
             $table->index('category');
             $table->index('sentiment');
             $table->index('published_at');
-            $table->fullText(['title', 'description']);
+            $table->index('title');
         });
     }
 
