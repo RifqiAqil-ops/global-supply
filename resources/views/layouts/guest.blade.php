@@ -7,7 +7,9 @@
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="d-flex align-items-center justify-content-center min-vh-100 py-5">
+<body>
+    @include('layouts.partials.bootstrap_banner')
+    <div class="d-flex align-items-center justify-content-center min-vh-100 py-5">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-5">

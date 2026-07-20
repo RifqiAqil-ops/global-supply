@@ -11,6 +11,8 @@
 </head>
 <body style="background-color: var(--color-bg); color: var(--color-text-main);">
 
+    @include('layouts.partials.bootstrap_banner')
+
     <!-- Top Navbar -->
     @include('layouts.partials.navbar')
 
