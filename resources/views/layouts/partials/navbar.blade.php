@@ -2,7 +2,7 @@
     <div class="container-fluid d-flex align-items-center justify-content-between p-0">
         <!-- Left: Logo & Mobile Toggle Button -->
         <div class="d-flex align-items-center gap-2">
-            <button class="navbar-toggler border-0 p-1 me-1 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbarCollapse" aria-controls="topNavbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler d-lg-none border-0 p-1 me-1 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileOffcanvas" aria-controls="mobileOffcanvas" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon" style="width: 20px; height: 20px;"></span>
             </button>
             <a href="{{ url('/') }}" class="text-decoration-none d-flex align-items-center">
@@ -13,127 +13,141 @@
             </a>
         </div>
 
-        <!-- Middle: Navigation Menus & Search (Responsive Collapse) -->
-        <div class="collapse navbar-collapse flex-grow-1 ms-lg-4" id="topNavbarCollapse">
-            <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between w-100 gap-3 py-3 py-lg-0">
-                <!-- Navigation Items -->
-                <ul class="navbar-nav align-items-start align-items-lg-center gap-1">
-                    @php
-                        $dashboardRoute = Auth::user()->isAdmin() ? 'admin.dashboard' : 'user.dashboard';
-                    @endphp
-                    
-                    <!-- Dashboard Link -->
-                    <li class="nav-item w-100 w-lg-auto">
-                        <a href="{{ route($dashboardRoute) }}" class="nav-link-premium {{ Route::is($dashboardRoute) ? 'active' : '' }}">
-                            Dashboard
-                        </a>
-                    </li>
-
-                    <!-- Monitoring Dropdown -->
-                    <li class="nav-item dropdown w-100 w-lg-auto">
-                        <a class="nav-link-premium dropdown-toggle {{ Route::is('countries.index') || Route::is('ports.index') || Route::is('weather.index') || Route::is('news.index') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Monitoring
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-premium">
-                            <li>
-                                <a class="dropdown-item {{ Route::is('countries.index') ? 'active' : '' }}" href="{{ route('countries.index') }}">
-                                    <i class="bi bi-flag"></i> Countries
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ Route::is('ports.index') ? 'active' : '' }}" href="{{ route('ports.index') }}">
-                                    <i class="bi bi-compass"></i> Ports & Logistics
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ Route::is('weather.index') ? 'active' : '' }}" href="{{ route('weather.index') }}">
-                                    <i class="bi bi-cloud-lightning"></i> Weather Alerts
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ Route::is('news.index') ? 'active' : '' }}" href="{{ route('news.index') }}">
-                                    <i class="bi bi-newspaper"></i> Geopolitical News
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <!-- Analytics Dropdown -->
-                    <li class="nav-item dropdown w-100 w-lg-auto">
-                        <a class="nav-link-premium dropdown-toggle {{ Route::is('compare.index') || Route::is('currency.index') || Route::is('risk-history.index') || Route::is('watchlists.index') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Analytics
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-premium">
-                            <li>
-                                <a class="dropdown-item {{ Route::is('compare.index') ? 'active' : '' }}" href="{{ route('compare.index') }}">
-                                    <i class="bi bi-shuffle"></i> Country Compare
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ Route::is('currency.index') ? 'active' : '' }}" href="{{ route('currency.index') }}">
-                                    <i class="bi bi-currency-exchange"></i> Currency Monitor
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ Route::is('risk-history.index') ? 'active' : '' }}" href="{{ route('risk-history.index') }}">
-                                    <i class="bi bi-clock-history"></i> Risk History
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ Route::is('watchlists.index') ? 'active' : '' }}" href="{{ route('watchlists.index') }}">
-                                    <i class="bi bi-eye"></i> Watchlists
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <!-- Admin Dropdown -->
-                    @if (Auth::user()->isAdmin())
-                    <li class="nav-item dropdown w-100 w-lg-auto">
-                        <a class="nav-link-premium dropdown-toggle {{ Route::is('admin.users.index') || Route::is('admin.ports.index') || Route::is('admin.articles.index') || Route::is('admin.weights.index') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Admin
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-premium">
-                            <li>
-                                <a class="dropdown-item {{ Route::is('admin.users.index') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
-                                    <i class="bi bi-people"></i> User Manager
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ Route::is('admin.ports.index') ? 'active' : '' }}" href="{{ route('admin.ports.index') }}">
-                                    <i class="bi bi-compass"></i> Manage Ports
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ Route::is('admin.articles.index') ? 'active' : '' }}" href="{{ route('admin.articles.index') }}">
-                                    <i class="bi bi-journal-text"></i> Manage Articles
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ Route::is('admin.weights.index') ? 'active' : '' }}" href="{{ route('admin.weights.index') }}">
-                                    <i class="bi bi-sliders"></i> Risk Weights
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endif
-                </ul>
-
-                <!-- Search Capsule -->
-                <div class="mx-3 mx-lg-0 flex-grow-1" style="max-width: 280px; width: 100%;">
-                    <form class="m-0" onsubmit="event.preventDefault();">
-                        <div class="position-relative search-capsule-wrapper">
-                            <span class="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted">
-                                <i class="bi bi-search small"></i>
-                            </span>
-                            <input type="text" class="form-control search-capsule-input" placeholder="Search countries, ports, currency..." autocomplete="off" style="padding-right: 52px;">
-                            <kbd class="search-kbd-hint d-none d-md-inline-block" style="font-size: 0.65rem; font-family: inherit; font-weight: 600; color: #94A3B8; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 4px; padding: 2px 4px; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; transition: all 0.15s ease;">Ctrl K</kbd>
-                            <!-- Autocomplete Dropdown Panel -->
-                            <div class="global-search-dropdown shadow-lg p-2 position-absolute" style="display: none; top: 100%; left: 0; right: 0; z-index: 1050; max-height: 380px; overflow-y: auto; margin-top: 8px; background: #ffffff; border: 1px solid #E5E7EB; border-radius: 14px; min-width: 340px;">
-                            </div>
-                        </div>
-                    </form>
+        <!-- Tablet-only Search Capsule -->
+        <div class="d-none d-sm-block d-lg-none mx-3 flex-grow-1" style="max-width: 240px; width: 100%;">
+            <form class="m-0" onsubmit="event.preventDefault();">
+                <div class="position-relative search-capsule-wrapper">
+                    <span class="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted">
+                        <i class="bi bi-search small"></i>
+                    </span>
+                    <input type="text" class="form-control search-capsule-input" placeholder="Search countries, ports..." autocomplete="off" style="padding-right: 52px;">
+                    <kbd class="search-kbd-hint" style="font-size: 0.65rem; font-family: inherit; font-weight: 600; color: #94A3B8; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 4px; padding: 2px 4px; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; transition: all 0.15s ease;">Ctrl K</kbd>
+                    <!-- Autocomplete Dropdown Panel -->
+                    <div class="global-search-dropdown shadow-lg p-2 position-absolute" style="display: none; top: 100%; left: 0; right: 0; z-index: 1050; max-height: 380px; overflow-y: auto; margin-top: 8px; background: #ffffff; border: 1px solid #E5E7EB; border-radius: 14px; min-width: 340px;">
+                    </div>
                 </div>
+            </form>
+        </div>
+
+        <!-- Middle (Desktop Only): Navigation Menus & Search -->
+        <div class="d-none d-lg-flex align-items-center justify-content-between flex-grow-1 ms-lg-4">
+            <!-- Navigation Items -->
+            <ul class="navbar-nav align-items-center gap-1">
+                @php
+                    $dashboardRoute = Auth::user()->isAdmin() ? 'admin.dashboard' : 'user.dashboard';
+                @endphp
+                
+                <!-- Dashboard Link -->
+                <li class="nav-item w-100 w-lg-auto">
+                    <a href="{{ route($dashboardRoute) }}" class="nav-link-premium {{ Route::is($dashboardRoute) ? 'active' : '' }}">
+                        Dashboard
+                    </a>
+                </li>
+
+                <!-- Monitoring Dropdown -->
+                <li class="nav-item dropdown w-100 w-lg-auto">
+                    <a class="nav-link-premium dropdown-toggle {{ Route::is('countries.index') || Route::is('ports.index') || Route::is('weather.index') || Route::is('news.index') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Monitoring
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-premium">
+                        <li>
+                            <a class="dropdown-item {{ Route::is('countries.index') ? 'active' : '' }}" href="{{ route('countries.index') }}">
+                                <i class="bi bi-flag"></i> Countries
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Route::is('ports.index') ? 'active' : '' }}" href="{{ route('ports.index') }}">
+                                <i class="bi bi-compass"></i> Ports & Logistics
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Route::is('weather.index') ? 'active' : '' }}" href="{{ route('weather.index') }}">
+                                <i class="bi bi-cloud-lightning"></i> Weather Alerts
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Route::is('news.index') ? 'active' : '' }}" href="{{ route('news.index') }}">
+                                <i class="bi bi-newspaper"></i> Geopolitical News
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Analytics Dropdown -->
+                <li class="nav-item dropdown w-100 w-lg-auto">
+                    <a class="nav-link-premium dropdown-toggle {{ Route::is('compare.index') || Route::is('currency.index') || Route::is('risk-history.index') || Route::is('watchlists.index') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Analytics
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-premium">
+                        <li>
+                            <a class="dropdown-item {{ Route::is('compare.index') ? 'active' : '' }}" href="{{ route('compare.index') }}">
+                                <i class="bi bi-shuffle"></i> Country Compare
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Route::is('currency.index') ? 'active' : '' }}" href="{{ route('currency.index') }}">
+                                <i class="bi bi-currency-exchange"></i> Currency Monitor
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Route::is('risk-history.index') ? 'active' : '' }}" href="{{ route('risk-history.index') }}">
+                                <i class="bi bi-clock-history"></i> Risk History
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Route::is('watchlists.index') ? 'active' : '' }}" href="{{ route('watchlists.index') }}">
+                                <i class="bi bi-eye"></i> Watchlists
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Admin Dropdown -->
+                @if (Auth::user()->isAdmin())
+                <li class="nav-item dropdown w-100 w-lg-auto">
+                    <a class="nav-link-premium dropdown-toggle {{ Route::is('admin.users.index') || Route::is('admin.ports.index') || Route::is('admin.articles.index') || Route::is('admin.weights.index') ? 'active' : '' }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Admin
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-premium">
+                        <li>
+                            <a class="dropdown-item {{ Route::is('admin.users.index') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                                <i class="bi bi-people"></i> User Manager
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Route::is('admin.ports.index') ? 'active' : '' }}" href="{{ route('admin.ports.index') }}">
+                                <i class="bi bi-compass"></i> Manage Ports
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Route::is('admin.articles.index') ? 'active' : '' }}" href="{{ route('admin.articles.index') }}">
+                                <i class="bi bi-journal-text"></i> Manage Articles
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Route::is('admin.weights.index') ? 'active' : '' }}" href="{{ route('admin.weights.index') }}">
+                                <i class="bi bi-sliders"></i> Risk Weights
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                @endif
+            </ul>
+
+            <!-- Search Capsule -->
+            <div class="mx-3 mx-lg-0 flex-grow-1" style="max-width: 280px; width: 100%;">
+                <form class="m-0" onsubmit="event.preventDefault();">
+                    <div class="position-relative search-capsule-wrapper">
+                        <span class="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted">
+                            <i class="bi bi-search small"></i>
+                        </span>
+                        <input type="text" class="form-control search-capsule-input" placeholder="Search countries, ports, currency..." autocomplete="off" style="padding-right: 52px;">
+                        <kbd class="search-kbd-hint d-none d-md-inline-block" style="font-size: 0.65rem; font-family: inherit; font-weight: 600; color: #94A3B8; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 4px; padding: 2px 4px; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; transition: all 0.15s ease;">Ctrl K</kbd>
+                        <!-- Autocomplete Dropdown Panel -->
+                        <div class="global-search-dropdown shadow-lg p-2 position-absolute" style="display: none; top: 100%; left: 0; right: 0; z-index: 1050; max-height: 380px; overflow-y: auto; margin-top: 8px; background: #ffffff; border: 1px solid #E5E7EB; border-radius: 14px; min-width: 340px;">
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -228,6 +242,92 @@
             </div>
         </div>
     </div>
+</nav>
+
+<!-- Mobile/Tablet Offcanvas Drawer -->
+<div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="mobileOffcanvas" aria-labelledby="mobileOffcanvasLabel" style="width: 280px; border-right: 1px solid #E5E7EB;">
+    <div class="offcanvas-header border-bottom px-4 py-3">
+        <div class="d-flex align-items-center gap-2">
+            <img src="{{ asset('images/logo.png') }}" alt="Waypoint Logo" style="height: 28px; width: auto;">
+            <span class="text-primary fs-4 fw-bold" style="letter-spacing: 0.5px; font-family: 'Inter', sans-serif;">
+                Waypoint
+            </span>
+        </div>
+        <button type="button" class="btn-close text-reset shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <div class="offcanvas-nav">
+            <!-- Search capsule in Offcanvas (Visible on mobile, hidden on tablet since tablet has it in header) -->
+            <div class="p-3 border-bottom d-sm-none">
+                <form class="m-0" onsubmit="event.preventDefault();">
+                    <div class="position-relative search-capsule-wrapper">
+                        <span class="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted">
+                            <i class="bi bi-search small"></i>
+                        </span>
+                        <input type="text" class="form-control search-capsule-input" placeholder="Search countries, ports..." autocomplete="off" style="padding-right: 52px;">
+                        <!-- Autocomplete Dropdown Panel -->
+                        <div class="global-search-dropdown shadow-lg p-2 position-absolute" style="display: none; top: 100%; left: 0; right: 0; z-index: 1050; max-height: 380px; overflow-y: auto; margin-top: 8px; background: #ffffff; border: 1px solid #E5E7EB; border-radius: 14px; min-width: 240px;">
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            @php
+                $dashboardRoute = Auth::user()->isAdmin() ? 'admin.dashboard' : 'user.dashboard';
+            @endphp
+
+            <div class="mobile-section-title">Core</div>
+            <a href="{{ route($dashboardRoute) }}" class="nav-link {{ Route::is($dashboardRoute) ? 'active' : '' }}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+
+            <div class="mobile-section-title">Monitoring</div>
+            <a href="{{ route('countries.index') }}" class="nav-link {{ Route::is('countries.index') ? 'active' : '' }}">
+                <i class="bi bi-flag"></i> Countries
+            </a>
+            <a href="{{ route('ports.index') }}" class="nav-link {{ Route::is('ports.index') ? 'active' : '' }}">
+                <i class="bi bi-compass"></i> Ports & Logistics
+            </a>
+            <a href="{{ route('weather.index') }}" class="nav-link {{ Route::is('weather.index') ? 'active' : '' }}">
+                <i class="bi bi-cloud-lightning"></i> Weather Alerts
+            </a>
+            <a href="{{ route('news.index') }}" class="nav-link {{ Route::is('news.index') ? 'active' : '' }}">
+                <i class="bi bi-newspaper"></i> Geopolitical News
+            </a>
+
+            <div class="mobile-section-title">Analytics</div>
+            <a href="{{ route('compare.index') }}" class="nav-link {{ Route::is('compare.index') ? 'active' : '' }}">
+                <i class="bi bi-shuffle"></i> Country Compare
+            </a>
+            <a href="{{ route('currency.index') }}" class="nav-link {{ Route::is('currency.index') ? 'active' : '' }}">
+                <i class="bi bi-currency-exchange"></i> Currency Monitor
+            </a>
+            <a href="{{ route('risk-history.index') }}" class="nav-link {{ Route::is('risk-history.index') ? 'active' : '' }}">
+                <i class="bi bi-clock-history"></i> Risk History
+            </a>
+            <a href="{{ route('watchlists.index') }}" class="nav-link {{ Route::is('watchlists.index') ? 'active' : '' }}">
+                <i class="bi bi-eye"></i> Watchlists
+            </a>
+
+            @if (Auth::user()->isAdmin())
+                <div class="mobile-section-title">Admin</div>
+                <a href="{{ route('admin.users.index') }}" class="nav-link {{ Route::is('admin.users.index') ? 'active' : '' }}">
+                    <i class="bi bi-people"></i> User Manager
+                </a>
+                <a href="{{ route('admin.ports.index') }}" class="nav-link {{ Route::is('admin.ports.index') ? 'active' : '' }}">
+                    <i class="bi bi-compass"></i> Manage Ports
+                </a>
+                <a href="{{ route('admin.articles.index') }}" class="nav-link {{ Route::is('admin.articles.index') ? 'active' : '' }}">
+                    <i class="bi bi-journal-text"></i> Manage Articles
+                </a>
+                <a href="{{ route('admin.weights.index') }}" class="nav-link {{ Route::is('admin.weights.index') ? 'active' : '' }}">
+                    <i class="bi bi-sliders"></i> Risk Weights
+                </a>
+            @endif
+        </div>
+    </div>
+</div>
+
 </nav>
 
 
