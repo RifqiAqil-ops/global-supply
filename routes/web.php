@@ -116,6 +116,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // User Dashboard & Modules
     Route::get('user/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
+    Route::post('user/refresh-metrics', [UserDashboardController::class, 'refreshMetrics'])->name('user.refresh-metrics');
 
     Route::get('countries', [\App\Http\Controllers\User\CountryController::class, 'index'])->name('countries.index');
     Route::get('countries/{country}', [\App\Http\Controllers\User\CountryController::class, 'show'])->name('countries.show');
