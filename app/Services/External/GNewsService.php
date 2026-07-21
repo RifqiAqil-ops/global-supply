@@ -75,11 +75,41 @@ class GNewsService extends BaseApiClient
             return $summary;
         }
 
-        $apiKey = $this->getApiKey();
+        // 1. Fetch top headlines first
+        try {
+            $params = [
+                'query' => [
+                    'category' => 'business',
+                    'lang'     => 'en',
+                    'max'      => 10,
+                    'apikey'   => $apiKey,
+                    'token'    => $apiKey,
+                ]
+            ];
+            $response = $this->request('GET', 'top-headlines', $params);
+            if (!empty($response) && isset($response['articles'])) {
+                foreach ($response['articles'] as $article) {
+                    $summary['fetched']++;
+                    $sourceUrl = $article['url'] ?? null;
+                    if (!$sourceUrl || $this->newsRepository->existsByUrl($sourceUrl)) {
+                        continue;
+                    }
+                    try {
+                        $parsed = $this->parseArticle($article, 'economic', 'top-headlines');
+                        NewsArticle::create($parsed);
+                        $summary['saved']++;
+                    } catch (Throwable $e) {
+                        Log::error("Failed to save top-headline article: " . $e->getMessage());
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            Log::warning("GNews top-headlines request failed: " . $e->getMessage());
+        }
 
+        // 2. Fetch category topic queries
         foreach ($this->topicQueries as $category => $queries) {
             foreach ($queries as $queryString) {
-                // Sleep 1 second to avoid GNews API rate limits (429)
                 sleep(1);
                 try {
                     $params = [
