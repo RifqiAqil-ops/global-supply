@@ -23,9 +23,9 @@ class GNewsService extends BaseApiClient
      * Each query consumes 1 API request from the daily limit.
      */
     protected array $topicQueries = [
-        'economic'    => ['global trade tariff sanctions', 'GDP inflation economy'],
-        'geopolitical' => ['geopolitical conflict political instability', 'war sanctions embargo'],
-        'logistics'   => ['shipping port congestion supply chain', 'freight logistics disruption'],
+        'economic'     => ['trade OR tariff OR economy OR inflation'],
+        'geopolitical' => ['geopolitics OR sanctions OR conflict OR defense'],
+        'logistics'    => ['shipping OR port OR logistics OR freight'],
     ];
 
     public function __construct(NewsRepositoryInterface $newsRepository)
