@@ -243,16 +243,6 @@ class GNewsService extends BaseApiClient
             Log::warning("GNews API call failed: " . $e->getMessage());
         }
 
-        // 3. Fallback: Seeder fallback if database has zero news articles
-        if ($articles->isEmpty()) {
-            try {
-                (new NewsArticleSeeder())->run();
-                $articles = $this->newsRepository->latestArticles($limit, $category);
-            } catch (Throwable $e) {
-                Log::error("Failed to seed fallback news: " . $e->getMessage());
-            }
-        }
-
         foreach ($articles as $art) {
             $art->isCached = true;
         }
@@ -297,16 +287,6 @@ class GNewsService extends BaseApiClient
             }
         } catch (Throwable $e) {
             Log::warning("GNews country API call failed for ID '{$countryId}': " . $e->getMessage());
-        }
-
-        // 3. Fallback: Seeder fallback if database has zero news articles for this country
-        if ($articles->isEmpty()) {
-            try {
-                (new NewsArticleSeeder())->run();
-                $articles = $this->newsRepository->articlesByCountry($countryId, $limit);
-            } catch (Throwable $e) {
-                Log::error("Failed to seed fallback country news: " . $e->getMessage());
-            }
         }
 
         foreach ($articles as $art) {

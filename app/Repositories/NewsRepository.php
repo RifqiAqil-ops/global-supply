@@ -18,7 +18,10 @@ class NewsRepository extends BaseRepository implements NewsRepositoryInterface
      */
     public function latestArticles(int $limit = 20, ?string $category = null): Collection
     {
-        $query = $this->model->orderByRaw("CASE WHEN source_url IS NOT NULL AND source_url != '' AND source_url NOT LIKE '%example.com%' THEN 0 ELSE 1 END")
+        $query = $this->model
+            ->whereNotNull('source_url')
+            ->where('source_url', '!=', '')
+            ->where('source_url', 'not like', '%example.com%')
             ->orderByDesc('published_at');
 
         if ($category) {

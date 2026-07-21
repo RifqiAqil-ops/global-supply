@@ -13,7 +13,10 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
-        $query = NewsArticle::with('country');
+        $query = NewsArticle::with('country')
+            ->whereNotNull('source_url')
+            ->where('source_url', '!=', '')
+            ->where('source_url', 'not like', '%example.com%');
 
         // Search
         if ($request->filled('search')) {
@@ -32,15 +35,14 @@ class NewsController extends Controller
             $query->where('sentiment', $request->input('sentiment'));
         }
 
-        $articles = $query->orderByRaw("CASE WHEN source_url IS NOT NULL AND source_url != '' AND source_url NOT LIKE '%example.com%' THEN 0 ELSE 1 END")
-            ->orderByDesc('published_at')
-            ->paginate(12);
+        $articles = $query->orderByDesc('published_at')->paginate(12);
 
-        // Stats
-        $totalArticles = NewsArticle::count();
-        $negativeCount = NewsArticle::where('sentiment', 'negative')->count();
-        $positiveCount = NewsArticle::where('sentiment', 'positive')->count();
-        $neutralCount = NewsArticle::where('sentiment', 'neutral')->count();
+        // Stats for real GNews articles
+        $realQuery = NewsArticle::whereNotNull('source_url')->where('source_url', '!=', '')->where('source_url', 'not like', '%example.com%');
+        $totalArticles = (clone $realQuery)->count();
+        $negativeCount = (clone $realQuery)->where('sentiment', 'negative')->count();
+        $positiveCount = (clone $realQuery)->where('sentiment', 'positive')->count();
+        $neutralCount = (clone $realQuery)->where('sentiment', 'neutral')->count();
 
         return view('user.news', compact(
             'articles', 'totalArticles', 'negativeCount', 'positiveCount', 'neutralCount'

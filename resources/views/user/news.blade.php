@@ -83,14 +83,10 @@
                     <span class="text-muted small">
                         <i class="bi bi-clock me-1"></i>{{ $article->published_at ? $article->published_at->diffForHumans() : '—' }}
                     </span>
-                    @if(!empty($article->source_url) && !str_contains($article->source_url, 'example.com') && !str_contains($article->source_url, 'gnews.io'))
+                    @if(!empty($article->source_url))
                     <a href="{{ $article->source_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-0 px-2 small">
                         <i class="bi bi-box-arrow-up-right me-1"></i>Source
                     </a>
-                    @else
-                    <span class="badge bg-secondary opacity-75 font-monospace text-uppercase" style="font-size: 0.68rem;" title="Demo Data Fallback Article">
-                        <i class="bi bi-info-circle me-1"></i>Demo Data
-                    </span>
                     @endif
                 </div>
             </div>
@@ -102,40 +98,16 @@
         </div>
     </div>
     @empty
-        @if(empty(config('gscrip.api.gnews.key')))
-        <!-- News Empty State: Key Missing -->
-        <div class="col-12">
-            <div class="card card-premium border-0 p-5 text-center" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.01) 100%);">
-                <div class="card-body">
-                    <div class="display-4 text-warning mb-3">
-                        <i class="bi bi-key-fill"></i>
-                    </div>
-                    <h4 class="text-white fw-bold mb-2">GNews API Key Configuration Required</h4>
-                    <p class="text-muted small mx-auto mb-4" style="max-width: 480px;">
-                        The geopolitical and news intelligence feed relies on the GNews API to fetch live global logistics and macro articles. To configure this module, please register for a free API key and set it in your local environment.
-                    </p>
-                    <div class="p-3 rounded bg-dark border border-secondary border-opacity-20 mx-auto mb-4 text-start font-monospace small" style="max-width: 420px; font-size: 0.78rem;">
-                        <span class="text-muted"># Add this configuration parameter in your .env file:</span><br>
-                        <span class="text-warning">GNEWS_API_KEY</span>=<span class="text-success">"your_api_token_here"</span>
-                    </div>
-                    <a href="https://gnews.io/docs" target="_blank" rel="noopener noreferrer" class="btn btn-warning btn-sm px-4 py-2 fw-semibold">
-                        <i class="bi bi-box-arrow-up-right me-1"></i> View GNews Documentation
-                    </a>
-                </div>
+    <!-- Clean Empty State -->
+    <div class="col-12">
+        <div class="card card-premium border-0">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-newspaper display-4 text-muted d-block mb-3"></i>
+                <h5 class="text-white fw-bold mb-2">No news is currently available</h5>
+                <p class="text-muted small mb-0">Please check again later.</p>
             </div>
         </div>
-        @else
-        <!-- News Empty State: Key Present but No Data -->
-        <div class="col-12">
-            <div class="card card-premium border-0">
-                <div class="card-body text-center py-5">
-                    <i class="bi bi-newspaper display-4 text-muted d-block mb-3"></i>
-                    <h5 class="text-white">No News Articles Aggregated Yet</h5>
-                    <p class="text-muted small mb-0">The GNews API Key is configured correctly! Please run the command line sync task to retrieve news updates: <code>php artisan gscrip:sync-news</code></p>
-                </div>
-            </div>
-        </div>
-        @endif
+    </div>
     @endforelse
 </div>
 
