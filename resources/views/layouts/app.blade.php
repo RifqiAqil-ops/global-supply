@@ -466,7 +466,7 @@
                                                             <span class="text-muted small">
                                                                 <i class="bi bi-clock me-1"></i>${a.published_at}
                                                             </span>
-                                                            ${a.source_url ? `<a href="${a.source_url}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary py-0 px-2 small"><i class="bi bi-box-arrow-up-right me-1"></i>Source</a>` : ''}
+                                                            ${a.source_url && !a.source_url.includes('example.com') ? `<a href="${a.source_url}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-0 px-2 small"><i class="bi bi-box-arrow-up-right me-1"></i>Source</a>` : `<span class="badge bg-secondary opacity-75 font-monospace text-uppercase" style="font-size: 0.68rem;">Demo Data</span>`}
                                                         </div>
                                                     </div>
                                                 </div>
