@@ -48,7 +48,7 @@ async function runFullParityAudit() {
         { name: 'Dashboard', path: '/user/dashboard' },
         { name: 'Admin Dashboard', path: '/admin/dashboard' },
         { name: 'Countries Index', path: '/countries' },
-        { name: 'Country Detail (ID)', path: '/countries/1' },
+        { name: 'Country Detail (US)', path: '/countries/US' },
         { name: 'Currency Matrix', path: '/currency' },
         { name: 'Risk Dashboard', path: '/risk' },
         { name: 'Weather Metrics', path: '/weather' },
