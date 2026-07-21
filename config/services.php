@@ -36,7 +36,7 @@ return [
     ],
 
     'gnews' => [
-        'key' => env('GNEWS_API_KEY'),
+        'key' => env('GNEWS_API_KEY', '7344b58e727ec29a67a0701ae00021c3'),
         'base_url' => env('GNEWS_BASE_URL', 'https://gnews.io/api/v4'),
     ],
 
