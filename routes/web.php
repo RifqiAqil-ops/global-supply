@@ -118,12 +118,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('user/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
     Route::post('user/refresh-metrics', [UserDashboardController::class, 'refreshMetrics'])->name('user.refresh-metrics');
 
-    Route::get('countries', [\App\Http\Controllers\User\CountryController::class, 'index'])->name('countries.index');
-    Route::get('countries/{country}', [\App\Http\Controllers\User\CountryController::class, 'show'])->name('countries.show');
+    Route::get('countries', [\App\Http\Controllers\CountryController::class, 'index'])->name('countries.index');
+    Route::get('countries/{country}', [\App\Http\Controllers\CountryController::class, 'show'])->name('countries.show');
 
     Route::get('currency', [\App\Http\Controllers\User\CurrencyController::class, 'index'])->name('currency.index');
 
-    Route::get('risk', [\App\Http\Controllers\User\RiskController::class, 'index'])->name('risk.index');
+    Route::get('risk', [\App\Http\Controllers\User\RiskHistoryController::class, 'index'])->name('risk.index');
     Route::get('risk-history', [\App\Http\Controllers\User\RiskHistoryController::class, 'index'])->name('risk-history.index');
 
     Route::get('compare', [\App\Http\Controllers\User\CompareController::class, 'index'])->name('compare.index');
