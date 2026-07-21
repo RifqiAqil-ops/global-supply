@@ -106,16 +106,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Logout
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
-    // Profile Settings
-    Route::get('profile', function () {
-        return view('placeholders.module', ['title' => 'Profile Settings', 'icon' => 'bi-person-circle']);
-    })->name('profile.edit');
-    Route::put('profile', function () {
-        return redirect()->back()->with('status', 'Profile updated successfully!');
-    })->name('profile.update');
-    Route::put('profile/password', function () {
-        return redirect()->back()->with('status', 'Password updated successfully!');
-    })->name('profile.password');
 
     // Admin Dashboard
     Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
@@ -155,24 +145,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('ports', \App\Http\Controllers\Admin\PortController::class)->except(['show']);
         Route::resource('articles', \App\Http\Controllers\Admin\ArticleController::class)->except(['show']);
 
-        Route::get('weights', function () {
-            return view('placeholders.module', ['title' => 'Risk Weights', 'icon' => 'bi-sliders']);
-        })->name('weights.index');
-        Route::post('weights', function () {
-            return redirect()->back()->with('status', 'Risk weights updated successfully!');
-        })->name('weights.update');
+        Route::get('weights', [\App\Http\Controllers\Admin\DashboardController::class, 'weights'])->name('weights.index');
+        Route::post('weights', [\App\Http\Controllers\Admin\DashboardController::class, 'updateWeights'])->name('weights.update');
 
         // External API Data Synchronization Controls
         Route::get('sync', [\App\Http\Controllers\Admin\SyncController::class, 'index'])->name('sync.index');
         Route::post('sync', [\App\Http\Controllers\Admin\SyncController::class, 'runSync'])->name('sync.run');
         Route::post('sync/all', [\App\Http\Controllers\Admin\SyncController::class, 'runAllSync'])->name('sync.run-all');
-
-        Route::get('settings', function () {
-            return view('placeholders.module', ['title' => 'System Settings', 'icon' => 'bi-gear']);
-        })->name('settings.index');
-
-        Route::get('logs', function () {
-            return view('placeholders.module', ['title' => 'Audit Logs', 'icon' => 'bi-journal-text']);
-        })->name('logs.index');
     });
 });

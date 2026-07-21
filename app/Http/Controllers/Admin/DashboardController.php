@@ -160,6 +160,15 @@ class DashboardController extends Controller
     }
 
     /**
+     * Show the Risk Weights adjustment console.
+     */
+    public function weights()
+    {
+        $weights = RiskWeight::with('riskCategory')->get();
+        return view('admin.weights.index', compact('weights'));
+    }
+
+    /**
      * Show the User Manager database list.
      */
     public function users()

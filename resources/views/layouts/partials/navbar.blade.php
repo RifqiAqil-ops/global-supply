@@ -220,17 +220,6 @@
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 rounded text-dark" href="#">
-                            <i class="bi bi-person text-muted"></i> My Profile
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 rounded text-dark" href="#">
-                            <i class="bi bi-gear text-muted"></i> Preferences
-                        </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
                         <form method="POST" action="{{ route('logout') }}" class="m-0">
                             @csrf
                             <button type="submit" class="dropdown-item d-flex align-items-center gap-2 rounded text-danger w-100 border-0 bg-transparent text-start shadow-none">
