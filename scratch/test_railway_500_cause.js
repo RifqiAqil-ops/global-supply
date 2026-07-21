@@ -13,7 +13,13 @@ async function testRailway500Cause() {
     const resp = await page.goto(`${railwayUrl}/system-audit-diagnostic`, { waitUntil: 'networkidle2' });
     console.log(`HTTP Status: ${resp.status()}`);
     const text = await resp.text();
-    console.log(`Diagnostic Page Output:\n${text}`);
+    try {
+        const json = JSON.parse(text);
+        console.log(`EXACT ERROR MESSAGE: ${json.error}`);
+        console.log(`FILE: ${json.file}:${json.line}`);
+    } catch(e) {
+        console.log(`Diagnostic Page Output:\n${text}`);
+    }
 
     await browser.close();
 }
