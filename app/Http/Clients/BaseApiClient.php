@@ -62,7 +62,7 @@ abstract class BaseApiClient
 
         try {
             // Build the HTTP request client instance
-            $client = Http::withHeaders($headers)->timeout($timeout);
+            $client = Http::withoutVerifying()->withHeaders($headers)->timeout($timeout);
 
             if ($retryAttempts > 0) {
                 $client->retry($retryAttempts, $retryDelay, function (Throwable $exception, $request) {
