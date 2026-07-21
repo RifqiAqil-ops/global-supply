@@ -58,15 +58,11 @@ class CountryController extends Controller
         // 1. Total countries
         $totalCountries = Country::count();
 
-        // 2. Average GDP (Latest available per country)
-        $avgGdp = EconomicIndicator::where('indicator_code', 'NY.GDP.MKTP.CD')
-            ->whereRaw('year = (select max(year) from economic_indicators as sub where sub.country_id = economic_indicators.country_id and sub.indicator_code = economic_indicators.indicator_code)')
-            ->avg('value') ?? 0.0;
+        // 2. Average GDP
+        $avgGdp = EconomicIndicator::where('indicator_code', 'NY.GDP.MKTP.CD')->avg('value') ?? 0.0;
 
-        // 3. Average Inflation (Latest available per country)
-        $avgInflation = EconomicIndicator::where('indicator_code', 'FP.CPI.TOTL.ZG')
-            ->whereRaw('year = (select max(year) from economic_indicators as sub where sub.country_id = economic_indicators.country_id and sub.indicator_code = economic_indicators.indicator_code)')
-            ->avg('value') ?? 0.0;
+        // 3. Average Inflation
+        $avgInflation = EconomicIndicator::where('indicator_code', 'FP.CPI.TOTL.ZG')->avg('value') ?? 0.0;
 
         // 4. Average Population
         $avgPopulation = Country::avg('population') ?? 0.0;
