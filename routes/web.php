@@ -139,7 +139,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('watchlists/{watchlist}', [\App\Http\Controllers\User\WatchlistController::class, 'update'])->name('watchlists.update');
     Route::delete('watchlists/{watchlist}', [\App\Http\Controllers\User\WatchlistController::class, 'destroy'])->name('watchlists.destroy');
 
-    Route::get('ports', [\App\Http\Controllers\Admin\PortController::class, 'index'])->name('ports.index');
+    Route::get('ports', [\App\Http\Controllers\PortController::class, 'index'])->name('ports.index');
 
     Route::get('weather', [\App\Http\Controllers\User\WeatherController::class, 'index'])->name('weather.index');
 
