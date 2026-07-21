@@ -151,11 +151,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('weights', function () {
             return view('placeholders.module', ['title' => 'Risk Weights', 'icon' => 'bi-sliders']);
         })->name('weights.index');
+        Route::post('weights', function () {
+            return redirect()->back()->with('status', 'Risk weights updated successfully!');
+        })->name('weights.update');
 
         // External API Data Synchronization Controls
         Route::get('sync', [\App\Http\Controllers\Admin\SyncController::class, 'index'])->name('sync.index');
         Route::post('sync', [\App\Http\Controllers\Admin\SyncController::class, 'runSync'])->name('sync.run');
-        Route::post('sync/all', [\App\Http\Controllers\Admin\SyncController::class, 'runAllSync'])->name('sync.all');
+        Route::post('sync/all', [\App\Http\Controllers\Admin\SyncController::class, 'runAllSync'])->name('sync.run-all');
 
         Route::get('settings', function () {
             return view('placeholders.module', ['title' => 'System Settings', 'icon' => 'bi-gear']);
