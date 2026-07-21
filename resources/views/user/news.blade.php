@@ -83,7 +83,7 @@
                     <span class="text-muted small">
                         <i class="bi bi-clock me-1"></i>{{ $article->published_at ? $article->published_at->diffForHumans() : '—' }}
                     </span>
-                    @if($article->source_url && !str_contains($article->source_url, 'example.com'))
+                    @if(!empty($article->source_url) && !str_contains($article->source_url, 'example.com') && !str_contains($article->source_url, 'gnews.io'))
                     <a href="{{ $article->source_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary py-0 px-2 small">
                         <i class="bi bi-box-arrow-up-right me-1"></i>Source
                     </a>

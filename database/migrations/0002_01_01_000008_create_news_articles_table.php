@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->text('content')->nullable();
             $table->string('source_name')->nullable();
-            $table->string('source_url', 1000);
+            $table->string('source_url', 1000)->nullable();
             $table->string('image_url', 1000)->nullable();
             $table->enum('category', ['economic', 'geopolitical', 'logistics', 'general'])->default('general');
             $table->enum('sentiment', ['positive', 'negative', 'neutral'])->default('neutral');

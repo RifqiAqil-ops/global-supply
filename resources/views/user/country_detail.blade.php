@@ -427,7 +427,7 @@
                                 <span class="badge {{ $sentimentColor }} bg-opacity-10 text-{{ $article->sentiment }} border border-{{ $article->sentiment }} border-opacity-20 small fw-bold">{{ strtoupper($article->sentiment) }}</span>
                                 <span class="text-muted small" style="font-size: 0.7rem;">{{ $article->published_at->diffForHumans() }}</span>
                             </div>
-                            @if($article->source_url && !str_contains($article->source_url, 'example.com'))
+                            @if(!empty($article->source_url) && !str_contains($article->source_url, 'example.com') && !str_contains($article->source_url, 'gnews.io'))
                             <h6 class="text-white mb-1 fw-semibold small">
                                 <a href="{{ $article->source_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-white hover-primary">
                                     {{ $article->title }} <i class="bi bi-box-arrow-up-right ms-1 text-primary" style="font-size: 0.7rem;"></i>
