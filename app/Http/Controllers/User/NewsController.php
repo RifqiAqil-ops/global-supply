@@ -32,7 +32,9 @@ class NewsController extends Controller
             $query->where('sentiment', $request->input('sentiment'));
         }
 
-        $articles = $query->orderByDesc('published_at')->paginate(12);
+        $articles = $query->orderByRaw("CASE WHEN source_url IS NOT NULL AND source_url != '' AND source_url NOT LIKE '%example.com%' THEN 0 ELSE 1 END")
+            ->orderByDesc('published_at')
+            ->paginate(12);
 
         // Stats
         $totalArticles = NewsArticle::count();
