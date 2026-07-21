@@ -140,6 +140,32 @@ Route::middleware('auth')->group(function () {
     Route::get('articles', [\App\Http\Controllers\User\ArticleController::class, 'index'])->name('articles.index');
     Route::get('articles/{slug}', [\App\Http\Controllers\User\ArticleController::class, 'show'])->name('articles.show');
 
+    Route::get('debug-gnews-sync', function() {
+        $service = app(\App\Services\External\GNewsService::class);
+        $key = $service->getApiKey();
+        $hasKey = $service->hasApiKey();
+        $dbCountBefore = \App\Models\NewsArticle::count();
+        
+        $syncResult = [];
+        $exception = null;
+        try {
+            $syncResult = $service->syncAllNews();
+        } catch (\Throwable $e) {
+            $exception = $e->getMessage() . "\n" . $e->getTraceAsString();
+        }
+        
+        $dbCountAfter = \App\Models\NewsArticle::count();
+
+        return response()->json([
+            'api_key_used' => substr($key, 0, 5) . '...',
+            'has_api_key' => $hasKey,
+            'db_count_before' => $dbCountBefore,
+            'db_count_after' => $dbCountAfter,
+            'sync_result' => $syncResult,
+            'exception' => $exception,
+        ]);
+    });
+
     // Admin settings
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['show']);
