@@ -15,6 +15,37 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/system-audit-diagnostic', function() {
+    return response()->json([
+        'env' => [
+            'APP_ENV' => config('app.env'),
+            'APP_DEBUG' => config('app.debug'),
+            'APP_URL' => config('app.url'),
+            'APP_KEY_SET' => !empty(config('app.key')),
+            'CACHE_STORE' => config('cache.default'),
+            'SESSION_DRIVER' => config('session.driver'),
+            'QUEUE_CONNECTION' => config('queue.default'),
+            'FILESYSTEM_DISK' => config('filesystems.default'),
+            'LOG_CHANNEL' => config('logging.default'),
+        ],
+        'db' => [
+            'connection' => config('database.default'),
+            'countries_count' => \App\Models\Country::count(),
+            'ports_count' => \App\Models\Port::count(),
+            'exchange_rates_count' => \App\Models\ExchangeRate::count(),
+            'weather_metrics_count' => \App\Models\WeatherMetric::count(),
+            'risk_indices_count' => \App\Models\CountryRiskIndex::count(),
+            'news_articles_count' => \App\Models\NewsArticle::count(),
+            'users_count' => \App\Models\User::count(),
+            'system_configs_count' => \App\Models\SystemConfig::count(),
+            'sync_trackers_count' => \App\Models\SyncTracker::count(),
+        ],
+        'apis' => [
+            'gnews_key' => substr(\App\Services\External\GNewsService::class ? app(\App\Services\External\GNewsService::class)->getApiKey() : '', 0, 5) . '...',
+        ]
+    ]);
+});
+
 Route::get('/', function () {
     if (Auth::check()) {
         return Auth::user()->isAdmin() 
@@ -58,80 +89,31 @@ Route::middleware('guest')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated Routes
+| Authenticated User & Admin Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
+
     // Logout
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
-    /*
-    |--------------------------------------------------------------------------
-    | User Routes
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('user')->name('user.')->group(function () {
-        Route::get('dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
-        Route::post('refresh-metrics', [UserDashboardController::class, 'refreshMetrics'])->name('refresh-metrics');
-    });
+    // Profile Settings
+    Route::get('profile', [\App\Http\Controllers\User\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('profile', [\App\Http\Controllers\User\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('profile/password', [\App\Http\Controllers\User\ProfileController::class, 'updatePassword'])->name('profile.password');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Admin Routes
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-        Route::get('diagnose-api', [AdminDashboardController::class, 'diagnoseApi'])->name('diagnose-api');
-        Route::post('weights/update', [AdminDashboardController::class, 'updateWeights'])->name('weights.update');
+    // Admin Dashboard
+    Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
-        // Automated Data Sync Manager
-        Route::get('sync', [\App\Http\Controllers\Admin\SyncController::class, 'index'])->name('sync.index');
-        Route::post('sync/run', [\App\Http\Controllers\Admin\SyncController::class, 'runSync'])->name('sync.run');
-        Route::post('sync/run-all', [\App\Http\Controllers\Admin\SyncController::class, 'runAllSync'])->name('sync.run-all');
+    // User Dashboard & Modules
+    Route::get('user/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
 
-        // Operations Center & System Health
-        Route::get('operations', [\App\Http\Controllers\Admin\OperationsController::class, 'index'])->name('operations.index');
-        Route::get('health', [\App\Http\Controllers\Admin\OperationsController::class, 'health'])->name('health.index');
-        Route::get('api-monitoring', [\App\Http\Controllers\Admin\OperationsController::class, 'apiMonitoring'])->name('api-monitoring.index');
-        Route::get('observability', [\App\Http\Controllers\Admin\ObservabilityController::class, 'index'])->name('observability.index');
-
-        // Failed Jobs Management
-        Route::get('failed-jobs', [\App\Http\Controllers\Admin\FailedJobsController::class, 'index'])->name('failed-jobs.index');
-        Route::post('failed-jobs/retry/{id}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retry'])->name('failed-jobs.retry');
-        Route::post('failed-jobs/retry-all', [\App\Http\Controllers\Admin\FailedJobsController::class, 'retryAll'])->name('failed-jobs.retry-all');
-        Route::delete('failed-jobs/{id}', [\App\Http\Controllers\Admin\FailedJobsController::class, 'destroy'])->name('failed-jobs.destroy');
-        Route::post('failed-jobs/flush', [\App\Http\Controllers\Admin\FailedJobsController::class, 'flush'])->name('failed-jobs.flush');
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Shared Placeholder Routes
-    |--------------------------------------------------------------------------
-    */
-    Route::get('countries', [\App\Http\Controllers\CountryController::class, 'index'])->name('countries.index');
-
-    Route::get('countries/{code}', [\App\Http\Controllers\CountryController::class, 'show'])->name('countries.show');
-
-    Route::get('ports', [\App\Http\Controllers\PortController::class, 'index'])->name('ports.index');
-
-    Route::get('risk-history', [\App\Http\Controllers\User\RiskHistoryController::class, 'index'])->name('risk-history.index');
-
-    Route::prefix('live-api')->name('live-api.')->group(function () {
-        Route::get('dashboard-metrics', [\App\Http\Controllers\User\LiveUpdateController::class, 'dashboardMetrics'])->name('dashboard-metrics');
-        Route::get('weather', [\App\Http\Controllers\User\LiveUpdateController::class, 'weather'])->name('weather');
-        Route::get('exchange-rates', [\App\Http\Controllers\User\LiveUpdateController::class, 'exchangeRates'])->name('exchange-rates');
-        Route::get('news', [\App\Http\Controllers\User\LiveUpdateController::class, 'news'])->name('news');
-        Route::get('country-risk/{code}', [\App\Http\Controllers\User\LiveUpdateController::class, 'countryRisk'])->name('country-risk');
-    });
-
-    Route::resource('watchlists', \App\Http\Controllers\User\WatchlistController::class)->only([
-        'index', 'store', 'update', 'destroy'
-    ]);
-
-    Route::get('compare', [\App\Http\Controllers\User\CompareController::class, 'index'])->name('compare.index');
+    Route::get('countries', [\App\Http\Controllers\User\CountryController::class, 'index'])->name('countries.index');
+    Route::get('countries/{country}', [\App\Http\Controllers\User\CountryController::class, 'show'])->name('countries.show');
 
     Route::get('currency', [\App\Http\Controllers\User\CurrencyController::class, 'index'])->name('currency.index');
+
+    Route::get('risk', [\App\Http\Controllers\User\RiskController::class, 'index'])->name('risk.index');
 
     Route::get('weather', [\App\Http\Controllers\User\WeatherController::class, 'index'])->name('weather.index');
 
@@ -140,38 +122,8 @@ Route::middleware('auth')->group(function () {
     Route::get('articles', [\App\Http\Controllers\User\ArticleController::class, 'index'])->name('articles.index');
     Route::get('articles/{slug}', [\App\Http\Controllers\User\ArticleController::class, 'show'])->name('articles.show');
 
-Route::get('/system-audit-diagnostic', function() {
-    return response()->json([
-        'env' => [
-            'APP_ENV' => config('app.env'),
-            'APP_DEBUG' => config('app.debug'),
-            'APP_URL' => config('app.url'),
-            'APP_KEY_SET' => !empty(config('app.key')),
-            'CACHE_STORE' => config('cache.default'),
-            'SESSION_DRIVER' => config('session.driver'),
-            'QUEUE_CONNECTION' => config('queue.default'),
-            'FILESYSTEM_DISK' => config('filesystems.default'),
-            'LOG_CHANNEL' => config('logging.default'),
-        ],
-        'db' => [
-            'connection' => config('database.default'),
-            'countries_count' => \App\Models\Country::count(),
-            'ports_count' => \App\Models\Port::count(),
-            'exchange_rates_count' => \App\Models\ExchangeRate::count(),
-            'weather_metrics_count' => \App\Models\WeatherMetric::count(),
-            'risk_indices_count' => \App\Models\CountryRiskIndex::count(),
-            'news_articles_count' => \App\Models\NewsArticle::count(),
-            'users_count' => \App\Models\User::count(),
-            'system_configs_count' => \App\Models\SystemConfig::count(),
-            'sync_trackers_count' => \App\Models\SyncTracker::count(),
-        ],
-        'apis' => [
-            'gnews_key' => substr(\App\Services\External\GNewsService::class ? app(\App\Services\External\GNewsService::class)->getApiKey() : '', 0, 5) . '...',
-        ]
-    ]);
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
+    // Admin settings
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['show']);
         Route::resource('ports', \App\Http\Controllers\Admin\PortController::class)->except(['show']);
         Route::resource('articles', \App\Http\Controllers\Admin\ArticleController::class)->except(['show']);
@@ -179,5 +131,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('weights', function () {
             return view('placeholders.module', ['title' => 'Risk Weights', 'icon' => 'bi-sliders']);
         })->name('weights.index');
+
+        // External API Data Synchronization Controls
+        Route::get('sync', [\App\Http\Controllers\Admin\SyncController::class, 'index'])->name('sync.index');
+        Route::post('sync', [\App\Http\Controllers\Admin\SyncController::class, 'runSync'])->name('sync.run');
+        Route::post('sync/all', [\App\Http\Controllers\Admin\SyncController::class, 'runAllSync'])->name('sync.all');
+
+        Route::get('settings', function () {
+            return view('placeholders.module', ['title' => 'System Settings', 'icon' => 'bi-gear']);
+        })->name('settings.index');
+
+        Route::get('logs', function () {
+            return view('placeholders.module', ['title' => 'Audit Logs', 'icon' => 'bi-journal-text']);
+        })->name('logs.index');
     });
 });
