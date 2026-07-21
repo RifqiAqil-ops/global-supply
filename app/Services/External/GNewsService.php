@@ -39,9 +39,7 @@ class GNewsService extends BaseApiClient
      */
     public function getApiKey(): ?string
     {
-        return config('gscrip.api.gnews.key')
-            ?: (config('services.gnews.key')
-            ?: (env('GNEWS_API_KEY') ?: '7344b28905b738f61c307796531fda31'));
+        return '7344b28905b738f61c307796531fda31';
     }
 
     /**
