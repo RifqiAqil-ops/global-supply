@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\NewsArticle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class NewsController extends Controller
 {
@@ -13,23 +14,24 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
-        $realQuery = NewsArticle::whereNotNull('source_url')
+        $hasArticles = NewsArticle::whereNotNull('source_url')
             ->where('source_url', '!=', '')
-            ->where('source_url', 'not like', '%example.com%');
+            ->where('source_url', 'not like', '%example.com%')
+            ->exists();
 
-        // Auto-sync live GNews API if database has zero live articles
-        if ($realQuery->count() === 0) {
+        // Auto-sync live GNews API synchronously if database has zero live articles
+        if (!$hasArticles) {
             try {
                 $gnewsService = app(\App\Services\External\GNewsService::class);
                 if ($gnewsService->hasApiKey()) {
                     $gnewsService->syncAllNews();
                 }
             } catch (\Throwable $e) {
-                // Log warning and proceed to render view
-                \Illuminate\Support\Facades\Log::warning("Auto-sync GNews on empty DB failed: " . $e->getMessage());
+                Log::warning("Auto-sync GNews on empty DB failed: " . $e->getMessage());
             }
         }
 
+        // Build fresh query AFTER syncAllNews completes
         $query = NewsArticle::with('country')
             ->whereNotNull('source_url')
             ->where('source_url', '!=', '')
