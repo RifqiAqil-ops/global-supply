@@ -13,6 +13,23 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
+        $realQuery = NewsArticle::whereNotNull('source_url')
+            ->where('source_url', '!=', '')
+            ->where('source_url', 'not like', '%example.com%');
+
+        // Auto-sync live GNews API if database has zero live articles
+        if ($realQuery->count() === 0) {
+            try {
+                $gnewsService = app(\App\Services\External\GNewsService::class);
+                if ($gnewsService->hasApiKey()) {
+                    $gnewsService->syncAllNews();
+                }
+            } catch (\Throwable $e) {
+                // Log warning and proceed to render view
+                \Illuminate\Support\Facades\Log::warning("Auto-sync GNews on empty DB failed: " . $e->getMessage());
+            }
+        }
+
         $query = NewsArticle::with('country')
             ->whereNotNull('source_url')
             ->where('source_url', '!=', '')
