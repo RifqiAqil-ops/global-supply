@@ -157,7 +157,7 @@ Route::middleware('auth')->group(function () {
         $dbCountAfter = \App\Models\NewsArticle::count();
 
         return response()->json([
-            'api_key_used' => substr($key, 0, 5) . '...',
+            'api_key_used' => $key,
             'has_api_key' => $hasKey,
             'db_count_before' => $dbCountBefore,
             'db_count_after' => $dbCountAfter,

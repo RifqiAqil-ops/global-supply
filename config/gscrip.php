@@ -13,7 +13,7 @@ return [
         'exchange_rate' => env('EXCHANGERATE_BASE_URL', 'https://api.exchangerate-api.com/v4'),
         'gnews' => [
             'base_url' => env('GNEWS_BASE_URL', 'https://gnews.io/api/v4'),
-            'key' => env('GNEWS_API_KEY', '7344b58e727ec29a67a0701ae00021c3'),
+            'key' => env('GNEWS_API_KEY', '7344b28905b738f61c307796531fda31'),
         ],
     ],
 
