@@ -130,6 +130,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('watchlists/{watchlist}', [\App\Http\Controllers\User\WatchlistController::class, 'destroy'])->name('watchlists.destroy');
 
     Route::get('ports', [\App\Http\Controllers\PortController::class, 'index'])->name('ports.index');
+    Route::post('ports/analyze-route', [\App\Http\Controllers\PortController::class, 'analyzeRoute'])->name('ports.analyze-route');
 
     Route::get('weather', [\App\Http\Controllers\User\WeatherController::class, 'index'])->name('weather.index');
 

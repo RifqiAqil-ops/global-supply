@@ -257,37 +257,25 @@
         font-weight: 500;
     }
 
-    /* Small Risk Progress Bar */
-    .risk-progress-bar {
-        height: 6px;
-        border-radius: 3px;
-        background-color: #E2E8F0;
-        overflow: hidden;
+    /* Timeline Nodes styling */
+    .timeline-step-node {
+        cursor: pointer;
+        transition: transform 0.2s ease, background-color 0.2s ease;
     }
-    .risk-progress-fill {
-        height: 100%;
-        border-radius: 3px;
-        transition: width 0.3s ease;
+    .timeline-step-node:hover {
+        transform: translateY(-2px);
+        background-color: #EFF6FF !important;
     }
 
-    /* Shimmer Skeleton elements */
-    .shimmer-skeleton-row td {
-        position: relative;
-        overflow: hidden;
+    /* Animated Polyline dash animation */
+    @keyframes leaflet-dash-flow {
+        to {
+            stroke-dashoffset: -20;
+        }
     }
-    .shimmer-skeleton-row td::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-        transform: translateX(-100%);
-        animation: loading-shimmer 1.5s infinite;
-    }
-    @keyframes loading-shimmer {
-        100% { transform: translateX(100%); }
+    .animated-polyline {
+        stroke-dasharray: 10, 10;
+        animation: leaflet-dash-flow 1s linear infinite;
     }
 </style>
 @endpush
@@ -306,7 +294,7 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <h1 class="h3 text-dark mb-1 fw-bold" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.5px;">Ports & Logistics Intelligence</h1>
-            <p class="text-muted mb-0 small">Enterprise maritime infrastructure directory and risk analysis console</p>
+            <p class="text-muted mb-0 small">Enterprise maritime infrastructure directory and route risk analysis console</p>
         </div>
         <div>
             <span class="badge bg-white text-dark border border-light-subtle py-2.5 px-3.5 shadow-sm rounded-pill d-inline-flex align-items-center gap-2" style="font-size: 0.85rem;">
@@ -316,7 +304,7 @@
         </div>
     </div>
 
-    <!-- 4 Statistic Overview Cards (V8 Style) -->
+    <!-- 4 Statistic Overview Cards -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
             <div class="metric-card-premium p-4 d-flex align-items-center gap-3">
@@ -361,6 +349,90 @@
                     <h3 class="fw-bold mb-0 text-dark" style="font-family: 'Outfit', sans-serif;">52.8</h3>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 🚢 Smart Shipping Route Analyzer Card -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 24px; background-color: #FFFFFF;">
+        <div class="card-header bg-transparent border-bottom py-3.5 px-4 d-flex align-items-center justify-content-between" style="border-color: #E5E7EB !important;">
+            <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="bi bi-diagram-3-fill fs-5"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-dark mb-0" style="font-size: 1.05rem; font-family: 'Outfit', sans-serif;">🚢 Smart Shipping Route Analyzer</h5>
+                    <span class="text-muted small" style="font-size: 0.78rem;">Determine the safest, most efficient international shipping lanes based on live risk & weather intelligence</span>
+                </div>
+            </div>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 px-3 py-1.5 rounded-pill small fw-semibold">AI Powered</span>
+        </div>
+        <div class="card-body p-4">
+            <form id="formRouteAnalyzer" class="row g-3">
+                @csrf
+                <!-- Origin Port -->
+                <div class="col-md-6 col-lg-3">
+                    <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Origin Port</label>
+                    <select class="form-select bg-light border-light-subtle rounded-3" id="selectOriginPort" name="origin_port_id" required style="font-size: 0.85rem;">
+                        <option value="">Select Origin Port...</option>
+                        @foreach($allActivePorts as $p)
+                            <option value="{{ $p->id }}" {{ $loop->first ? 'selected' : '' }}>{{ $p->name }} ({{ $p->country ? $p->country->name : 'N/A' }}) - {{ $p->port_code ?? $p->un_locode }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Destination Port -->
+                <div class="col-md-6 col-lg-3">
+                    <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-flag-fill text-success me-1"></i>Destination Port</label>
+                    <select class="form-select bg-light border-light-subtle rounded-3" id="selectDestinationPort" name="destination_port_id" required style="font-size: 0.85rem;">
+                        <option value="">Select Destination Port...</option>
+                        @foreach($allActivePorts as $p)
+                            <option value="{{ $p->id }}" {{ $loop->count > 1 && $loop->index === 1 ? 'selected' : '' }}>{{ $p->name }} ({{ $p->country ? $p->country->name : 'N/A' }}) - {{ $p->port_code ?? $p->un_locode }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Priority Selector -->
+                <div class="col-md-6 col-lg-3">
+                    <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-sliders me-1 text-primary"></i>Priority Mode</label>
+                    <div class="d-flex gap-2">
+                        <input type="radio" class="btn-check" name="priority" id="prioritySafest" value="safest" checked>
+                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-1.5" for="prioritySafest">
+                            <i class="bi bi-shield-check me-1"></i>Safest
+                        </label>
+
+                        <input type="radio" class="btn-check" name="priority" id="priorityFastest" value="fastest">
+                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-1.5" for="priorityFastest">
+                            <i class="bi bi-lightning-charge me-1"></i>Fastest
+                        </label>
+
+                        <input type="radio" class="btn-check" name="priority" id="priorityCheapest" value="cheapest">
+                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-1.5" for="priorityCheapest">
+                            <i class="bi bi-currency-dollar me-1"></i>Cheapest
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Container Type -->
+                <div class="col-md-6 col-lg-3">
+                    <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-box-seam me-1 text-info"></i>Container Type</label>
+                    <select class="form-select bg-light border-light-subtle rounded-3" id="selectContainerType" name="container_type" style="font-size: 0.85rem;">
+                        <option value="container" selected>Standard Container (FCL/LCL)</option>
+                        <option value="general">General Cargo</option>
+                        <option value="liquid">Liquid Bulk / Tanker</option>
+                        <option value="bulk">Dry Bulk / Carrier</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button Row -->
+                <div class="col-12 d-flex justify-content-end gap-2 mt-3 pt-2 border-top border-light">
+                    <button type="button" class="btn btn-outline-secondary px-3 btn-sm rounded-3 fw-semibold" id="btnResetAnalyzer">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset Selection
+                    </button>
+                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-3 fw-semibold shadow-sm" id="btnSubmitAnalyzer">
+                        <i class="bi bi-play-circle-fill me-1"></i>Analyze Route
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -457,6 +529,177 @@
         </div>
     </div>
 
+    <!-- 📊 Dynamic Route Analysis Results Container (Initially Hidden) -->
+    <div id="routeAnalyzerResults" class="mb-4" style="display: none;">
+        <!-- Header Banner with Title & Clear Results button -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px; background: linear-gradient(135deg, #1E293B, #0F172A); color: #FFFFFF;">
+            <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-primary px-2.5 py-1 rounded-pill small fw-semibold" id="resPriorityBadge">Safest Mode</span>
+                        <span class="badge bg-info bg-opacity-20 text-info border border-info border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold" id="resContainerBadge">Standard Container</span>
+                    </div>
+                    <h4 class="fw-bold text-white mb-0" id="resRouteTitle" style="font-family: 'Outfit', sans-serif;">Belawan → Shanghai</h4>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="window.print()">
+                        <i class="bi bi-printer me-1"></i>Export PDF / Print
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger rounded-pill px-3" id="btnCloseRouteResults">
+                        <i class="bi bi-x-lg me-1"></i>Close Results
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8 Summary Metric Cards Grid -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="metric-card-premium p-3.5">
+                    <span class="text-muted small d-block mb-1"><i class="bi bi-signpost-split text-primary me-1"></i>Distance</span>
+                    <h4 class="fw-bold text-dark mb-0" id="resDistanceVal">0 NM</h4>
+                    <span class="text-muted small" style="font-size: 0.72rem;" id="resDistanceKm">0 km</span>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="metric-card-premium p-3.5">
+                    <span class="text-muted small d-block mb-1"><i class="bi bi-clock-history text-info me-1"></i>Estimated Time</span>
+                    <h4 class="fw-bold text-dark mb-0" id="resEtaVal">0 Days</h4>
+                    <span class="text-muted small" style="font-size: 0.72rem;">Transit Included</span>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="metric-card-premium p-3.5">
+                    <span class="text-muted small d-block mb-1"><i class="bi bi-shield-exclamation text-warning me-1"></i>Overall Risk Score</span>
+                    <h4 class="fw-bold text-dark mb-0" id="resRiskVal">0.0</h4>
+                    <span class="badge rounded-pill small fw-semibold px-2 py-0.5" id="resRiskBadge">Low Risk</span>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="metric-card-premium p-3.5">
+                    <span class="text-muted small d-block mb-1"><i class="bi bi-cloud-sun text-success me-1"></i>Current Weather</span>
+                    <div class="fw-bold text-dark small text-truncate" id="resWeatherVal">Normal</div>
+                    <span class="text-muted small d-block text-truncate" style="font-size: 0.72rem;" id="resWeatherSub">Marine Conditions</span>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="metric-card-premium p-3.5">
+                    <span class="text-muted small d-block mb-1"><i class="bi bi-currency-exchange text-primary me-1"></i>Currency Impact</span>
+                    <div class="fw-bold text-dark small text-truncate" id="resCurrencyVal">USD Settlement</div>
+                    <span class="text-muted small d-block text-truncate" style="font-size: 0.72rem;">FX Stability</span>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="metric-card-premium p-3.5">
+                    <span class="text-muted small d-block mb-1"><i class="bi bi-bar-chart-steps text-danger me-1"></i>Port Congestion</span>
+                    <h4 class="fw-bold text-dark mb-0" id="resCongestionVal">0%</h4>
+                    <span class="text-muted small" style="font-size: 0.72rem;">Average Delay</span>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="metric-card-premium p-3.5">
+                    <span class="text-muted small d-block mb-1"><i class="bi bi-globe-americas text-secondary me-1"></i>Geopolitical Status</span>
+                    <div class="fw-bold text-dark small text-truncate" id="resGeopoliticalVal">Stable Corridor</div>
+                    <span class="text-muted small d-block text-truncate" style="font-size: 0.72rem;">Active News Feeds</span>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="metric-card-premium p-3.5 bg-primary bg-opacity-10 border-primary border-opacity-20">
+                    <span class="text-primary small d-block mb-1 fw-bold"><i class="bi bi-check2-circle me-1"></i>Recommendation</span>
+                    <div class="fw-bold text-primary small" id="resRecommendationVal">Optimal & Safe</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insight Commentary & Interactive Route Timeline Grid -->
+        <div class="row g-4 mb-4">
+            <!-- Left: AI Insight Commentary Card -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; background-color: #FFFFFF;">
+                    <div class="card-header bg-transparent border-bottom py-3 px-4 d-flex align-items-center gap-2" style="border-color: #E5E7EB !important;">
+                        <i class="bi bi-robot text-primary fs-5"></i>
+                        <h6 class="fw-bold text-dark mb-0" style="font-family: 'Outfit', sans-serif;">AI Route Analysis & Intelligence Advisory</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="p-3 rounded-3 border border-primary border-opacity-15 bg-primary bg-opacity-10 mb-3" style="font-size: 0.88rem; line-height: 1.6; color: #1E293B;" id="resAiInsightText">
+                            <!-- Populated dynamically -->
+                        </div>
+                        <div class="d-flex flex-column gap-2 text-muted small" style="font-size: 0.8rem;">
+                            <div class="d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill text-success"></i> Real-time maritime safety parameters evaluated</div>
+                            <div class="d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill text-success"></i> Weather anomalies and severe wind speeds checked</div>
+                            <div class="d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill text-success"></i> Dynamic port congestion index calculated for all waypoints</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Interactive Transit Nodes Timeline -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; background-color: #FFFFFF;">
+                    <div class="card-header bg-transparent border-bottom py-3 px-4 d-flex align-items-center justify-content-between" style="border-color: #E5E7EB !important;">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-signpost-split-fill text-success fs-5"></i>
+                            <h6 class="fw-bold text-dark mb-0" style="font-family: 'Outfit', sans-serif;">Route Transit Timeline</h6>
+                        </div>
+                        <span class="text-muted small" style="font-size: 0.72rem;">Click node to focus map</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column gap-3" id="resTimelineContainer">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alternative Route Comparison Card (Rendered if available) -->
+        <div id="resAlternativeContainer" style="display: none;">
+            <div class="card border-0 shadow-sm" style="border-radius: 20px; background-color: #FFFFFF; border-left: 5px solid #2563EB !important;">
+                <div class="card-header bg-transparent border-bottom py-3 px-4 d-flex align-items-center justify-content-between" style="border-color: #E5E7EB !important;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-shaded text-primary fs-5"></i>
+                        <h6 class="fw-bold text-dark mb-0" style="font-family: 'Outfit', sans-serif;">Alternative Route Comparison & Optimization</h6>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 rounded-pill px-3 py-1 small fw-semibold" id="resAltSavingsBadge">Risk Reduction</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 border bg-light">
+                                <span class="badge bg-secondary mb-2">Original Selected Path</span>
+                                <h6 class="fw-bold text-dark mb-1" id="resAltOrigTitle">Belawan → Shanghai</h6>
+                                <div class="d-flex gap-3 text-muted small">
+                                    <span>Risk Score: <strong class="text-dark" id="resAltOrigRisk">72.0</strong></span>
+                                    <span>ETA: <strong class="text-dark" id="resAltOrigEta">11 Days</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 border border-success border-opacity-30 bg-success bg-opacity-10">
+                                <span class="badge bg-success mb-2">Recommended Alternative</span>
+                                <h6 class="fw-bold text-dark mb-1" id="resAltNewTitle">Belawan → Port Klang → Shanghai</h6>
+                                <div class="d-flex gap-3 text-muted small">
+                                    <span>Risk Score: <strong class="text-success" id="resAltNewRisk">38.0</strong></span>
+                                    <span>ETA: <strong class="text-dark" id="resAltNewEta">13 Days</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0 mt-3" id="resAltRecommendationText">
+                        <!-- Populated dynamically -->
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Active Filter Chips display area -->
     <div class="d-flex flex-wrap align-items-center gap-2 mb-3 px-1" id="filter-chips-container" style="min-height: 38px;">
         <!-- Generated dynamically via JS -->
@@ -464,7 +707,7 @@
 
     <!-- Main Sidebar and Grid layout -->
     <div class="row g-4">
-        <!-- Sidebar Filter controls (Sleek Accordion Panel) -->
+        <!-- Sidebar Filter controls -->
         <div class="col-lg-3">
             <div class="card border-0 shadow-sm" style="border-radius: 24px;">
                 <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center" style="border-color: #E5E7EB !important;">
@@ -592,7 +835,7 @@
             </div>
         </div>
 
-        <!-- Directory list (Sleek card & progress indicators) -->
+        <!-- Directory list -->
         <div class="col-lg-9">
             <div class="table-container-premium shadow-sm">
                 <div class="card-header bg-transparent border-bottom py-3" style="border-color: #E5E7EB !important;">
@@ -638,6 +881,9 @@
         maxZoom: 20
     }).addTo(map);
 
+    // Layer group for route polylines and route markers
+    const routeLayersGroup = L.layerGroup().addTo(map);
+
     // Hide Skeleton once tile layer finishes loading
     setTimeout(() => {
         const skel = document.getElementById('mapSkeleton');
@@ -667,7 +913,6 @@
 
         data.forEach(port => {
             if (port.latitude && port.longitude) {
-                // Determine risk badge color
                 let riskClass = 'bg-secondary text-muted border-secondary';
                 let riskText = 'N/A';
                 if (port.risk_score) {
@@ -698,248 +943,378 @@
                             <span class="badge ${riskClass} bg-opacity-10 border small fw-bold px-2 py-0.5 rounded-pill" style="font-size: 0.68rem;">${riskText}</span>
                         </div>
                         <div class="text-muted small mb-3" style="font-size: 0.76rem; line-height: 1.6;">
-                            <div class="d-flex justify-content-between mb-1"><span>Country:</span><strong class="text-dark">${port.country_name} (${port.country_code})</strong></div>
-                            <div class="d-flex justify-content-between mb-1"><span>UN LOCODE:</span><strong class="text-dark"><code>${port.un_locode || 'N/A'}</code></strong></div>
-                            <div class="d-flex justify-content-between mb-1"><span>Coordinates:</span><strong class="text-dark">${port.latitude.toFixed(4)}, ${port.longitude.toFixed(4)}</strong></div>
-                            <div class="d-flex justify-content-between mb-1"><span>Harbor Size:</span><strong class="text-dark">${port.harbor_size || 'N/A'}</strong></div>
-                            <div class="d-flex justify-content-between mb-1"><span>Harbor Type:</span><strong class="text-dark">${port.harbor_type || 'N/A'}</strong></div>
-                            <div class="d-flex justify-content-between"><span>Max Vessel Size:</span><strong class="text-dark">${port.max_vessel_size || 'N/A'}</strong></div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>UN/LOCODE:</span>
+                                <strong class="text-dark">${port.port_code || port.un_locode || 'N/A'}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Country:</span>
+                                <strong class="text-dark">${port.country_name || 'N/A'}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Harbor Size / Type:</span>
+                                <strong class="text-dark">${port.harbor_size || 'N/A'} / ${port.harbor_type || 'N/A'}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Coordinates:</span>
+                                <strong class="text-dark">${parseFloat(port.latitude).toFixed(4)}, ${parseFloat(port.longitude).toFixed(4)}</strong>
+                            </div>
                         </div>
-                        <a href="${port.view_url}" class="btn btn-popup-gradient btn-sm w-100 rounded-pill text-white fw-bold py-1.5 text-center text-decoration-none d-block" style="font-size: 0.76rem;">
-                            <i class="bi bi-arrow-up-right-circle me-1"></i>View Country Dashboard
-                        </a>
+                        <div class="d-flex gap-1.5">
+                            <button class="btn btn-sm btn-primary btn-popup-gradient w-100 text-white rounded-pill fw-semibold py-1.5" style="font-size: 0.75rem;" onclick="focusPortInTable(${port.id})">
+                                <i class="bi bi-card-text me-1"></i> Highlight in Directory
+                            </button>
+                        </div>
                     </div>
                 `;
 
-                // Build custom leaflet marker
-                const marker = L.marker([port.latitude, port.longitude])
-                    .bindPopup(popupHtml, { className: 'premium-leaflet-popup' });
-                
-                markersGroup.addLayer(marker);
-                markers[`${port.latitude}_${port.longitude}`] = marker;
+                const circleMarker = L.circleMarker([port.latitude, port.longitude], {
+                    radius: 7,
+                    fillColor: port.risk_score < 40 ? '#10B981' : (port.risk_score < 70 ? '#F59E0B' : '#EF4444'),
+                    color: '#FFFFFF',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).bindPopup(popupHtml, { className: 'premium-leaflet-popup' });
+
+                markersGroup.addLayer(circleMarker);
+                markers[port.id] = circleMarker;
             }
         });
 
-        // Update Visible Ports count initially
-        updateVisibleCount();
+        // Update Telemetry
+        const telemetryVisible = document.getElementById('telemetryVisible');
+        if (telemetryVisible) {
+            telemetryVisible.innerText = data.length;
+        }
     }
 
-    // Draw initial markers
     drawMarkers(ports);
 
-    // Update telemetry visible count based on current bounding box
-    function updateVisibleCount() {
-        let count = 0;
-        const bounds = map.getBounds();
-        ports.forEach(p => {
-            if (p.latitude && p.longitude) {
-                const latLng = L.latLng(p.latitude, p.longitude);
-                if (bounds.contains(latLng)) {
-                    count++;
-                }
-            }
-        });
-        const visibleEl = document.getElementById('telemetryVisible');
-        if (visibleEl) visibleEl.innerText = `${count} Ports`;
-    }
-
-    // Map Event Listeners for Telemetry
-    map.on('zoomend', () => {
-        const zoomEl = document.getElementById('telemetryZoom');
-        if (zoomEl) zoomEl.innerText = map.getZoom();
-        updateVisibleCount();
-    });
-    map.on('moveend', () => {
-        updateVisibleCount();
-    });
-
-    // Helper function to focus map on a port with flyTo bounce and open popup
-    function focusMap(lat, lng, name) {
-        map.flyTo([lat, lng], 11, {
-            animate: true,
-            duration: 1.5
-        });
-        const markerKey = `${lat}_${lng}`;
-        
-        map.once('moveend', () => {
-            if (markers[markerKey]) {
-                markers[markerKey].openPopup();
-                
-                // Highlight row in list
-                document.querySelectorAll('.table-premium tbody tr').forEach(row => {
-                    row.classList.remove('active-row');
-                    if (row.innerHTML.includes(name)) {
-                        row.classList.add('active-row');
-                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                });
-            }
-        });
-
-        // Scroll map into view for mobile
-        document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // Floating Custom Control Actions
-    document.getElementById('mapBtnZoomIn').addEventListener('click', () => map.zoomIn());
-    document.getElementById('mapBtnZoomOut').addEventListener('click', () => map.zoomOut());
-
-    document.getElementById('mapBtnFullscreenCustom').addEventListener('click', function() {
-        const mapContainer = document.getElementById('map').parentElement;
+    // Custom Map Control Buttons handlers
+    document.getElementById('mapBtnZoomIn')?.addEventListener('click', () => map.zoomIn());
+    document.getElementById('mapBtnZoomOut')?.addEventListener('click', () => map.zoomOut());
+    document.getElementById('mapBtnResetCustom')?.addEventListener('click', () => map.setView([20, 0], 2));
+    
+    document.getElementById('mapBtnFullscreenCustom')?.addEventListener('click', () => {
+        const hero = document.querySelector('.map-container-hero');
         if (!document.fullscreenElement) {
-            mapContainer.requestFullscreen().catch(err => {
-                console.error(`Error enabling fullscreen: ${err.message}`);
-            });
+            hero.requestFullscreen().catch(err => alert(`Fullscreen error: ${err.message}`));
         } else {
             document.exitFullscreen();
         }
     });
 
-    document.getElementById('mapBtnResetCustom').addEventListener('click', function() {
+    document.getElementById('mapBtnLocationCustom')?.addEventListener('click', () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                map.setView([pos.coords.latitude, pos.coords.longitude], 8);
+            }, () => alert('Unable to retrieve location.'));
+        }
+    });
+
+    // Telemetry zoom tracking
+    map.on('zoomend', () => {
+        const zoomEl = document.getElementById('telemetryZoom');
+        if (zoomEl) zoomEl.innerText = map.getZoom();
+    });
+
+    // Function to highlight port row in directory table
+    window.focusPortInTable = function(portId) {
+        const row = document.getElementById(`port-row-${portId}`);
+        if (row) {
+            document.querySelectorAll('.table-premium tr').forEach(r => r.classList.remove('active-row'));
+            row.classList.add('active-row');
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
+    // ----------------------------------------------------
+    // 🚢 SMART SHIPPING ROUTE ANALYZER LOGIC
+    // ----------------------------------------------------
+    const formRouteAnalyzer = document.getElementById('formRouteAnalyzer');
+    const btnSubmitAnalyzer = document.getElementById('btnSubmitAnalyzer');
+    const btnResetAnalyzer = document.getElementById('btnResetAnalyzer');
+    const resultsContainer = document.getElementById('routeAnalyzerResults');
+    const btnCloseRouteResults = document.getElementById('btnCloseRouteResults');
+
+    btnResetAnalyzer?.addEventListener('click', function() {
+        formRouteAnalyzer.reset();
+        routeLayersGroup.clearLayers();
+        resultsContainer.style.display = 'none';
         map.setView([20, 0], 2);
     });
 
-    document.getElementById('mapBtnLocationCustom').addEventListener('click', function() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => {
-                map.flyTo([position.coords.latitude, position.coords.longitude], 10);
-            }, err => {
-                alert("Unable to retrieve location.");
-            });
-        } else {
-            alert("Geolocation is not supported by your browser.");
-        }
+    btnCloseRouteResults?.addEventListener('click', function() {
+        resultsContainer.style.display = 'none';
+        routeLayersGroup.clearLayers();
+        map.setView([20, 0], 2);
     });
 
-    // Client-Side Autocomplete Logic
-    const searchInput = document.getElementById('inputSearchQuery');
-    const autocompleteDropdown = document.getElementById('searchAutocompleteDropdown');
-    let activeDropdownIndex = -1;
+    formRouteAnalyzer?.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    searchInput.addEventListener('input', function() {
-        const query = this.value.toLowerCase().trim();
-        if (query.length < 2) {
-            autocompleteDropdown.style.display = 'none';
+        const originId = document.getElementById('selectOriginPort').value;
+        const destId = document.getElementById('selectDestinationPort').value;
+
+        if (originId === destId) {
+            alert('Pelabuhan tujuan harus berbeda dengan pelabuhan asal.');
             return;
         }
 
-        // Filter local ports array (highly performant, sub-millisecond, zero server roundtrips)
-        const suggestions = ports.filter(p => 
-            p.name.toLowerCase().includes(query) || 
-            (p.country_name || '').toLowerCase().includes(query) ||
-            (p.un_locode || '').toLowerCase().includes(query)
-        ).slice(0, 5);
+        const originalBtnHtml = btnSubmitAnalyzer.innerHTML;
+        btnSubmitAnalyzer.disabled = true;
+        btnSubmitAnalyzer.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status"></span> Analyzing Route...`;
 
-        if (suggestions.length === 0) {
-            autocompleteDropdown.style.display = 'none';
-            return;
-        }
+        const formData = new FormData(formRouteAnalyzer);
 
-        let html = '';
-        suggestions.forEach((s, idx) => {
-            const countryCode = s.country_code ? s.country_code.toLowerCase() : '';
-            const flagEmoji = s.country_code 
-                ? String.fromCodePoint(...[...s.country_code.toUpperCase()].map(c => 127397 + c.charCodeAt(0)))
-                : '🚢';
+        fetch("{{ route('ports.analyze-route') }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(res => {
+            btnSubmitAnalyzer.disabled = false;
+            btnSubmitAnalyzer.innerHTML = originalBtnHtml;
 
-            html += `
-                <div class="autocomplete-item" data-index="${idx}" onclick="selectAutocomplete('${s.name}', ${s.latitude}, ${s.longitude})">
-                    <div>
-                        <strong>${flagEmoji} ${s.name}</strong>
-                        <span class="text-muted d-block small" style="font-size: 0.72rem;">${s.country_name} | ${s.un_locode || 'N/A'}</span>
+            if (res.success && res.data) {
+                renderRouteResults(res.data);
+            } else {
+                alert(res.message || 'Data belum tersedia.');
+            }
+        })
+        .catch(err => {
+            btnSubmitAnalyzer.disabled = false;
+            btnSubmitAnalyzer.innerHTML = originalBtnHtml;
+            console.error('Route analysis error:', err);
+            alert('Terjadi kesalahan saat menghubungkan ke server analisis rute.');
+        });
+    });
+
+    function renderRouteResults(data) {
+        // Show results container
+        resultsContainer.style.display = 'block';
+        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Update Title & Badges
+        document.getElementById('resRouteTitle').innerText = `${data.origin.name} → ${data.destination.name}`;
+        
+        const priorityInput = document.querySelector('input[name="priority"]:checked');
+        const priorityLabel = priorityInput ? priorityInput.nextElementSibling.innerText.trim() : 'Safest Mode';
+        document.getElementById('resPriorityBadge').innerText = priorityLabel;
+
+        const containerSelect = document.getElementById('selectContainerType');
+        const containerLabel = containerSelect ? containerSelect.options[containerSelect.selectedIndex].text : 'Standard Container';
+        document.getElementById('resContainerBadge').innerText = containerLabel;
+
+        // Update Summary metrics
+        document.getElementById('resDistanceVal').innerText = `${data.summary.distance_nm} NM`;
+        document.getElementById('resDistanceKm').innerText = `(${data.summary.distance_km} km)`;
+        document.getElementById('resEtaVal').innerText = `${data.summary.eta_days} Days`;
+        document.getElementById('resRiskVal').innerText = `${data.summary.risk_score} / 100`;
+
+        const riskBadge = document.getElementById('resRiskBadge');
+        riskBadge.innerText = `${data.summary.risk_level} Risk`;
+        riskBadge.className = data.summary.risk_level === 'Low' ? 'badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 rounded-pill small fw-semibold px-2 py-0.5' :
+                              (data.summary.risk_level === 'Medium' ? 'badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-20 rounded-pill small fw-semibold px-2 py-0.5' :
+                              'badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-20 rounded-pill small fw-semibold px-2 py-0.5');
+
+        document.getElementById('resWeatherVal').innerText = data.summary.weather_summary;
+        document.getElementById('resCurrencyVal').innerText = data.summary.currency_impact;
+        document.getElementById('resCongestionVal').innerText = data.summary.port_congestion;
+        document.getElementById('resGeopoliticalVal').innerText = data.summary.geopolitical_status;
+        document.getElementById('resRecommendationVal').innerText = data.summary.recommendation;
+
+        // Update AI Insight commentary
+        document.getElementById('resAiInsightText').innerHTML = `
+            <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-quote text-primary fs-3 leading-none me-1 opacity-50"></i>
+                <div>${data.ai_insight}</div>
+            </div>
+        `;
+
+        // Update Timeline
+        const timelineContainer = document.getElementById('resTimelineContainer');
+        let timelineHtml = '';
+
+        data.timeline.forEach((step, idx) => {
+            const stepIcon = step.type === 'Origin' ? 'bi-geo-alt-fill text-danger' : (step.type === 'Destination' ? 'bi-flag-fill text-success' : 'bi-diagram-3-fill text-primary');
+            const stepBadgeClass = step.type === 'Origin' ? 'bg-danger' : (step.type === 'Destination' ? 'bg-success' : 'bg-primary');
+
+            timelineHtml += `
+                <div class="p-3 rounded-3 border border-light bg-light timeline-step-node d-flex align-items-center justify-content-between" onclick="focusRouteNode(${step.latitude}, ${step.longitude}, ${step.port_id})">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center fw-bold text-dark fs-6" style="width: 38px; height: 38px; flex-shrink: 0;">
+                            <i class="bi ${stepIcon}"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge ${stepBadgeClass} bg-opacity-10 text-dark small fw-bold px-2 py-0.5 rounded">${step.type}</span>
+                                <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${step.port_name}</h6>
+                            </div>
+                            <span class="text-muted small" style="font-size: 0.76rem;">${step.country_name} • Congestion: ${step.congestion}</span>
+                        </div>
                     </div>
-                    <i class="bi bi-geo-alt-fill text-primary small"></i>
+                    <div class="text-end">
+                        <span class="badge ${step.risk_level === 'Low' ? 'bg-success' : (step.risk_level === 'Medium' ? 'bg-warning' : 'bg-danger')} bg-opacity-10 text-dark small fw-bold px-2 py-1 rounded-pill" style="font-size: 0.7rem;">
+                            Risk: ${step.risk_score}
+                        </span>
+                    </div>
                 </div>
             `;
-        });
-
-        autocompleteDropdown.innerHTML = html;
-        autocompleteDropdown.style.display = 'block';
-        activeDropdownIndex = -1;
-    });
-
-    // Select Autocomplete item
-    window.selectAutocomplete = function(name, lat, lng) {
-        searchInput.value = name;
-        autocompleteDropdown.style.display = 'none';
-        focusMap(lat, lng, name);
-        performSearch();
-    };
-
-    // Close autocomplete when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!searchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
-            autocompleteDropdown.style.display = 'none';
-        }
-    });
-
-    // Keyboard navigation in Autocomplete
-    searchInput.addEventListener('keydown', function(e) {
-        const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
-        if (autocompleteDropdown.style.display === 'block' && items.length > 0) {
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                activeDropdownIndex = (activeDropdownIndex + 1) % items.length;
-                setActiveItem(items);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                activeDropdownIndex = (activeDropdownIndex - 1 + items.length) % items.length;
-                setActiveItem(items);
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                if (activeDropdownIndex > -1) {
-                    items[activeDropdownIndex].click();
-                }
-            }
-        }
-    });
-
-    function setActiveItem(items) {
-        items.forEach(it => it.classList.remove('active'));
-        if (activeDropdownIndex > -1) {
-            items[activeDropdownIndex].classList.add('active');
-            items[activeDropdownIndex].scrollIntoView({ block: 'nearest' });
-        }
-    }
-
-    // Dynamic Active Filter Chips update
-    const filterForm = document.getElementById('ports-filter-form');
-    const chipsContainer = document.getElementById('filter-chips-container');
-
-    function renderFilterChips() {
-        chipsContainer.innerHTML = '';
-        const formData = new FormData(filterForm);
-        let chipsHtml = '';
-
-        for (const [key, value] of formData.entries()) {
-            if (value !== 'all' && value !== '') {
-                let displayName = value;
-                
-                // For Country ID, resolve country name from select option label
-                if (key === 'country_id') {
-                    const option = filterForm.querySelector(`select[name="country_id"] option[value="${value}"]`);
-                    displayName = option ? option.text : value;
-                }
-
-                chipsHtml += `
-                    <div class="filter-chip-badge">
-                        <span>${displayName}</span>
-                        <span class="filter-chip-close" onclick="clearFilterField('${key}')"><i class="bi bi-x"></i></span>
+            if (idx < data.timeline.length - 1) {
+                timelineHtml += `
+                    <div class="d-flex justify-content-center my-n1">
+                        <i class="bi bi-arrow-down text-muted fs-6 opacity-50"></i>
                     </div>
                 `;
             }
+        });
+        timelineContainer.innerHTML = timelineHtml;
+
+        // Render Alternative Route if present
+        const altContainer = document.getElementById('resAlternativeContainer');
+        if (data.alternative_route) {
+            altContainer.style.display = 'block';
+            const alt = data.alternative_route;
+            document.getElementById('resAltOrigTitle').innerText = alt.original.route_summary;
+            document.getElementById('resAltOrigRisk').innerText = alt.original.risk_score;
+            document.getElementById('resAltOrigEta').innerText = `${alt.original.eta_days} Days`;
+
+            document.getElementById('resAltNewTitle').innerText = alt.alternative.route_summary;
+            document.getElementById('resAltNewRisk').innerText = alt.alternative.risk_score;
+            document.getElementById('resAltNewEta').innerText = `${alt.alternative.eta_days} Days`;
+            document.getElementById('resAltSavingsBadge').innerText = `-${alt.alternative.savings_risk_percent}% Risk Savings`;
+            document.getElementById('resAltRecommendationText').innerText = alt.alternative.recommendation_text;
+        } else {
+            altContainer.style.display = 'none';
         }
 
-        if (chipsHtml) {
-            chipsContainer.innerHTML = `
-                <span class="text-muted small fw-bold me-2" style="font-size: 0.75rem;">Active Filters:</span>
-                <div class="d-flex flex-wrap gap-2">${chipsHtml}</div>
+        // Draw Map Polyline Route & Waypoints
+        drawRouteOnMap(data);
+    }
+
+    function drawRouteOnMap(data) {
+        routeLayersGroup.clearLayers();
+
+        const latLngs = [];
+        const routeColor = data.summary.risk_score < 40 ? '#10B981' : (data.summary.risk_score < 65 ? '#F59E0B' : '#EF4444');
+
+        data.timeline.forEach(node => {
+            const latLng = [node.latitude, node.longitude];
+            latLngs.push(latLng);
+
+            const iconHtml = node.type === 'Origin' 
+                ? `<div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 28px; height: 28px; font-weight: 700; font-size: 14px;"><i class="bi bi-geo-alt-fill"></i></div>`
+                : (node.type === 'Destination' 
+                    ? `<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 28px; height: 28px; font-weight: 700; font-size: 14px;"><i class="bi bi-flag-fill"></i></div>`
+                    : `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 24px; height: 24px; font-weight: 700; font-size: 12px;"><i class="bi bi-diagram-3-fill"></i></div>`);
+
+            const customIcon = L.divIcon({
+                html: iconHtml,
+                className: 'custom-route-marker-icon',
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+
+            const popupHtml = `
+                <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif; min-width: 240px;">
+                    <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+                        <span class="badge ${node.type === 'Origin' ? 'bg-danger' : (node.type === 'Destination' ? 'bg-success' : 'bg-primary')} px-2 py-0.5 rounded">${node.type}</span>
+                        <span class="fw-bold small text-dark">${node.port_name}</span>
+                    </div>
+                    <div class="text-muted small" style="font-size: 0.78rem; line-height: 1.6;">
+                        <div>Country: <strong class="text-dark">${node.country_name}</strong></div>
+                        <div>Status: <strong class="text-success">${node.status}</strong></div>
+                        <div>Congestion Index: <strong class="text-dark">${node.congestion}</strong></div>
+                        <div>Weather: <strong class="text-dark">${node.weather}</strong></div>
+                        <div>Risk Score: <strong class="text-dark">${node.risk_score} (${node.risk_level})</strong></div>
+                    </div>
+                </div>
             `;
+
+            const marker = L.marker(latLng, { icon: customIcon }).bindPopup(popupHtml, { className: 'premium-leaflet-popup' });
+            routeLayersGroup.addLayer(marker);
+        });
+
+        // Add Animated Polyline
+        const polyline = L.polyline(latLngs, {
+            color: routeColor,
+            weight: 5,
+            opacity: 0.85,
+            className: 'animated-polyline'
+        }).addTo(routeLayersGroup);
+
+        // Fit map bounds to encompass the full route smoothly
+        if (latLngs.length > 0) {
+            map.fitBounds(polyline.getBounds(), { padding: [60, 60] });
         }
     }
 
-    window.clearFilterField = function(fieldName) {
-        const field = filterForm.querySelector(`[name="${fieldName}"]`);
+    window.focusRouteNode = function(lat, lng, portId) {
+        map.setView([lat, lng], 8, { animate: true });
+        routeLayersGroup.eachLayer(layer => {
+            if (layer.getLatLng && Math.abs(layer.getLatLng().lat - lat) < 0.0001 && Math.abs(layer.getLatLng().lng - lng) < 0.0001) {
+                layer.openPopup();
+            }
+        });
+    };
+
+    // Filter Ajax Handlers
+    const filterForm = document.getElementById('ports-filter-form');
+    const searchInput = document.getElementById('inputSearchQuery');
+    let searchTimeout = null;
+
+    function renderFilterChips() {
+        const chipsContainer = document.getElementById('filter-chips-container');
+        if (!chipsContainer) return;
+        
+        chipsContainer.innerHTML = '';
+        const formData = new FormData(filterForm);
+        let activeCount = 0;
+
+        for (const [key, value] of formData.entries()) {
+            if (value && value !== 'all' && value !== '') {
+                activeCount++;
+                let labelText = `${key}: ${value}`;
+                
+                if (key === 'search') labelText = `Search: "${value}"`;
+                if (key === 'region') labelText = `Region: ${value}`;
+                if (key === 'country_id') {
+                    const option = filterForm.querySelector(`select[name="country_id"] option[value="${value}"]`);
+                    labelText = `Country: ${option ? option.text : value}`;
+                }
+                if (key === 'harbor_size') labelText = `Size: ${value}`;
+                if (key === 'harbor_type') labelText = `Type: ${value}`;
+                if (key === 'status') labelText = `Status: ${value}`;
+
+                const chip = document.createElement('span');
+                chip.className = 'filter-chip-badge';
+                chip.innerHTML = `
+                    ${labelText}
+                    <span class="filter-chip-close" onclick="removeSingleFilter('${key}')">&times;</span>
+                `;
+                chipsContainer.appendChild(chip);
+            }
+        }
+
+        if (activeCount > 0) {
+            const clearAllBtn = document.createElement('button');
+            clearAllBtn.type = 'button';
+            clearAllBtn.className = 'btn btn-link text-danger text-decoration-none p-0 ms-2 small fw-semibold';
+            clearAllBtn.style.fontSize = '0.78rem';
+            clearAllBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Clear All';
+            clearAllBtn.onclick = resetAllFilters;
+            chipsContainer.appendChild(clearAllBtn);
+        }
+    }
+
+    window.removeSingleFilter = function(key) {
+        const field = filterForm.querySelector(`[name="${key}"]`);
         if (field) {
             if (field.tagName === 'SELECT') {
                 field.value = 'all';
@@ -950,17 +1325,15 @@
         }
     };
 
-    // Reset filters panel button
-    document.getElementById('btn-reset-filters-panel').addEventListener('click', () => {
+    function resetAllFilters() {
         filterForm.reset();
-        filterForm.querySelectorAll('select').forEach(sel => sel.value = 'all');
-        filterForm.querySelector('input[name="search"]').value = '';
+        filterForm.querySelectorAll('select').forEach(s => s.value = 'all');
+        filterForm.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
         performSearch();
-    });
+    }
 
-    // AJAX Form and Search Submission
-    let searchTimeout;
-    
+    document.getElementById('btn-reset-filters-panel')?.addEventListener('click', resetAllFilters);
+
     function performSearch() {
         renderFilterChips();
 
@@ -971,12 +1344,10 @@
                 params.append(key, value);
             }
         }
-        
-        // Show Skeleton loading state instead of freezing
+
         const tbody = document.querySelector('table tbody');
         if (tbody) {
             tbody.innerHTML = `
-                <tr class="shimmer-skeleton-row"><td colspan="8" class="py-3 bg-light opacity-50">&nbsp;</td></tr>
                 <tr class="shimmer-skeleton-row"><td colspan="8" class="py-3 bg-light opacity-50">&nbsp;</td></tr>
                 <tr class="shimmer-skeleton-row"><td colspan="8" class="py-3 bg-light opacity-50">&nbsp;</td></tr>
             `;
@@ -990,42 +1361,27 @@
         .then(response => response.json())
         .then(res => {
             if (res.success) {
-                // Update table body
                 if (tbody) tbody.innerHTML = res.html;
                 
-                // Update pagination container
                 const pagContainer = document.querySelector('.card-footer');
                 if (pagContainer) {
                     if (res.total > 0) {
                         pagContainer.style.setProperty('display', 'flex', 'important');
-                        
                         const infoDiv = pagContainer.querySelector('.pagination-info');
-                        if (infoDiv) {
-                            infoDiv.innerHTML = `Showing results of ${res.total} ports`;
-                        }
-                        
+                        if (infoDiv) infoDiv.innerHTML = `Showing results of ${res.total} ports`;
                         const linksDiv = pagContainer.querySelector('.pagination-links');
-                        if (linksDiv) {
-                            linksDiv.innerHTML = res.pagination;
-                        }
+                        if (linksDiv) linksDiv.innerHTML = res.pagination;
                     } else {
                         pagContainer.style.setProperty('display', 'none', 'important');
                     }
                 }
                 
-                // Redraw map markers
                 drawMarkers(res.mapPorts);
-                
-                // Update active count badge
                 const activeBadge = document.querySelector('.badge.bg-white span');
-                if (activeBadge) {
-                    activeBadge.innerHTML = `Active Ports Tracked: ${res.mapPorts.length}`;
-                }
+                if (activeBadge) activeBadge.innerHTML = `Active Ports Tracked: ${res.mapPorts.length}`;
             }
         })
-        .catch(err => {
-            console.error('Search error:', err);
-        });
+        .catch(err => console.error('Search error:', err));
     }
 
     // Debounce search input
@@ -1045,66 +1401,6 @@
     filterForm.addEventListener('submit', (e) => {
         e.preventDefault();
         performSearch();
-    });
-
-    // Intercept pagination links to route through AJAX
-    document.addEventListener('click', function(e) {
-        const pagLink = e.target.closest('.pagination a');
-        if (pagLink) {
-            e.preventDefault();
-            const url = new URL(pagLink.href);
-            const page = url.searchParams.get('page');
-            
-            const formData = new FormData(filterForm);
-            const params = new URLSearchParams();
-            for (const [key, value] of formData.entries()) {
-                if (value !== 'all' && value !== '') {
-                    params.append(key, value);
-                }
-            }
-            params.set('page', page);
-
-            const tbody = document.querySelector('table tbody');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr class="shimmer-skeleton-row"><td colspan="8" class="py-3 bg-light opacity-50">&nbsp;</td></tr>
-                    <tr class="shimmer-skeleton-row"><td colspan="8" class="py-3 bg-light opacity-50">&nbsp;</td></tr>
-                `;
-            }
-
-            fetch(`${window.location.pathname}?${params.toString()}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(res => {
-                if (res.success) {
-                    if (tbody) tbody.innerHTML = res.html;
-                    const pagContainer = document.querySelector('.card-footer');
-                    if (pagContainer) {
-                        if (res.total > 0) {
-                            pagContainer.style.setProperty('display', 'flex', 'important');
-                            
-                            const infoDiv = pagContainer.querySelector('.pagination-info');
-                            if (infoDiv) {
-                                infoDiv.innerHTML = `Showing results of ${res.total} ports`;
-                            }
-                            
-                            const linksDiv = pagContainer.querySelector('.pagination-links');
-                            if (linksDiv) {
-                                linksDiv.innerHTML = res.pagination;
-                            }
-                        } else {
-                            pagContainer.style.setProperty('display', 'none', 'important');
-                        }
-                    }
-                }
-            })
-            .catch(err => {
-                console.error('Pagination error:', err);
-            });
-        }
     });
 
     // Initial render of chips on load
