@@ -144,6 +144,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin settings
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('diagnose-api', [AdminDashboardController::class, 'diagnoseApi'])->name('diagnose-api');
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->except(['show']);
         Route::resource('ports', \App\Http\Controllers\Admin\PortController::class)->except(['show']);
         Route::resource('articles', \App\Http\Controllers\Admin\ArticleController::class)->except(['show']);
