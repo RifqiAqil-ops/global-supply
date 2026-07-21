@@ -124,6 +124,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('currency', [\App\Http\Controllers\User\CurrencyController::class, 'index'])->name('currency.index');
 
     Route::get('risk', [\App\Http\Controllers\User\RiskController::class, 'index'])->name('risk.index');
+    Route::get('risk-history', [\App\Http\Controllers\User\RiskHistoryController::class, 'index'])->name('risk-history.index');
+
+    Route::get('compare', [\App\Http\Controllers\User\CompareController::class, 'index'])->name('compare.index');
+
+    Route::get('watchlists', [\App\Http\Controllers\User\WatchlistController::class, 'index'])->name('watchlists.index');
+    Route::post('watchlists', [\App\Http\Controllers\User\WatchlistController::class, 'store'])->name('watchlists.store');
+    Route::put('watchlists/{watchlist}', [\App\Http\Controllers\User\WatchlistController::class, 'update'])->name('watchlists.update');
+    Route::delete('watchlists/{watchlist}', [\App\Http\Controllers\User\WatchlistController::class, 'destroy'])->name('watchlists.destroy');
+
+    Route::get('ports', [\App\Http\Controllers\Admin\PortController::class, 'index'])->name('ports.index');
 
     Route::get('weather', [\App\Http\Controllers\User\WeatherController::class, 'index'])->name('weather.index');
 
