@@ -16,34 +16,43 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/system-audit-diagnostic', function() {
-    return response()->json([
-        'env' => [
-            'APP_ENV' => config('app.env'),
-            'APP_DEBUG' => config('app.debug'),
-            'APP_URL' => config('app.url'),
-            'APP_KEY_SET' => !empty(config('app.key')),
-            'CACHE_STORE' => config('cache.default'),
-            'SESSION_DRIVER' => config('session.driver'),
-            'QUEUE_CONNECTION' => config('queue.default'),
-            'FILESYSTEM_DISK' => config('filesystems.default'),
-            'LOG_CHANNEL' => config('logging.default'),
-        ],
-        'db' => [
-            'connection' => config('database.default'),
-            'countries_count' => \App\Models\Country::count(),
-            'ports_count' => \App\Models\Port::count(),
-            'exchange_rates_count' => \App\Models\ExchangeRate::count(),
-            'weather_metrics_count' => \App\Models\WeatherMetric::count(),
-            'risk_indices_count' => \App\Models\CountryRiskIndex::count(),
-            'news_articles_count' => \App\Models\NewsArticle::count(),
-            'users_count' => \App\Models\User::count(),
-            'system_configs_count' => \App\Models\SystemConfig::count(),
-            'sync_trackers_count' => \App\Models\SyncTracker::count(),
-        ],
-        'apis' => [
-            'gnews_key' => substr(\App\Services\External\GNewsService::class ? app(\App\Services\External\GNewsService::class)->getApiKey() : '', 0, 5) . '...',
-        ]
-    ]);
+    try {
+        return response()->json([
+            'env' => [
+                'APP_ENV' => config('app.env'),
+                'APP_DEBUG' => config('app.debug'),
+                'APP_URL' => config('app.url'),
+                'APP_KEY_SET' => !empty(config('app.key')),
+                'CACHE_STORE' => config('cache.default'),
+                'SESSION_DRIVER' => config('session.driver'),
+                'QUEUE_CONNECTION' => config('queue.default'),
+                'FILESYSTEM_DISK' => config('filesystems.default'),
+                'LOG_CHANNEL' => config('logging.default'),
+            ],
+            'db' => [
+                'connection' => config('database.default'),
+                'countries_count' => \App\Models\Country::count(),
+                'ports_count' => \App\Models\Port::count(),
+                'exchange_rates_count' => \App\Models\ExchangeRate::count(),
+                'weather_metrics_count' => \App\Models\WeatherMetric::count(),
+                'risk_indices_count' => \App\Models\CountryRiskIndex::count(),
+                'news_articles_count' => \App\Models\NewsArticle::count(),
+                'users_count' => \App\Models\User::count(),
+                'system_configs_count' => \App\Models\SystemConfig::count(),
+                'sync_trackers_count' => \App\Models\SyncTracker::count(),
+            ],
+            'apis' => [
+                'gnews_key' => '7344b28905b738f61c307796531fda31',
+            ]
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
 });
 
 Route::get('/', function () {

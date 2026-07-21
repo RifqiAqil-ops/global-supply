@@ -6,7 +6,6 @@ async function runFullParityAudit() {
     console.log('===========================================================');
 
     const railwayUrl = 'https://global-supply-production.up.railway.app';
-    const localUrl = 'http://127.0.0.1:8000';
 
     const browser = await puppeteer.launch({
         headless: 'new',
@@ -19,7 +18,7 @@ async function runFullParityAudit() {
     // -----------------------------------------------------------------
     // PHASE 1 & 2 & 3: Environment, Database & Diagnostic Fetch
     // -----------------------------------------------------------------
-    console.log('\n[PHASE 1 & 2] Fetching Railway Audit Diagnostic Data...');
+    console.log('\n[PHASE 1 & 2] Logged in as Admin to Railway Production...');
     await page.goto(`${railwayUrl}/login`, { waitUntil: 'networkidle2' });
     await page.type('#email', 'admin@gscrip.com');
     await page.type('#password', 'password');
@@ -28,21 +27,31 @@ async function runFullParityAudit() {
         page.waitForNavigation({ waitUntil: 'networkidle2' }).catch(() => {})
     ]);
 
+    console.log('Fetching Railway Audit Diagnostic Data...');
     const railwayDiagResp = await page.goto(`${railwayUrl}/system-audit-diagnostic`, { waitUntil: 'networkidle2' });
-    const railwayDiag = JSON.parse(await railwayDiagResp.text());
-
-    console.log('\nRailway Diagnostic Output:');
-    console.log(JSON.stringify(railwayDiag, null, 2));
+    const text = await railwayDiagResp.text();
+    let railwayDiag = {};
+    try {
+        railwayDiag = JSON.parse(text);
+        console.log('\n===========================================================');
+        console.log('RAILWAY DIAGNOSTIC OUTPUT (PHASE 1 & 2):');
+        console.log('===========================================================');
+        console.log(JSON.stringify(railwayDiag, null, 2));
+    } catch (e) {
+        console.log(`Failed to parse JSON: ${text.slice(0, 500)}`);
+    }
 
     // -----------------------------------------------------------------
     // PHASE 4: Feature Suite Audit across Pages
     // -----------------------------------------------------------------
     const routesToTest = [
-        { name: 'Dashboard', path: '/dashboard' },
+        { name: 'Dashboard', path: '/user/dashboard' },
+        { name: 'Admin Dashboard', path: '/admin/dashboard' },
         { name: 'Countries Index', path: '/countries' },
         { name: 'Country Detail (ID)', path: '/countries/1' },
         { name: 'Currency Matrix', path: '/currency' },
         { name: 'Risk Dashboard', path: '/risk' },
+        { name: 'Weather Metrics', path: '/weather' },
         { name: 'Geopolitical News', path: '/news' },
         { name: 'Admin Users', path: '/admin/users' },
         { name: 'Admin Ports', path: '/admin/ports' },
@@ -64,9 +73,8 @@ async function runFullParityAudit() {
         const content = await page.content();
 
         const has500 = content.includes('500 Server Error') || content.includes('Whoops');
-        const has404 = status === 404;
 
-        console.log(`[${r.name}] -> Status: ${status} | Load Time: ${duration}ms | 500 Error: ${has500}`);
+        console.log(`[${r.name}] (${r.path}) -> Status: ${status} | Load Time: ${duration}ms | 500 Error: ${has500}`);
         routeAuditResults.push({
             name: r.name,
             path: r.path,
@@ -90,7 +98,6 @@ async function runFullParityAudit() {
         const resp = await page.goto(searchUrl, { waitUntil: 'networkidle2' });
         const html = await page.content();
         
-        // Count country cards or rows rendered
         const cardCount = (html.match(/card-premium/g) || []).length;
         console.log(`Search Query: "${term}" -> HTTP Status: ${resp.status()} | Cards Found: ${cardCount}`);
     }
