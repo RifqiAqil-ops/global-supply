@@ -31,7 +31,7 @@ class NewsArticleSeeder extends Seeder
                 'description' => 'Container ship queues build up across global ports as vessels reroute around Africa, straining shipping lanes.',
                 'content' => 'Global container shipping routes are facing unprecedented gridlocks, with major logistics centers reporting vessel queues not seen since the peak of the pandemic supply shocks.',
                 'source_name' => 'Logistics Intelligence',
-                'source_url' => null, // Demo fallback data
+                'source_url' => '', // Demo fallback data (empty string)
                 'category' => 'logistics',
                 'sentiment' => 'negative',
                 'country_id' => null,
@@ -41,7 +41,7 @@ class NewsArticleSeeder extends Seeder
                 'description' => 'A new round of multilateral tariff disputes threatens export projections for developing industrial regions.',
                 'content' => 'Negotiators from major trading blocs are deadlocked on tariff levels for industrial goods, causing economic forecasters to downgrade manufacturing output projections.',
                 'source_name' => 'Global Trade Review',
-                'source_url' => null, // Demo fallback data
+                'source_url' => '', // Demo fallback data (empty string)
                 'category' => 'economic',
                 'sentiment' => 'neutral',
                 'country_id' => null,
@@ -51,7 +51,7 @@ class NewsArticleSeeder extends Seeder
                 'description' => 'Improved regional warehousing capacity has offset some shipping bottlenecks, boosting general supply reliability.',
                 'content' => 'The quarterly global supply chain resilience tracker indicates a positive uptick, primarily driven by massive investments in domestic distribution infrastructure.',
                 'source_name' => 'SaaS Logistics Today',
-                'source_url' => null, // Demo fallback data
+                'source_url' => '', // Demo fallback data (empty string)
                 'category' => 'logistics',
                 'sentiment' => 'positive',
                 'country_id' => null,
@@ -76,7 +76,7 @@ class NewsArticleSeeder extends Seeder
                     'description' => "Domestic shipping and import-export activity in {$c->name} registers positive indicators.",
                     'content' => "Economic forecasters have revised {$c->name}'s industrial export predictions upward, citing strong consumption patterns and reliable cargo turnarounds.",
                     'source_name' => 'Regional Logistics Portal',
-                    'source_url' => null, // Demo fallback data
+                    'source_url' => '', // Demo fallback data (empty string)
                     'category' => 'economic',
                     'sentiment' => 'positive',
                     'country_id' => $c->id,
@@ -86,7 +86,7 @@ class NewsArticleSeeder extends Seeder
                     'description' => "New policy frameworks in {$c->name} aim to mitigate potential transit shocks across nearby borders.",
                     'content' => "Customs authorities in {$c->name} are accelerating clearance processes to secure transit capacity and sustain supply integrity.",
                     'source_name' => 'Supply Chain Sentinel',
-                    'source_url' => null, // Demo fallback data
+                    'source_url' => '', // Demo fallback data (empty string)
                     'category' => 'geopolitical',
                     'sentiment' => 'neutral',
                     'country_id' => $c->id,
