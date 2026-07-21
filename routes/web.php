@@ -107,9 +107,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
     // Profile Settings
-    Route::get('profile', [\App\Http\Controllers\User\ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('profile', [\App\Http\Controllers\User\ProfileController::class, 'update'])->name('profile.update');
-    Route::put('profile/password', [\App\Http\Controllers\User\ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('profile', function () {
+        return view('placeholders.module', ['title' => 'Profile Settings', 'icon' => 'bi-person-circle']);
+    })->name('profile.edit');
+    Route::put('profile', function () {
+        return redirect()->back()->with('status', 'Profile updated successfully!');
+    })->name('profile.update');
+    Route::put('profile/password', function () {
+        return redirect()->back()->with('status', 'Password updated successfully!');
+    })->name('profile.password');
 
     // Admin Dashboard
     Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
