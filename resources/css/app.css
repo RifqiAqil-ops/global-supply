@@ -1014,7 +1014,7 @@ body, .typo-body {
     top: 0;
     left: 0;
     right: 0;
-    height: 72px;
+    min-height: 72px;
     background-color: #FFFFFF !important;
     border-bottom: 1px solid #E5E7EB !important;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.015) !important;
@@ -1042,6 +1042,13 @@ body, .typo-body {
     font-size: 0.9rem;
 }
 
+@media (max-width: 991.98px) {
+    .nav-link-premium {
+        padding: 10px 16px !important;
+        width: 100%;
+    }
+}
+
 .nav-link-premium:hover {
     color: #2563EB !important;
 }
@@ -1051,15 +1058,17 @@ body, .typo-body {
     font-weight: 600 !important;
 }
 
-.nav-link-premium.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 16px;
-    right: 16px;
-    height: 3px;
-    background-color: #2563EB;
-    border-radius: 3px 3px 0 0;
+@media (min-width: 992px) {
+    .nav-link-premium.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 16px;
+        right: 16px;
+        height: 3px;
+        background-color: #2563EB;
+        border-radius: 3px 3px 0 0;
+    }
 }
 
 /* Premium Dropdowns (Desktop & Collapse) */
