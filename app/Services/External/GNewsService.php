@@ -75,6 +75,8 @@ class GNewsService extends BaseApiClient
             return $summary;
         }
 
+        $apiKey = $this->getApiKey();
+
         // 1. Fetch top headlines first
         try {
             $params = [
