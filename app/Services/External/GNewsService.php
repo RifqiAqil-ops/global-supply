@@ -30,10 +30,7 @@ class GNewsService extends BaseApiClient
 
     public function __construct(NewsRepositoryInterface $newsRepository)
     {
-        parent::__construct(
-            config('gscrip.api.gnews.base_url', config('services.gnews.base_url', 'https://gnews.io/api/v4')),
-            'GNews'
-        );
+        parent::__construct('https://gnews.io/api/v4', 'GNews');
         $this->newsRepository = $newsRepository;
     }
 
@@ -171,6 +168,7 @@ class GNewsService extends BaseApiClient
                 } catch (Throwable $e) {
                     Log::error("GNews API request failed for query '{$queryString}': " . $e->getMessage());
                     $summary['failed']++;
+                    $summary['errors'][] = $e->getMessage();
                 }
             }
         }
