@@ -434,8 +434,8 @@
                 <div class="col-md-5">
                     <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Origin Port</label>
                     <div class="combobox-wrapper">
-                        <input type="hidden" id="selectOriginPort" name="origin_port_id" value="{{ $allActivePorts->first()->id ?? '' }}" required>
-                        <input type="text" class="form-control combobox-input" id="inputOriginPortSearch" placeholder="Type port, country, code (e.g. Belawan, Indo)..." autocomplete="off" value="{{ $allActivePorts->first() ? $allActivePorts->first()->name . ' (' . ($allActivePorts->first()->country->name ?? 'N/A') . ') - ' . ($allActivePorts->first()->port_code ?? $allActivePorts->first()->un_locode) : '' }}">
+                        <input type="hidden" id="selectOriginPort" name="origin_port_id" value="" required>
+                        <input type="text" class="form-control combobox-input" id="inputOriginPortSearch" placeholder="Search origin port..." autocomplete="off" value="">
                         <div class="combobox-dropdown" id="dropdownOriginPort"></div>
                     </div>
                 </div>
@@ -444,8 +444,8 @@
                 <div class="col-md-5">
                     <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-flag-fill text-success me-1"></i>Destination Port</label>
                     <div class="combobox-wrapper">
-                        <input type="hidden" id="selectDestinationPort" name="destination_port_id" value="{{ count($allActivePorts) > 1 ? $allActivePorts[1]->id : '' }}" required>
-                        <input type="text" class="form-control combobox-input" id="inputDestinationPortSearch" placeholder="Type port, country, code (e.g. Singapore, Shanghai)..." autocomplete="off" value="{{ count($allActivePorts) > 1 ? $allActivePorts[1]->name . ' (' . ($allActivePorts[1]->country->name ?? 'N/A') . ') - ' . ($allActivePorts[1]->port_code ?? $allActivePorts[1]->un_locode) : '' }}">
+                        <input type="hidden" id="selectDestinationPort" name="destination_port_id" value="" required>
+                        <input type="text" class="form-control combobox-input" id="inputDestinationPortSearch" placeholder="Search destination port..." autocomplete="off" value="">
                         <div class="combobox-dropdown" id="dropdownDestinationPort"></div>
                     </div>
                 </div>
@@ -476,7 +476,7 @@
                     <button type="button" class="btn btn-outline-secondary px-3 btn-sm rounded-3 fw-semibold" id="btnResetAnalyzer">
                         <i class="bi bi-arrow-counterclockwise me-1"></i>Reset Selection
                     </button>
-                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-3 fw-semibold shadow-sm" id="btnSubmitAnalyzer">
+                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-3 fw-semibold shadow-sm" id="btnSubmitAnalyzer" disabled>
                         <i class="bi bi-play-circle-fill me-1"></i>Analyze Route
                     </button>
                 </div>
@@ -1123,6 +1123,19 @@
     // ----------------------------------------------------
     // 🔍 SEARCHABLE COMBOBOX CONTROLS (GitHub/Notion Style)
     // ----------------------------------------------------
+    function updateAnalyzerSubmitButtonState() {
+        const originVal = document.getElementById('selectOriginPort')?.value;
+        const destVal = document.getElementById('selectDestinationPort')?.value;
+        const btnSubmit = document.getElementById('btnSubmitAnalyzer');
+        if (btnSubmit) {
+            if (originVal && destVal && originVal !== destVal) {
+                btnSubmit.disabled = false;
+            } else {
+                btnSubmit.disabled = true;
+            }
+        }
+    }
+
     function initCombobox(inputId, hiddenId, dropdownId) {
         const input = document.getElementById(inputId);
         const hidden = document.getElementById(hiddenId);
@@ -1165,6 +1178,7 @@
                     hidden.value = port.id;
                     input.value = label;
                     dropdown.style.display = 'none';
+                    updateAnalyzerSubmitButtonState();
                 };
                 dropdown.appendChild(item);
             });
@@ -1176,6 +1190,10 @@
         });
 
         input.addEventListener('input', function() {
+            if (input.value.trim() === '') {
+                hidden.value = '';
+                updateAnalyzerSubmitButtonState();
+            }
             renderOptions(input.value);
             dropdown.style.display = 'block';
         });
@@ -1189,6 +1207,7 @@
 
     initCombobox('inputOriginPortSearch', 'selectOriginPort', 'dropdownOriginPort');
     initCombobox('inputDestinationPortSearch', 'selectDestinationPort', 'dropdownDestinationPort');
+    updateAnalyzerSubmitButtonState();
 
     // ----------------------------------------------------
     // 🚢 SMART SHIPPING ROUTE ANALYZER LOGIC
@@ -1201,22 +1220,27 @@
 
     btnResetAnalyzer?.addEventListener('click', function() {
         formRouteAnalyzer.reset();
-        if (allActivePortsData.length > 0) {
-            const p1 = allActivePortsData[0];
-            document.getElementById('selectOriginPort').value = p1.id;
-            document.getElementById('inputOriginPortSearch').value = `${p1.name} (${p1.country ? p1.country.name : 'N/A'}) - ${p1.port_code || p1.un_locode}`;
+        document.getElementById('selectOriginPort').value = '';
+        document.getElementById('inputOriginPortSearch').value = '';
+        document.getElementById('selectDestinationPort').value = '';
+        document.getElementById('inputDestinationPortSearch').value = '';
+
+        if (vesselAnimationInterval) {
+            clearInterval(vesselAnimationInterval);
+            vesselAnimationInterval = null;
         }
-        if (allActivePortsData.length > 1) {
-            const p2 = allActivePortsData[1];
-            document.getElementById('selectDestinationPort').value = p2.id;
-            document.getElementById('inputDestinationPortSearch').value = `${p2.name} (${p2.country ? p2.country.name : 'N/A'}) - ${p2.port_code || p2.un_locode}`;
-        }
+
         routeLayersGroup.clearLayers();
         resultsContainer.style.display = 'none';
         map.setView([20, 0], 2);
+        updateAnalyzerSubmitButtonState();
     });
 
     btnCloseRouteResults?.addEventListener('click', function() {
+        if (vesselAnimationInterval) {
+            clearInterval(vesselAnimationInterval);
+            vesselAnimationInterval = null;
+        }
         resultsContainer.style.display = 'none';
         routeLayersGroup.clearLayers();
         map.setView([20, 0], 2);
