@@ -128,23 +128,60 @@
         100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
 
-    /* Autocomplete Dropdown styling */
-    .autocomplete-wrapper {
+    /* Searchable Combobox Styling */
+    .combobox-wrapper {
         position: relative;
     }
-    .autocomplete-dropdown {
+    .combobox-input {
+        background-color: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 14px !important;
+        font-size: 0.85rem !important;
+        padding: 10px 14px !important;
+        transition: all 0.2s ease !important;
+    }
+    .combobox-input:focus {
+        background-color: #FFFFFF !important;
+        border-color: #2563EB !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+    }
+    .combobox-dropdown {
         position: absolute;
         top: 105%;
         left: 0;
         right: 0;
         background: #FFFFFF;
-        border: 1px solid #E5E7EB;
+        border: 1px solid #E2E8F0;
         border-radius: 16px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.1);
         z-index: 10000;
-        max-height: 250px;
+        max-height: 260px;
         overflow-y: auto;
         display: none;
+    }
+    .combobox-item {
+        padding: 10px 14px;
+        cursor: pointer;
+        font-size: 0.83rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #F1F5F9;
+        transition: background 0.15s ease;
+    }
+    .combobox-item:last-child {
+        border-bottom: none;
+    }
+    .combobox-item:hover, .combobox-item.active {
+        background-color: #EFF6FF;
+    }
+    .combobox-item .port-name {
+        font-weight: 600;
+        color: #0F172A;
+    }
+    .combobox-item .port-meta {
+        font-size: 0.75rem;
+        color: #64748B;
     }
 
     /* Accordion Filter Panel */
@@ -385,63 +422,53 @@
                     <span class="text-muted small" style="font-size: 0.78rem;">Determine the safest, most efficient international shipping lanes based on live risk & weather intelligence</span>
                 </div>
             </div>
-            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 px-3 py-1.5 rounded-pill small fw-semibold">AI Powered</span>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 px-3 py-1.5 rounded-pill small fw-semibold">Intelligence Active</span>
         </div>
         <div class="card-body p-4">
             <form id="formRouteAnalyzer" class="row g-3">
                 @csrf
-                <!-- Origin Port -->
-                <div class="col-md-6 col-lg-3">
+                <!-- Default hidden field for container_type to satisfy backend validation without breaking contract -->
+                <input type="hidden" name="container_type" value="container">
+
+                <!-- 1. Origin Port Searchable Combobox -->
+                <div class="col-md-5">
                     <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Origin Port</label>
-                    <select class="form-select bg-light border-light-subtle rounded-3" id="selectOriginPort" name="origin_port_id" required style="font-size: 0.85rem;">
-                        <option value="">Select Origin Port...</option>
-                        @foreach($allActivePorts as $p)
-                            <option value="{{ $p->id }}" {{ $loop->first ? 'selected' : '' }}>{{ $p->name }} ({{ $p->country ? $p->country->name : 'N/A' }}) - {{ $p->port_code ?? $p->un_locode }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Destination Port -->
-                <div class="col-md-6 col-lg-3">
-                    <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-flag-fill text-success me-1"></i>Destination Port</label>
-                    <select class="form-select bg-light border-light-subtle rounded-3" id="selectDestinationPort" name="destination_port_id" required style="font-size: 0.85rem;">
-                        <option value="">Select Destination Port...</option>
-                        @foreach($allActivePorts as $p)
-                            <option value="{{ $p->id }}" {{ $loop->count > 1 && $loop->index === 1 ? 'selected' : '' }}>{{ $p->name }} ({{ $p->country ? $p->country->name : 'N/A' }}) - {{ $p->port_code ?? $p->un_locode }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Priority Selector -->
-                <div class="col-md-6 col-lg-3">
-                    <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-sliders me-1 text-primary"></i>Priority Mode</label>
-                    <div class="d-flex gap-2">
-                        <input type="radio" class="btn-check" name="priority" id="prioritySafest" value="safest" checked>
-                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-1.5" for="prioritySafest">
-                            <i class="bi bi-shield-check me-1"></i>Safest
-                        </label>
-
-                        <input type="radio" class="btn-check" name="priority" id="priorityFastest" value="fastest">
-                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-1.5" for="priorityFastest">
-                            <i class="bi bi-lightning-charge me-1"></i>Fastest
-                        </label>
-
-                        <input type="radio" class="btn-check" name="priority" id="priorityCheapest" value="cheapest">
-                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-1.5" for="priorityCheapest">
-                            <i class="bi bi-currency-dollar me-1"></i>Cheapest
-                        </label>
+                    <div class="combobox-wrapper">
+                        <input type="hidden" id="selectOriginPort" name="origin_port_id" value="{{ $allActivePorts->first()->id ?? '' }}" required>
+                        <input type="text" class="form-control combobox-input" id="inputOriginPortSearch" placeholder="Type port, country, code (e.g. Belawan, Indo)..." autocomplete="off" value="{{ $allActivePorts->first() ? $allActivePorts->first()->name . ' (' . ($allActivePorts->first()->country->name ?? 'N/A') . ') - ' . ($allActivePorts->first()->port_code ?? $allActivePorts->first()->un_locode) : '' }}">
+                        <div class="combobox-dropdown" id="dropdownOriginPort"></div>
                     </div>
                 </div>
 
-                <!-- Container Type -->
-                <div class="col-md-6 col-lg-3">
-                    <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-box-seam me-1 text-info"></i>Container Type</label>
-                    <select class="form-select bg-light border-light-subtle rounded-3" id="selectContainerType" name="container_type" style="font-size: 0.85rem;">
-                        <option value="container" selected>Standard Container (FCL/LCL)</option>
-                        <option value="general">General Cargo</option>
-                        <option value="liquid">Liquid Bulk / Tanker</option>
-                        <option value="bulk">Dry Bulk / Carrier</option>
-                    </select>
+                <!-- 2. Destination Port Searchable Combobox -->
+                <div class="col-md-5">
+                    <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-flag-fill text-success me-1"></i>Destination Port</label>
+                    <div class="combobox-wrapper">
+                        <input type="hidden" id="selectDestinationPort" name="destination_port_id" value="{{ count($allActivePorts) > 1 ? $allActivePorts[1]->id : '' }}" required>
+                        <input type="text" class="form-control combobox-input" id="inputDestinationPortSearch" placeholder="Type port, country, code (e.g. Singapore, Shanghai)..." autocomplete="off" value="{{ count($allActivePorts) > 1 ? $allActivePorts[1]->name . ' (' . ($allActivePorts[1]->country->name ?? 'N/A') . ') - ' . ($allActivePorts[1]->port_code ?? $allActivePorts[1]->un_locode) : '' }}">
+                        <div class="combobox-dropdown" id="dropdownDestinationPort"></div>
+                    </div>
+                </div>
+
+                <!-- 3. Priority Selector -->
+                <div class="col-md-2">
+                    <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-sliders me-1 text-primary"></i>Priority Mode</label>
+                    <div class="d-flex gap-1.5">
+                        <input type="radio" class="btn-check" name="priority" id="prioritySafest" value="safest" checked>
+                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-2" for="prioritySafest" title="Safest Route">
+                            <i class="bi bi-shield-check"></i> Safest
+                        </label>
+
+                        <input type="radio" class="btn-check" name="priority" id="priorityFastest" value="fastest">
+                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-2" for="priorityFastest" title="Fastest Route">
+                            <i class="bi bi-lightning-charge"></i>
+                        </label>
+
+                        <input type="radio" class="btn-check" name="priority" id="priorityCheapest" value="cheapest">
+                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-2" for="priorityCheapest" title="Cheapest Route">
+                            <i class="bi bi-currency-dollar"></i>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Submit Button Row -->
@@ -552,50 +579,46 @@
 
     <!-- 📊 Dynamic Route Analysis Results Container (Initially Hidden) -->
     <div id="routeAnalyzerResults" class="mb-4" style="display: none;">
-        <!-- 1. DENSE HORIZONTAL RESULT HEADER BAR -->
-        <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px; background: linear-gradient(135deg, #0F172A, #1E293B); color: #FFFFFF;">
+        <!-- 1. DENSE LIGHT-MODE RESULT HEADER BAR -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px; background-color: #FFFFFF; border: 1px solid #E5E7EB !important;">
             <div class="card-body p-3.5 px-4">
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
                     <!-- Left: Corridor & Route Badges -->
                     <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle bg-primary bg-opacity-20 text-primary d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px; flex-shrink: 0;">
-                            <i class="bi bi-compass-fill fs-4 text-primary"></i>
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px; flex-shrink: 0;">
+                            <i class="bi bi-compass-fill fs-5 text-primary"></i>
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2 mb-0.5">
-                                <span class="badge bg-primary px-2.5 py-1 rounded-pill small fw-semibold" id="resPriorityBadge">Safest Mode</span>
-                                <span class="badge bg-info bg-opacity-20 text-info border border-info border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold" id="resContainerBadge">Standard Container</span>
-                                <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold" id="resHeaderRiskBadge">Low Risk</span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 px-2.5 py-0.5 rounded-pill small fw-semibold" id="resPriorityBadge">Safest Mode</span>
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-2.5 py-0.5 rounded-pill small fw-semibold" id="resHeaderRiskBadge">Low Risk</span>
                             </div>
-                            <h4 class="fw-bold text-white mb-0" id="resRouteTitle" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.3px;">Belawan → Shanghai</h4>
+                            <h4 class="fw-bold text-dark mb-0" id="resRouteTitle" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.3px; font-size: 1.2rem;">Belawan → Shanghai</h4>
                         </div>
                     </div>
 
                     <!-- Center: Quick Horizontal Telemetry Specs -->
-                    <div class="d-flex align-items-center gap-4 py-2 py-lg-0 border-top border-bottom border-lg-0 border-secondary border-opacity-25 px-2 px-lg-0">
+                    <div class="d-flex align-items-center gap-4 py-2 py-lg-0 border-top border-bottom border-lg-0 border-light px-2 px-lg-0">
                         <div>
-                            <span class="text-white-50 d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Distance</span>
-                            <span class="fw-bold text-white" id="resHeaderDistance">0 NM <small class="text-white-50 font-normal" style="font-size: 0.75rem;">(0 km)</small></span>
+                            <span class="text-muted d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Distance</span>
+                            <span class="fw-bold text-dark" id="resHeaderDistance">0 NM <small class="text-muted font-normal" style="font-size: 0.75rem;">(0 km)</small></span>
                         </div>
-                        <div class="vr bg-secondary opacity-25 d-none d-sm-block" style="height: 28px;"></div>
+                        <div class="vr bg-secondary opacity-25 d-none d-sm-block" style="height: 24px;"></div>
                         <div>
-                            <span class="text-white-50 d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">ETA</span>
-                            <span class="fw-bold text-white" id="resHeaderEta">0 Days</span>
+                            <span class="text-muted d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">ETA</span>
+                            <span class="fw-bold text-dark" id="resHeaderEta">0 Days</span>
                         </div>
-                        <div class="vr bg-secondary opacity-25 d-none d-sm-block" style="height: 28px;"></div>
+                        <div class="vr bg-secondary opacity-25 d-none d-sm-block" style="height: 24px;"></div>
                         <div>
-                            <span class="text-white-50 d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Overall Risk</span>
+                            <span class="text-muted d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Overall Risk</span>
                             <span class="fw-bold text-warning" id="resHeaderRiskScore">0.0 / 100</span>
                         </div>
                     </div>
 
-                    <!-- Right: Quick Actions -->
+                    <!-- Right: Action Button -->
                     <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1.5" onclick="window.print()">
-                            <i class="bi bi-printer me-1"></i>Export / Print
-                        </button>
-                        <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 py-1.5" id="btnCloseRouteResults">
-                            <i class="bi bi-x-lg me-1"></i>Close
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3.5 py-1.5 fw-semibold" id="btnCloseRouteResults">
+                            <i class="bi bi-x-lg me-1"></i>Close Result
                         </button>
                     </div>
                 </div>
@@ -604,7 +627,7 @@
 
         <!-- 2. CATEGORIZED INFORMATION GROUPS (4 Semantic Panels) -->
         <div class="row g-4 mb-4">
-            <!-- Group 1: Transport Telemetry (Priority 1) -->
+            <!-- Group 1: Transport Telemetry -->
             <div class="col-md-6 col-lg-3">
                 <div class="info-group-card h-100">
                     <div class="info-group-header">
@@ -626,7 +649,7 @@
                 </div>
             </div>
 
-            <!-- Group 2: Risk & Congestion (Priority 1) -->
+            <!-- Group 2: Risk & Congestion -->
             <div class="col-md-6 col-lg-3">
                 <div class="info-group-card h-100">
                     <div class="info-group-header">
@@ -670,11 +693,11 @@
                 </div>
             </div>
 
-            <!-- Group 4: AI Recommendation Panel -->
+            <!-- Group 4: Route Recommendation Panel -->
             <div class="col-md-6 col-lg-3">
                 <div class="info-group-card h-100 bg-primary bg-opacity-10 border-primary border-opacity-25">
                     <div class="info-group-header text-primary">
-                        <i class="bi bi-check2-circle fs-6"></i>Final AI Recommendation
+                        <i class="bi bi-check2-circle fs-6"></i>Route Recommendation
                     </div>
                     <div class="p-3 rounded-3 bg-white border border-primary border-opacity-20 shadow-sm">
                         <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 rounded-pill mb-2 px-2.5 py-1 small fw-semibold">Evaluated</span>
@@ -685,14 +708,14 @@
             </div>
         </div>
 
-        <!-- 3. AI INSIGHT & REFINED STEP-BY-STEP TIMELINE -->
+        <!-- 3. ROUTE ADVISORY & REFINED STEP-BY-STEP TIMELINE -->
         <div class="row g-4 mb-4">
-            <!-- Left: AI Insight Commentary Card -->
+            <!-- Left: Route Advisory & Intelligence Advisory -->
             <div class="col-lg-7">
                 <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; background-color: #FFFFFF;">
                     <div class="card-header bg-transparent border-bottom py-3 px-4 d-flex align-items-center gap-2" style="border-color: #E5E7EB !important;">
-                        <i class="bi bi-robot text-primary fs-5"></i>
-                        <h6 class="fw-bold text-dark mb-0" style="font-family: 'Outfit', sans-serif;">AI Route Analysis & Intelligence Advisory</h6>
+                        <i class="bi bi-shield-check text-primary fs-5"></i>
+                        <h6 class="fw-bold text-dark mb-0" style="font-family: 'Outfit', sans-serif;">Route Advisory & Strategic Intelligence</h6>
                     </div>
                     <div class="card-body p-4">
                         <div class="p-3.5 rounded-3 border border-primary border-opacity-20 bg-primary bg-opacity-10 mb-3" style="font-size: 0.88rem; line-height: 1.6; color: #1E293B;" id="resAiInsightText">
@@ -976,6 +999,7 @@
 
     // Load active ports from backend
     const ports = @json($mapPorts);
+    const allActivePortsData = @json($allActivePorts);
 
     function drawMarkers(data) {
         markersGroup.clearLayers();
@@ -1097,6 +1121,76 @@
     };
 
     // ----------------------------------------------------
+    // 🔍 SEARCHABLE COMBOBOX CONTROLS (GitHub/Notion Style)
+    // ----------------------------------------------------
+    function initCombobox(inputId, hiddenId, dropdownId) {
+        const input = document.getElementById(inputId);
+        const hidden = document.getElementById(hiddenId);
+        const dropdown = document.getElementById(dropdownId);
+        if (!input || !hidden || !dropdown) return;
+
+        function renderOptions(filterText = '') {
+            dropdown.innerHTML = '';
+            const query = filterText.toLowerCase().trim();
+            
+            const filtered = allActivePortsData.filter(port => {
+                const pName = (port.name || '').toLowerCase();
+                const cName = (port.country ? port.country.name : '').toLowerCase();
+                const pCode = (port.port_code || port.un_locode || '').toLowerCase();
+                return pName.includes(query) || cName.includes(query) || pCode.includes(query);
+            });
+
+            if (filtered.length === 0) {
+                dropdown.innerHTML = `<div class="p-3 text-muted small text-center">No ports found matching "${filterText}"</div>`;
+                return;
+            }
+
+            filtered.slice(0, 30).forEach(port => {
+                const cName = port.country ? port.country.name : 'N/A';
+                const code = port.port_code || port.un_locode || 'N/A';
+                const label = `${port.name} (${cName}) - ${code}`;
+                
+                const item = document.createElement('div');
+                item.className = 'combobox-item';
+                if (hidden.value == port.id) item.classList.add('active');
+                item.innerHTML = `
+                    <div>
+                        <div class="port-name">${port.name}</div>
+                        <div class="port-meta">${cName} • Code: ${code}</div>
+                    </div>
+                    <i class="bi bi-chevron-right text-muted small"></i>
+                `;
+                item.onclick = function(e) {
+                    e.stopPropagation();
+                    hidden.value = port.id;
+                    input.value = label;
+                    dropdown.style.display = 'none';
+                };
+                dropdown.appendChild(item);
+            });
+        }
+
+        input.addEventListener('focus', function() {
+            renderOptions(input.value);
+            dropdown.style.display = 'block';
+        });
+
+        input.addEventListener('input', function() {
+            renderOptions(input.value);
+            dropdown.style.display = 'block';
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
+
+    initCombobox('inputOriginPortSearch', 'selectOriginPort', 'dropdownOriginPort');
+    initCombobox('inputDestinationPortSearch', 'selectDestinationPort', 'dropdownDestinationPort');
+
+    // ----------------------------------------------------
     // 🚢 SMART SHIPPING ROUTE ANALYZER LOGIC
     // ----------------------------------------------------
     const formRouteAnalyzer = document.getElementById('formRouteAnalyzer');
@@ -1107,6 +1201,16 @@
 
     btnResetAnalyzer?.addEventListener('click', function() {
         formRouteAnalyzer.reset();
+        if (allActivePortsData.length > 0) {
+            const p1 = allActivePortsData[0];
+            document.getElementById('selectOriginPort').value = p1.id;
+            document.getElementById('inputOriginPortSearch').value = `${p1.name} (${p1.country ? p1.country.name : 'N/A'}) - ${p1.port_code || p1.un_locode}`;
+        }
+        if (allActivePortsData.length > 1) {
+            const p2 = allActivePortsData[1];
+            document.getElementById('selectDestinationPort').value = p2.id;
+            document.getElementById('inputDestinationPortSearch').value = `${p2.name} (${p2.country ? p2.country.name : 'N/A'}) - ${p2.port_code || p2.un_locode}`;
+        }
         routeLayersGroup.clearLayers();
         resultsContainer.style.display = 'none';
         map.setView([20, 0], 2);
@@ -1123,6 +1227,11 @@
 
         const originId = document.getElementById('selectOriginPort').value;
         const destId = document.getElementById('selectDestinationPort').value;
+
+        if (!originId || !destId) {
+            alert('Silakan pilih pelabuhan asal dan tujuan terlebih dahulu.');
+            return;
+        }
 
         if (originId === destId) {
             alert('Pelabuhan tujuan harus berbeda dengan pelabuhan asal.');
@@ -1165,27 +1274,23 @@
     function renderRouteResults(data) {
         resultsContainer.style.display = 'block';
 
-        // 1. Update Dense Horizontal Header Bar
+        // 1. Update Dense Light Header Bar
         document.getElementById('resRouteTitle').innerText = `${data.origin.name} → ${data.destination.name}`;
         
         const priorityInput = document.querySelector('input[name="priority"]:checked');
         const priorityLabel = priorityInput ? priorityInput.nextElementSibling.innerText.trim() : 'Safest Mode';
         document.getElementById('resPriorityBadge').innerText = priorityLabel;
 
-        const containerSelect = document.getElementById('selectContainerType');
-        const containerLabel = containerSelect ? containerSelect.options[containerSelect.selectedIndex].text : 'Standard Container';
-        document.getElementById('resContainerBadge').innerText = containerLabel;
-
         const headerRiskBadge = document.getElementById('resHeaderRiskBadge');
         headerRiskBadge.innerText = `${data.summary.risk_level} Risk`;
-        headerRiskBadge.className = data.summary.risk_level === 'Low' ? 'badge bg-success bg-opacity-20 text-success border border-success border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold' :
-                              (data.summary.risk_level === 'Medium' ? 'badge bg-warning bg-opacity-20 text-warning border border-warning border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold' :
-                              'badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold');
+        headerRiskBadge.className = data.summary.risk_level === 'Low' ? 'badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 px-2.5 py-0.5 rounded-pill small fw-semibold' :
+                              (data.summary.risk_level === 'Medium' ? 'badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-20 px-2.5 py-0.5 rounded-pill small fw-semibold' :
+                              'badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-20 px-2.5 py-0.5 rounded-pill small fw-semibold');
 
         const formattedDistNm = parseFloat(data.summary.distance_nm).toFixed(1);
         const formattedDistKm = parseFloat(data.summary.distance_km).toFixed(1);
 
-        document.getElementById('resHeaderDistance').innerHTML = `${formattedDistNm} NM <small class="text-white-50 font-normal" style="font-size: 0.75rem;">(${formattedDistKm} km)</small>`;
+        document.getElementById('resHeaderDistance').innerHTML = `${formattedDistNm} NM <small class="text-muted font-normal" style="font-size: 0.75rem;">(${formattedDistKm} km)</small>`;
         document.getElementById('resHeaderEta').innerText = `${data.summary.eta_days} Days`;
         document.getElementById('resHeaderRiskScore').innerText = `${data.summary.risk_score} / 100`;
 
@@ -1207,7 +1312,7 @@
         document.getElementById('resGeopoliticalVal').innerText = data.summary.geopolitical_status;
         document.getElementById('resRecommendationVal').innerText = data.summary.recommendation;
 
-        // 3. Update AI Insight Commentary
+        // 3. Update Route Advisory Commentary
         document.getElementById('resAiInsightText').innerHTML = `
             <div class="d-flex align-items-start gap-2.5">
                 <i class="bi bi-quote text-primary fs-2 leading-none me-1 opacity-40"></i>
@@ -1223,7 +1328,7 @@
             const isOrigin = step.type === 'Origin';
             const isDest = step.type === 'Destination';
             const dotColor = isOrigin ? '#EF4444' : (isDest ? '#10B981' : '#3B82F6');
-            const badgeClass = isOrigin ? 'bg-danger' : (isDest ? '#10B981' : 'bg-primary');
+            const badgeClass = isOrigin ? 'bg-danger' : (isDest ? 'bg-success' : 'bg-primary');
             const iconClass = isOrigin ? 'bi-geo-alt-fill text-danger' : (isDest ? 'bi-flag-fill text-success' : 'bi-diagram-3-fill text-primary');
 
             timelineHtml += `
