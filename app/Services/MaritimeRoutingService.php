@@ -63,18 +63,6 @@ class MaritimeRoutingService
 
         $directDist = $this->calculateDistanceNM($originLat, $originLon, $destLat, $destLon);
 
-        // If short distance (< 150 NM), direct sea leg with smooth coastal curve
-        if ($directDist < 150) {
-            $directCoords = $this->interpolateLeg([$originLat, $originLon], [$destLat, $destLon], 15);
-            return [
-                'coordinates' => $directCoords,
-                'waypoints' => [],
-                'chokepoints' => [],
-                'warnings' => [],
-                'total_distance_nm' => $directDist,
-            ];
-        }
-
         // Find entry and exit sea waypoints
         $startWpId = $this->findClosestWaypointId($originLat, $originLon, $avoidWaypointIds);
         $endWpId = $this->findClosestWaypointId($destLat, $destLon, $avoidWaypointIds);
@@ -82,7 +70,7 @@ class MaritimeRoutingService
         // Run Dijkstra pathfinder on sea graph
         $pathWpIds = $this->dijkstraPath($startWpId, $endWpId, $graph, $allWaypoints, $avoidWaypointIds);
 
-        // Build full node sequence: [Origin -> Waypoint1 -> Waypoint2 ... -> Destination]
+        // Build full node sequence: [Origin -> Sea Waypoint 1 -> Sea Waypoint 2 ... -> Destination]
         $nodeSequence = [
             ['lat' => $originLat, 'lng' => $originLon, 'name' => 'Origin Port', 'type' => 'Port']
         ];
@@ -114,7 +102,7 @@ class MaritimeRoutingService
 
         $nodeSequence[] = ['lat' => $destLat, 'lng' => $destLon, 'name' => 'Destination Port', 'type' => 'Port'];
 
-        // Generate smooth densified multi-point coordinates polyline
+        // Generate smooth densified multi-point coordinates polyline strictly over water
         $polyCoords = [];
         $totalDistanceNM = 0;
 
@@ -125,8 +113,8 @@ class MaritimeRoutingService
             $legDist = $this->calculateDistanceNM($p1[0], $p1[1], $p2[0], $p2[1]);
             $totalDistanceNM += $legDist;
 
-            // Densified points per leg (15 to 35 sub-points)
-            $steps = max(15, (int)round($legDist / 20));
+            // Interpolate clean sub-points per leg
+            $steps = max(10, (int)round($legDist / 25));
             $legPoints = $this->interpolateLeg($p1, $p2, $steps);
 
             if ($i > 0) {
@@ -211,20 +199,15 @@ class MaritimeRoutingService
     }
 
     /**
-     * Interpolate intermediate points for smooth curve navigation.
+     * Interpolate clean intermediate sea points between open-water waypoints.
      */
-    protected function interpolateLeg(array $p1, array $p2, int $steps = 20): array
+    protected function interpolateLeg(array $p1, array $p2, int $steps = 15): array
     {
         $points = [];
         for ($i = 0; $i <= $steps; $i++) {
             $t = $i / $steps;
-            
-            // Add subtle sine curvature to coastal leg so line curves naturally like ocean water
-            $curvature = sin($t * M_PI) * 0.08 * sin(($p1[0] + $p2[1]) * 10);
-            
-            $lat = $p1[0] + ($p2[0] - $p1[0]) * $t + $curvature;
-            $lng = $p1[1] + ($p2[1] - $p1[1]) * $t - $curvature;
-
+            $lat = $p1[0] + ($p2[0] - $p1[0]) * $t;
+            $lng = $p1[1] + ($p2[1] - $p1[1]) * $t;
             $points[] = [round($lat, 5), round($lng, 5)];
         }
         return $points;
