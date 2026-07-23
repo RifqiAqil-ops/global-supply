@@ -17,19 +17,19 @@
     .metric-card-premium {
         background: #FFFFFF;
         border: 1px solid #E5E7EB;
-        border-radius: 24px;
+        border-radius: 20px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
     .metric-card-premium:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.08);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 18px -6px rgba(0, 0, 0, 0.06);
     }
 
     /* Leaflet Map Hero & Glassmorphism Panels */
     .map-container-hero {
         position: relative;
-        height: 520px;
+        height: 540px;
         border-radius: 24px;
         overflow: hidden;
         border: 1px solid #E5E7EB;
@@ -44,12 +44,12 @@
     .glass-panel {
         position: absolute;
         z-index: 1000;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.88);
         backdrop-filter: blur(16px) saturate(180%);
         -webkit-backdrop-filter: blur(16px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 24px;
-        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 20px;
+        padding: 14px 16px;
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
         transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
         pointer-events: auto;
@@ -146,20 +146,6 @@
         overflow-y: auto;
         display: none;
     }
-    .autocomplete-item {
-        padding: 12px 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: background 0.15s ease;
-    }
-    .autocomplete-item:hover, .autocomplete-item.active {
-        background-color: #F1F5F9;
-    }
-    .autocomplete-item strong {
-        color: #0F172A;
-    }
 
     /* Accordion Filter Panel */
     .filter-accordion-header {
@@ -169,9 +155,6 @@
         font-weight: 600;
         color: #334155;
         font-size: 0.85rem;
-    }
-    .filter-accordion-header:after {
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2364748b'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
     }
     .filter-accordion-item {
         border: none !important;
@@ -190,10 +173,6 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: all 0.15s ease;
-    }
-    .filter-chip-badge:hover {
-        background-color: #DBEAFE;
     }
     .filter-chip-close {
         cursor: pointer;
@@ -206,10 +185,6 @@
         background-color: rgba(30, 64, 175, 0.1);
         color: #1E40AF;
         font-size: 0.65rem;
-        transition: background 0.15s;
-    }
-    .filter-chip-close:hover {
-        background-color: rgba(30, 64, 175, 0.25);
     }
 
     /* Premium Leaflet Popup design overrides */
@@ -224,11 +199,6 @@
     .btn-popup-gradient {
         background: linear-gradient(135deg, #2563EB, #06B6D4) !important;
         border: none !important;
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-    }
-    .btn-popup-gradient:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
     }
 
     /* Directory Table rounded and sticky features */
@@ -245,9 +215,6 @@
         z-index: 10;
         background-color: #F8FAFC;
     }
-    .table-premium tbody tr {
-        transition: background-color 0.15s ease, transform 0.15s ease;
-    }
     .table-premium tbody tr:hover {
         background-color: #EFF6FF !important;
         cursor: pointer;
@@ -257,14 +224,48 @@
         font-weight: 500;
     }
 
-    /* Timeline Nodes styling */
-    .timeline-step-node {
-        cursor: pointer;
-        transition: transform 0.2s ease, background-color 0.2s ease;
+    /* Refined Step-by-Step Vertical Timeline */
+    .timeline-vertical-wrapper {
+        position: relative;
+        padding-left: 28px;
     }
-    .timeline-step-node:hover {
-        transform: translateY(-2px);
-        background-color: #EFF6FF !important;
+    .timeline-vertical-line {
+        position: absolute;
+        left: 13px;
+        top: 18px;
+        bottom: 18px;
+        width: 3px;
+        background: linear-gradient(180deg, #EF4444, #3B82F6 50%, #10B981 100%);
+        border-radius: 2px;
+    }
+    .timeline-step-card {
+        position: relative;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .timeline-step-card:last-child {
+        margin-bottom: 0;
+    }
+    .timeline-step-card:hover {
+        transform: translateX(4px);
+        border-color: #2563EB;
+        box-shadow: 0 6px 16px -4px rgba(37, 99, 235, 0.12);
+        background: #F8FAFC;
+    }
+    .timeline-step-dot {
+        position: absolute;
+        left: -29px;
+        top: 16px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 3px solid #FFFFFF;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
     }
 
     /* Animated Polyline dash animation */
@@ -276,6 +277,26 @@
     .animated-polyline {
         stroke-dasharray: 10, 10;
         animation: leaflet-dash-flow 1s linear infinite;
+    }
+
+    /* Categorized Section Cards */
+    .info-group-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+    }
+    .info-group-header {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        color: #64748B;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 </style>
 @endpush
@@ -531,94 +552,140 @@
 
     <!-- 📊 Dynamic Route Analysis Results Container (Initially Hidden) -->
     <div id="routeAnalyzerResults" class="mb-4" style="display: none;">
-        <!-- Header Banner with Title & Clear Results button -->
-        <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px; background: linear-gradient(135deg, #1E293B, #0F172A); color: #FFFFFF;">
-            <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                <div>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="badge bg-primary px-2.5 py-1 rounded-pill small fw-semibold" id="resPriorityBadge">Safest Mode</span>
-                        <span class="badge bg-info bg-opacity-20 text-info border border-info border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold" id="resContainerBadge">Standard Container</span>
+        <!-- 1. DENSE HORIZONTAL RESULT HEADER BAR -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px; background: linear-gradient(135deg, #0F172A, #1E293B); color: #FFFFFF;">
+            <div class="card-body p-3.5 px-4">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                    <!-- Left: Corridor & Route Badges -->
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-primary bg-opacity-20 text-primary d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px; flex-shrink: 0;">
+                            <i class="bi bi-compass-fill fs-4 text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-0.5">
+                                <span class="badge bg-primary px-2.5 py-1 rounded-pill small fw-semibold" id="resPriorityBadge">Safest Mode</span>
+                                <span class="badge bg-info bg-opacity-20 text-info border border-info border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold" id="resContainerBadge">Standard Container</span>
+                                <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold" id="resHeaderRiskBadge">Low Risk</span>
+                            </div>
+                            <h4 class="fw-bold text-white mb-0" id="resRouteTitle" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.3px;">Belawan → Shanghai</h4>
+                        </div>
                     </div>
-                    <h4 class="fw-bold text-white mb-0" id="resRouteTitle" style="font-family: 'Outfit', sans-serif;">Belawan → Shanghai</h4>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="window.print()">
-                        <i class="bi bi-printer me-1"></i>Export PDF / Print
-                    </button>
-                    <button type="button" class="btn btn-sm btn-danger rounded-pill px-3" id="btnCloseRouteResults">
-                        <i class="bi bi-x-lg me-1"></i>Close Results
-                    </button>
+
+                    <!-- Center: Quick Horizontal Telemetry Specs -->
+                    <div class="d-flex align-items-center gap-4 py-2 py-lg-0 border-top border-bottom border-lg-0 border-secondary border-opacity-25 px-2 px-lg-0">
+                        <div>
+                            <span class="text-white-50 d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Distance</span>
+                            <span class="fw-bold text-white" id="resHeaderDistance">0 NM <small class="text-white-50 font-normal" style="font-size: 0.75rem;">(0 km)</small></span>
+                        </div>
+                        <div class="vr bg-secondary opacity-25 d-none d-sm-block" style="height: 28px;"></div>
+                        <div>
+                            <span class="text-white-50 d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">ETA</span>
+                            <span class="fw-bold text-white" id="resHeaderEta">0 Days</span>
+                        </div>
+                        <div class="vr bg-secondary opacity-25 d-none d-sm-block" style="height: 28px;"></div>
+                        <div>
+                            <span class="text-white-50 d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Overall Risk</span>
+                            <span class="fw-bold text-warning" id="resHeaderRiskScore">0.0 / 100</span>
+                        </div>
+                    </div>
+
+                    <!-- Right: Quick Actions -->
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1.5" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i>Export / Print
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 py-1.5" id="btnCloseRouteResults">
+                            <i class="bi bi-x-lg me-1"></i>Close
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 8 Summary Metric Cards Grid -->
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="metric-card-premium p-3.5">
-                    <span class="text-muted small d-block mb-1"><i class="bi bi-signpost-split text-primary me-1"></i>Distance</span>
-                    <h4 class="fw-bold text-dark mb-0" id="resDistanceVal">0 NM</h4>
-                    <span class="text-muted small" style="font-size: 0.72rem;" id="resDistanceKm">0 km</span>
+        <!-- 2. CATEGORIZED INFORMATION GROUPS (4 Semantic Panels) -->
+        <div class="row g-4 mb-4">
+            <!-- Group 1: Transport Telemetry (Priority 1) -->
+            <div class="col-md-6 col-lg-3">
+                <div class="info-group-card h-100">
+                    <div class="info-group-header">
+                        <i class="bi bi-speedometer2 text-primary fs-6"></i>Transport Specs
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small d-block mb-1">Total Distance</span>
+                        <div class="d-flex align-items-baseline gap-1">
+                            <h3 class="fw-bold text-dark mb-0" id="resDistanceVal">0 NM</h3>
+                            <span class="text-muted small" id="resDistanceKm">(0 km)</span>
+                        </div>
+                    </div>
+                    <hr class="my-2 border-light">
+                    <div>
+                        <span class="text-muted small d-block mb-1">Estimated Travel Time</span>
+                        <h4 class="fw-bold text-primary mb-0" id="resEtaVal">0 Days</h4>
+                        <span class="text-muted" style="font-size: 0.72rem;">Transit & Buffer Included</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="metric-card-premium p-3.5">
-                    <span class="text-muted small d-block mb-1"><i class="bi bi-clock-history text-info me-1"></i>Estimated Time</span>
-                    <h4 class="fw-bold text-dark mb-0" id="resEtaVal">0 Days</h4>
-                    <span class="text-muted small" style="font-size: 0.72rem;">Transit Included</span>
+            <!-- Group 2: Risk & Congestion (Priority 1) -->
+            <div class="col-md-6 col-lg-3">
+                <div class="info-group-card h-100">
+                    <div class="info-group-header">
+                        <i class="bi bi-shield-lock text-warning fs-6"></i>Risk & Port Congestion
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small d-block mb-1">Composite Risk Score</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <h3 class="fw-bold text-dark mb-0" id="resRiskVal">0.0</h3>
+                            <span class="badge rounded-pill small fw-semibold px-2.5 py-1" id="resRiskBadge">Low Risk</span>
+                        </div>
+                    </div>
+                    <hr class="my-2 border-light">
+                    <div>
+                        <span class="text-muted small d-block mb-1">Waypoints Congestion</span>
+                        <h4 class="fw-bold text-danger mb-0" id="resCongestionVal">0%</h4>
+                        <span class="text-muted" style="font-size: 0.72rem;">Average Delay Index</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="metric-card-premium p-3.5">
-                    <span class="text-muted small d-block mb-1"><i class="bi bi-shield-exclamation text-warning me-1"></i>Overall Risk Score</span>
-                    <h4 class="fw-bold text-dark mb-0" id="resRiskVal">0.0</h4>
-                    <span class="badge rounded-pill small fw-semibold px-2 py-0.5" id="resRiskBadge">Low Risk</span>
+            <!-- Group 3: Environment & Macro Factors -->
+            <div class="col-md-6 col-lg-3">
+                <div class="info-group-card h-100">
+                    <div class="info-group-header">
+                        <i class="bi bi-globe-americas text-success fs-6"></i>Environment & Macro
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-muted small d-block">Current Weather</span>
+                        <strong class="text-dark small d-block text-truncate" id="resWeatherVal">Normal</strong>
+                        <span class="text-muted" style="font-size: 0.72rem;" id="resWeatherSub">Marine Conditions</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-muted small d-block">FX Currency Impact</span>
+                        <strong class="text-dark small d-block text-truncate" id="resCurrencyVal">USD Settlement</strong>
+                    </div>
+                    <div>
+                        <span class="text-muted small d-block">Geopolitical Corridor</span>
+                        <strong class="text-dark small d-block text-truncate" id="resGeopoliticalVal">Stable Corridor</strong>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="metric-card-premium p-3.5">
-                    <span class="text-muted small d-block mb-1"><i class="bi bi-cloud-sun text-success me-1"></i>Current Weather</span>
-                    <div class="fw-bold text-dark small text-truncate" id="resWeatherVal">Normal</div>
-                    <span class="text-muted small d-block text-truncate" style="font-size: 0.72rem;" id="resWeatherSub">Marine Conditions</span>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="metric-card-premium p-3.5">
-                    <span class="text-muted small d-block mb-1"><i class="bi bi-currency-exchange text-primary me-1"></i>Currency Impact</span>
-                    <div class="fw-bold text-dark small text-truncate" id="resCurrencyVal">USD Settlement</div>
-                    <span class="text-muted small d-block text-truncate" style="font-size: 0.72rem;">FX Stability</span>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="metric-card-premium p-3.5">
-                    <span class="text-muted small d-block mb-1"><i class="bi bi-bar-chart-steps text-danger me-1"></i>Port Congestion</span>
-                    <h4 class="fw-bold text-dark mb-0" id="resCongestionVal">0%</h4>
-                    <span class="text-muted small" style="font-size: 0.72rem;">Average Delay</span>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="metric-card-premium p-3.5">
-                    <span class="text-muted small d-block mb-1"><i class="bi bi-globe-americas text-secondary me-1"></i>Geopolitical Status</span>
-                    <div class="fw-bold text-dark small text-truncate" id="resGeopoliticalVal">Stable Corridor</div>
-                    <span class="text-muted small d-block text-truncate" style="font-size: 0.72rem;">Active News Feeds</span>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="metric-card-premium p-3.5 bg-primary bg-opacity-10 border-primary border-opacity-20">
-                    <span class="text-primary small d-block mb-1 fw-bold"><i class="bi bi-check2-circle me-1"></i>Recommendation</span>
-                    <div class="fw-bold text-primary small" id="resRecommendationVal">Optimal & Safe</div>
+            <!-- Group 4: AI Recommendation Panel -->
+            <div class="col-md-6 col-lg-3">
+                <div class="info-group-card h-100 bg-primary bg-opacity-10 border-primary border-opacity-25">
+                    <div class="info-group-header text-primary">
+                        <i class="bi bi-check2-circle fs-6"></i>Final AI Recommendation
+                    </div>
+                    <div class="p-3 rounded-3 bg-white border border-primary border-opacity-20 shadow-sm">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 rounded-pill mb-2 px-2.5 py-1 small fw-semibold">Evaluated</span>
+                        <div class="fw-bold text-dark fs-6" id="resRecommendationVal">Optimal & Safe</div>
+                        <p class="text-muted small mb-0 mt-1" style="font-size: 0.76rem;">Standard Maritime Dispatch Recommended</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- AI Insight Commentary & Interactive Route Timeline Grid -->
+        <!-- 3. AI INSIGHT & REFINED STEP-BY-STEP TIMELINE -->
         <div class="row g-4 mb-4">
             <!-- Left: AI Insight Commentary Card -->
             <div class="col-lg-7">
@@ -628,30 +695,31 @@
                         <h6 class="fw-bold text-dark mb-0" style="font-family: 'Outfit', sans-serif;">AI Route Analysis & Intelligence Advisory</h6>
                     </div>
                     <div class="card-body p-4">
-                        <div class="p-3 rounded-3 border border-primary border-opacity-15 bg-primary bg-opacity-10 mb-3" style="font-size: 0.88rem; line-height: 1.6; color: #1E293B;" id="resAiInsightText">
+                        <div class="p-3.5 rounded-3 border border-primary border-opacity-20 bg-primary bg-opacity-10 mb-3" style="font-size: 0.88rem; line-height: 1.6; color: #1E293B;" id="resAiInsightText">
                             <!-- Populated dynamically -->
                         </div>
-                        <div class="d-flex flex-column gap-2 text-muted small" style="font-size: 0.8rem;">
-                            <div class="d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill text-success"></i> Real-time maritime safety parameters evaluated</div>
-                            <div class="d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill text-success"></i> Weather anomalies and severe wind speeds checked</div>
-                            <div class="d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill text-success"></i> Dynamic port congestion index calculated for all waypoints</div>
+                        <div class="d-flex flex-column gap-2.5 text-muted small mt-3" style="font-size: 0.8rem;">
+                            <div class="d-flex align-items-center gap-2"><i class="bi bi-shield-check text-success fs-6"></i> Real-time maritime safety & piracy parameters evaluated</div>
+                            <div class="d-flex align-items-center gap-2"><i class="bi bi-cloud-sun text-info fs-6"></i> Weather anomalies and severe wind speeds checked</div>
+                            <div class="d-flex align-items-center gap-2"><i class="bi bi-bar-chart-steps text-warning fs-6"></i> Dynamic port congestion index calculated for all waypoints</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right: Interactive Transit Nodes Timeline -->
+            <!-- Right: Interactive Step-by-Step Vertical Timeline -->
             <div class="col-lg-5">
                 <div class="card border-0 shadow-sm h-100" style="border-radius: 20px; background-color: #FFFFFF;">
                     <div class="card-header bg-transparent border-bottom py-3 px-4 d-flex align-items-center justify-content-between" style="border-color: #E5E7EB !important;">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-signpost-split-fill text-success fs-5"></i>
+                            <i class="bi bi-diagram-3 text-success fs-5"></i>
                             <h6 class="fw-bold text-dark mb-0" style="font-family: 'Outfit', sans-serif;">Route Transit Timeline</h6>
                         </div>
-                        <span class="text-muted small" style="font-size: 0.72rem;">Click node to focus map</span>
+                        <span class="text-muted small" style="font-size: 0.72rem;">Click step to center map</span>
                     </div>
                     <div class="card-body p-4">
-                        <div class="d-flex flex-column gap-3" id="resTimelineContainer">
+                        <div class="timeline-vertical-wrapper" id="resTimelineContainer">
+                            <div class="timeline-vertical-line"></div>
                             <!-- Populated dynamically -->
                         </div>
                     </div>
@@ -659,40 +727,42 @@
             </div>
         </div>
 
-        <!-- Alternative Route Comparison Card (Rendered if available) -->
+        <!-- 4. REFINED ROUTE COMPARISON CARD -->
         <div id="resAlternativeContainer" style="display: none;">
-            <div class="card border-0 shadow-sm" style="border-radius: 20px; background-color: #FFFFFF; border-left: 5px solid #2563EB !important;">
+            <div class="card border-0 shadow-sm" style="border-radius: 20px; background-color: #FFFFFF; border-left: 6px solid #2563EB !important;">
                 <div class="card-header bg-transparent border-bottom py-3 px-4 d-flex align-items-center justify-content-between" style="border-color: #E5E7EB !important;">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-shield-shaded text-primary fs-5"></i>
-                        <h6 class="fw-bold text-dark mb-0" style="font-family: 'Outfit', sans-serif;">Alternative Route Comparison & Optimization</h6>
+                        <h6 class="fw-bold text-dark mb-0" style="font-family: 'Outfit', sans-serif;">Alternative Route Optimization & Comparison</h6>
                     </div>
-                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 rounded-pill px-3 py-1 small fw-semibold" id="resAltSavingsBadge">Risk Reduction</span>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1.5 small fw-semibold" id="resAltSavingsBadge">Risk Reduction</span>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-4 align-items-center">
+                        <!-- Left: Original Path -->
                         <div class="col-md-6">
-                            <div class="p-3 rounded-3 border bg-light">
-                                <span class="badge bg-secondary mb-2">Original Selected Path</span>
-                                <h6 class="fw-bold text-dark mb-1" id="resAltOrigTitle">Belawan → Shanghai</h6>
-                                <div class="d-flex gap-3 text-muted small">
-                                    <span>Risk Score: <strong class="text-dark" id="resAltOrigRisk">72.0</strong></span>
-                                    <span>ETA: <strong class="text-dark" id="resAltOrigEta">11 Days</strong></span>
+                            <div class="p-3.5 rounded-3 border bg-light">
+                                <span class="badge bg-secondary mb-2 px-2.5 py-1">Original Selected Path</span>
+                                <h6 class="fw-bold text-dark mb-2" id="resAltOrigTitle" style="font-size: 0.95rem;">Belawan → Shanghai</h6>
+                                <div class="d-flex gap-4 text-muted small">
+                                    <div>Risk Score: <strong class="text-dark" id="resAltOrigRisk">72.0</strong></div>
+                                    <div>ETA: <strong class="text-dark" id="resAltOrigEta">11 Days</strong></div>
                                 </div>
                             </div>
                         </div>
+                        <!-- Right: Optimized Alternative Path -->
                         <div class="col-md-6">
-                            <div class="p-3 rounded-3 border border-success border-opacity-30 bg-success bg-opacity-10">
-                                <span class="badge bg-success mb-2">Recommended Alternative</span>
-                                <h6 class="fw-bold text-dark mb-1" id="resAltNewTitle">Belawan → Port Klang → Shanghai</h6>
-                                <div class="d-flex gap-3 text-muted small">
-                                    <span>Risk Score: <strong class="text-success" id="resAltNewRisk">38.0</strong></span>
-                                    <span>ETA: <strong class="text-dark" id="resAltNewEta">13 Days</strong></span>
+                            <div class="p-3.5 rounded-3 border border-success border-opacity-40 bg-success bg-opacity-10">
+                                <span class="badge bg-success mb-2 px-2.5 py-1"><i class="bi bi-star-fill me-1"></i>Recommended Alternative</span>
+                                <h6 class="fw-bold text-dark mb-2" id="resAltNewTitle" style="font-size: 0.95rem;">Belawan → Port Klang → Shanghai</h6>
+                                <div class="d-flex gap-4 text-muted small">
+                                    <div>Risk Score: <strong class="text-success fw-bold" id="resAltNewRisk">38.0</strong></div>
+                                    <div>ETA: <strong class="text-dark" id="resAltNewEta">13 Days</strong></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <p class="text-muted small mb-0 mt-3" id="resAltRecommendationText">
+                    <p class="text-muted small mb-0 mt-3.5 pt-2 border-top border-light" id="resAltRecommendationText">
                         <!-- Populated dynamically -->
                     </p>
                 </div>
@@ -982,7 +1052,6 @@
             }
         });
 
-        // Update Telemetry
         const telemetryVisible = document.getElementById('telemetryVisible');
         if (telemetryVisible) {
             telemetryVisible.innerText = data.length;
@@ -1013,13 +1082,11 @@
         }
     });
 
-    // Telemetry zoom tracking
     map.on('zoomend', () => {
         const zoomEl = document.getElementById('telemetryZoom');
         if (zoomEl) zoomEl.innerText = map.getZoom();
     });
 
-    // Function to highlight port row in directory table
     window.focusPortInTable = function(portId) {
         const row = document.getElementById(`port-row-${portId}`);
         if (row) {
@@ -1096,11 +1163,9 @@
     });
 
     function renderRouteResults(data) {
-        // Show results container
         resultsContainer.style.display = 'block';
-        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        // Update Title & Badges
+        // 1. Update Dense Horizontal Header Bar
         document.getElementById('resRouteTitle').innerText = `${data.origin.name} → ${data.destination.name}`;
         
         const priorityInput = document.querySelector('input[name="priority"]:checked');
@@ -1111,72 +1176,76 @@
         const containerLabel = containerSelect ? containerSelect.options[containerSelect.selectedIndex].text : 'Standard Container';
         document.getElementById('resContainerBadge').innerText = containerLabel;
 
-        // Update Summary metrics
+        const headerRiskBadge = document.getElementById('resHeaderRiskBadge');
+        headerRiskBadge.innerText = `${data.summary.risk_level} Risk`;
+        headerRiskBadge.className = data.summary.risk_level === 'Low' ? 'badge bg-success bg-opacity-20 text-success border border-success border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold' :
+                              (data.summary.risk_level === 'Medium' ? 'badge bg-warning bg-opacity-20 text-warning border border-warning border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold' :
+                              'badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold');
+
+        document.getElementById('resHeaderDistance').innerHTML = `${data.summary.distance_nm} NM <small class="text-white-50 font-normal" style="font-size: 0.75rem;">(${data.summary.distance_km} km)</small>`;
+        document.getElementById('resHeaderEta').innerText = `${data.summary.eta_days} Days`;
+        document.getElementById('resHeaderRiskScore').innerText = `${data.summary.risk_score} / 100`;
+
+        // 2. Update Categorized 4 Panels
         document.getElementById('resDistanceVal').innerText = `${data.summary.distance_nm} NM`;
         document.getElementById('resDistanceKm').innerText = `(${data.summary.distance_km} km)`;
         document.getElementById('resEtaVal').innerText = `${data.summary.eta_days} Days`;
-        document.getElementById('resRiskVal').innerText = `${data.summary.risk_score} / 100`;
 
+        document.getElementById('resRiskVal').innerText = `${data.summary.risk_score}`;
         const riskBadge = document.getElementById('resRiskBadge');
         riskBadge.innerText = `${data.summary.risk_level} Risk`;
-        riskBadge.className = data.summary.risk_level === 'Low' ? 'badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 rounded-pill small fw-semibold px-2 py-0.5' :
-                              (data.summary.risk_level === 'Medium' ? 'badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-20 rounded-pill small fw-semibold px-2 py-0.5' :
-                              'badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-20 rounded-pill small fw-semibold px-2 py-0.5');
+        riskBadge.className = data.summary.risk_level === 'Low' ? 'badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 rounded-pill small fw-semibold px-2.5 py-1' :
+                              (data.summary.risk_level === 'Medium' ? 'badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-20 rounded-pill small fw-semibold px-2.5 py-1' :
+                              'badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-20 rounded-pill small fw-semibold px-2.5 py-1');
 
+        document.getElementById('resCongestionVal').innerText = data.summary.port_congestion;
         document.getElementById('resWeatherVal').innerText = data.summary.weather_summary;
         document.getElementById('resCurrencyVal').innerText = data.summary.currency_impact;
-        document.getElementById('resCongestionVal').innerText = data.summary.port_congestion;
         document.getElementById('resGeopoliticalVal').innerText = data.summary.geopolitical_status;
         document.getElementById('resRecommendationVal').innerText = data.summary.recommendation;
 
-        // Update AI Insight commentary
+        // 3. Update AI Insight Commentary
         document.getElementById('resAiInsightText').innerHTML = `
-            <div class="d-flex align-items-start gap-2">
-                <i class="bi bi-quote text-primary fs-3 leading-none me-1 opacity-50"></i>
-                <div>${data.ai_insight}</div>
+            <div class="d-flex align-items-start gap-2.5">
+                <i class="bi bi-quote text-primary fs-2 leading-none me-1 opacity-40"></i>
+                <div class="fw-medium">${data.ai_insight}</div>
             </div>
         `;
 
-        // Update Timeline
+        // 4. Update Step-by-step Vertical Timeline
         const timelineContainer = document.getElementById('resTimelineContainer');
-        let timelineHtml = '';
+        let timelineHtml = '<div class="timeline-vertical-line"></div>';
 
-        data.timeline.forEach((step, idx) => {
-            const stepIcon = step.type === 'Origin' ? 'bi-geo-alt-fill text-danger' : (step.type === 'Destination' ? 'bi-flag-fill text-success' : 'bi-diagram-3-fill text-primary');
-            const stepBadgeClass = step.type === 'Origin' ? 'bg-danger' : (step.type === 'Destination' ? 'bg-success' : 'bg-primary');
+        data.timeline.forEach((step) => {
+            const isOrigin = step.type === 'Origin';
+            const isDest = step.type === 'Destination';
+            const dotColor = isOrigin ? '#EF4444' : (isDest ? '#10B981' : '#3B82F6');
+            const badgeClass = isOrigin ? 'bg-danger' : (isDest ? '#10B981' : 'bg-primary');
+            const iconClass = isOrigin ? 'bi-geo-alt-fill text-danger' : (isDest ? 'bi-flag-fill text-success' : 'bi-diagram-3-fill text-primary');
 
             timelineHtml += `
-                <div class="p-3 rounded-3 border border-light bg-light timeline-step-node d-flex align-items-center justify-content-between" onclick="focusRouteNode(${step.latitude}, ${step.longitude}, ${step.port_id})">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center fw-bold text-dark fs-6" style="width: 38px; height: 38px; flex-shrink: 0;">
-                            <i class="bi ${stepIcon}"></i>
+                <div class="timeline-step-card" onclick="focusRouteNode(${step.latitude}, ${step.longitude}, ${step.port_id})">
+                    <div class="timeline-step-dot" style="background-color: ${dotColor};"></div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi ${iconClass} fs-6"></i>
+                            <span class="badge ${badgeClass} bg-opacity-10 text-dark small fw-bold px-2 py-0.5 rounded">${step.type}</span>
+                            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.92rem;">${step.port_name}</h6>
                         </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="badge ${stepBadgeClass} bg-opacity-10 text-dark small fw-bold px-2 py-0.5 rounded">${step.type}</span>
-                                <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">${step.port_name}</h6>
-                            </div>
-                            <span class="text-muted small" style="font-size: 0.76rem;">${step.country_name} • Congestion: ${step.congestion}</span>
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <span class="badge ${step.risk_level === 'Low' ? 'bg-success' : (step.risk_level === 'Medium' ? 'bg-warning' : 'bg-danger')} bg-opacity-10 text-dark small fw-bold px-2 py-1 rounded-pill" style="font-size: 0.7rem;">
+                        <span class="badge ${step.risk_level === 'Low' ? 'bg-success' : (step.risk_level === 'Medium' ? 'bg-warning' : 'bg-danger')} bg-opacity-10 text-dark small fw-bold px-2.5 py-1 rounded-pill" style="font-size: 0.7rem;">
                             Risk: ${step.risk_score}
                         </span>
                     </div>
+                    <div class="d-flex align-items-center justify-content-between text-muted small mt-2 pt-1 border-top border-light" style="font-size: 0.78rem;">
+                        <span><i class="bi bi-globe me-1"></i>${step.country_name}</span>
+                        <span><i class="bi bi-bar-chart-steps me-1"></i>Congestion: <strong class="text-dark">${step.congestion}</strong></span>
+                    </div>
                 </div>
             `;
-            if (idx < data.timeline.length - 1) {
-                timelineHtml += `
-                    <div class="d-flex justify-content-center my-n1">
-                        <i class="bi bi-arrow-down text-muted fs-6 opacity-50"></i>
-                    </div>
-                `;
-            }
         });
         timelineContainer.innerHTML = timelineHtml;
 
-        // Render Alternative Route if present
+        // 5. Update Alternative Route Comparison if available
         const altContainer = document.getElementById('resAlternativeContainer');
         if (data.alternative_route) {
             altContainer.style.display = 'block';
@@ -1194,8 +1263,14 @@
             altContainer.style.display = 'none';
         }
 
-        // Draw Map Polyline Route & Waypoints
+        // 6. Draw Map Polyline Route & Waypoints, and smooth focus to Map
         drawRouteOnMap(data);
+
+        // Smooth scroll focus to Leaflet Map hero container
+        const mapHero = document.querySelector('.map-container-hero');
+        if (mapHero) {
+            mapHero.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
 
     function drawRouteOnMap(data) {
@@ -1209,16 +1284,16 @@
             latLngs.push(latLng);
 
             const iconHtml = node.type === 'Origin' 
-                ? `<div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 28px; height: 28px; font-weight: 700; font-size: 14px;"><i class="bi bi-geo-alt-fill"></i></div>`
+                ? `<div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 30px; height: 30px; font-weight: 700; font-size: 14px;"><i class="bi bi-geo-alt-fill"></i></div>`
                 : (node.type === 'Destination' 
-                    ? `<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 28px; height: 28px; font-weight: 700; font-size: 14px;"><i class="bi bi-flag-fill"></i></div>`
-                    : `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 24px; height: 24px; font-weight: 700; font-size: 12px;"><i class="bi bi-diagram-3-fill"></i></div>`);
+                    ? `<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 30px; height: 30px; font-weight: 700; font-size: 14px;"><i class="bi bi-flag-fill"></i></div>`
+                    : `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 26px; height: 26px; font-weight: 700; font-size: 12px;"><i class="bi bi-diagram-3-fill"></i></div>`);
 
             const customIcon = L.divIcon({
                 html: iconHtml,
                 className: 'custom-route-marker-icon',
-                iconSize: [28, 28],
-                iconAnchor: [14, 14]
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
             });
 
             const popupHtml = `
@@ -1245,7 +1320,7 @@
         const polyline = L.polyline(latLngs, {
             color: routeColor,
             weight: 5,
-            opacity: 0.85,
+            opacity: 0.9,
             className: 'animated-polyline'
         }).addTo(routeLayersGroup);
 
