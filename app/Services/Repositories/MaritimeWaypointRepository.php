@@ -11,15 +11,46 @@ class MaritimeWaypointRepository
     public function getWaypoints(): array
     {
         return [
-            // --- Southeast Asia & East Asia ---
-            'SG_STRAIT' => [
-                'id' => 'SG_STRAIT',
-                'name' => 'Strait of Malacca (Singapore Gate)',
-                'lat' => 1.25,
-                'lng' => 103.80,
-                'type' => 'Chokepoint',
-                'country' => 'Singapore / Malaysia',
-                'warning' => 'Heavy Maritime Traffic & Coastal Congestion',
+            // --- Sumatra, Malacca & Indonesian Archipelagic Sea Lanes ---
+            'ACEH_NORTH' => [
+                'id' => 'ACEH_NORTH',
+                'name' => 'North Aceh Maritime Entry',
+                'lat' => 5.6,
+                'lng' => 95.5,
+                'type' => 'Sea Passage',
+                'country' => 'Indonesia',
+            ],
+            'LHOKSEUMAWE_OFFSHORE' => [
+                'id' => 'LHOKSEUMAWE_OFFSHORE',
+                'name' => 'Lhokseumawe Coastal Channel',
+                'lat' => 5.3,
+                'lng' => 97.2,
+                'type' => 'Sea Passage',
+                'country' => 'Indonesia',
+            ],
+            'LANGSA_OFFSHORE' => [
+                'id' => 'LANGSA_OFFSHORE',
+                'name' => 'Langsa Offshore Waypoint',
+                'lat' => 4.6,
+                'lng' => 98.4,
+                'type' => 'Sea Passage',
+                'country' => 'Indonesia',
+            ],
+            'BELAWAN_OFFSHORE' => [
+                'id' => 'BELAWAN_OFFSHORE',
+                'name' => 'Belawan Sea Approach',
+                'lat' => 3.88,
+                'lng' => 98.85,
+                'type' => 'Sea Passage',
+                'country' => 'Indonesia',
+            ],
+            'ASAHAN_OFFSHORE' => [
+                'id' => 'ASAHAN_OFFSHORE',
+                'name' => 'Asahan Passage',
+                'lat' => 3.1,
+                'lng' => 99.8,
+                'type' => 'Sea Passage',
+                'country' => 'Indonesia',
             ],
             'MALACCA_NORTH' => [
                 'id' => 'MALACCA_NORTH',
@@ -29,12 +60,85 @@ class MaritimeWaypointRepository
                 'type' => 'Strait',
                 'country' => 'Malaysia / Indonesia',
             ],
+            'MALACCA_MID' => [
+                'id' => 'MALACCA_MID',
+                'name' => 'Mid Malacca Shipping Lane (Port Klang)',
+                'lat' => 2.3,
+                'lng' => 101.4,
+                'type' => 'Strait',
+                'country' => 'Malaysia / Indonesia',
+            ],
+            'MALACCA_SOUTH' => [
+                'id' => 'MALACCA_SOUTH',
+                'name' => 'South Malacca Strait (Kukup)',
+                'lat' => 1.5,
+                'lng' => 103.0,
+                'type' => 'Strait',
+                'country' => 'Malaysia / Indonesia',
+            ],
+            'SG_STRAIT' => [
+                'id' => 'SG_STRAIT',
+                'name' => 'Singapore Strait Chokepoint',
+                'lat' => 1.25,
+                'lng' => 103.80,
+                'type' => 'Chokepoint',
+                'country' => 'Singapore / Malaysia',
+                'warning' => 'Heavy Maritime Traffic & Coastal Congestion',
+            ],
+            'RIAU_STRAIT' => [
+                'id' => 'RIAU_STRAIT',
+                'name' => 'Riau Islands Sea Passage',
+                'lat' => 0.8,
+                'lng' => 104.5,
+                'type' => 'Sea Passage',
+                'country' => 'Indonesia',
+            ],
+            'BANGKA_NORTH' => [
+                'id' => 'BANGKA_NORTH',
+                'name' => 'North Bangka Strait',
+                'lat' => -1.5,
+                'lng' => 105.0,
+                'type' => 'Sea Passage',
+                'country' => 'Indonesia',
+            ],
+            'BANGKA_SOUTH' => [
+                'id' => 'BANGKA_SOUTH',
+                'name' => 'South Bangka Strait',
+                'lat' => -3.0,
+                'lng' => 106.0,
+                'type' => 'Sea Passage',
+                'country' => 'Indonesia',
+            ],
             'SUNDA_STRAIT' => [
                 'id' => 'SUNDA_STRAIT',
                 'name' => 'Sunda Strait Gate',
                 'lat' => -5.9,
                 'lng' => 105.8,
                 'type' => 'Strait',
+                'country' => 'Indonesia',
+            ],
+            'JAVA_SEA_WEST' => [
+                'id' => 'JAVA_SEA_WEST',
+                'name' => 'West Java Sea (Tanjung Priok)',
+                'lat' => -5.3,
+                'lng' => 106.8,
+                'type' => 'Sea Passage',
+                'country' => 'Indonesia',
+            ],
+            'JAVA_SEA_MID' => [
+                'id' => 'JAVA_SEA_MID',
+                'name' => 'Central Java Sea (Semarang)',
+                'lat' => -6.0,
+                'lng' => 110.2,
+                'type' => 'Sea Passage',
+                'country' => 'Indonesia',
+            ],
+            'JAVA_SEA_EAST' => [
+                'id' => 'JAVA_SEA_EAST',
+                'name' => 'East Java Sea (Surabaya)',
+                'lat' => -6.7,
+                'lng' => 112.7,
+                'type' => 'Sea Passage',
                 'country' => 'Indonesia',
             ],
             'LOMBOK_STRAIT' => [
@@ -45,6 +149,16 @@ class MaritimeWaypointRepository
                 'type' => 'Strait',
                 'country' => 'Indonesia',
             ],
+            'MAKASSAR_STRAIT' => [
+                'id' => 'MAKASSAR_STRAIT',
+                'name' => 'Makassar Strait Passage',
+                'lat' => -2.0,
+                'lng' => 118.5,
+                'type' => 'Strait',
+                'country' => 'Indonesia',
+            ],
+
+            // --- South China Sea & East Asia ---
             'SCS_SOUTH' => [
                 'id' => 'SCS_SOUTH',
                 'name' => 'South China Sea Basin',
@@ -327,14 +441,30 @@ class MaritimeWaypointRepository
     public function getGraphEdges(): array
     {
         return [
-            // SE Asia Connections
-            'SG_STRAIT' => ['MALACCA_NORTH', 'SUNDA_STRAIT', 'LOMBOK_STRAIT', 'SCS_SOUTH', 'ANDAMAN_SEA'],
-            'MALACCA_NORTH' => ['SG_STRAIT', 'ANDAMAN_SEA'],
-            'SUNDA_STRAIT' => ['SG_STRAIT', 'SRI_LANKA', 'CAPE_GOOD_HOPE'],
-            'LOMBOK_STRAIT' => ['SG_STRAIT', 'CAPE_GOOD_HOPE'],
+            // Sumatra & Malacca Chain
+            'ACEH_NORTH' => ['LHOKSEUMAWE_OFFSHORE', 'ANDAMAN_SEA'],
+            'LHOKSEUMAWE_OFFSHORE' => ['ACEH_NORTH', 'LANGSA_OFFSHORE', 'MALACCA_NORTH'],
+            'LANGSA_OFFSHORE' => ['LHOKSEUMAWE_OFFSHORE', 'BELAWAN_OFFSHORE'],
+            'BELAWAN_OFFSHORE' => ['LANGSA_OFFSHORE', 'ASAHAN_OFFSHORE', 'MALACCA_NORTH'],
+            'ASAHAN_OFFSHORE' => ['BELAWAN_OFFSHORE', 'MALACCA_MID'],
+            'MALACCA_NORTH' => ['LHOKSEUMAWE_OFFSHORE', 'BELAWAN_OFFSHORE', 'MALACCA_MID', 'ANDAMAN_SEA'],
+            'MALACCA_MID' => ['ASAHAN_OFFSHORE', 'MALACCA_NORTH', 'MALACCA_SOUTH'],
+            'MALACCA_SOUTH' => ['MALACCA_MID', 'SG_STRAIT'],
+            'SG_STRAIT' => ['MALACCA_SOUTH', 'RIAU_STRAIT', 'SCS_SOUTH', 'ANDAMAN_SEA'],
+            
+            // Indonesian Internal Sea Lanes
+            'RIAU_STRAIT' => ['SG_STRAIT', 'BANGKA_NORTH', 'SCS_SOUTH'],
+            'BANGKA_NORTH' => ['RIAU_STRAIT', 'BANGKA_SOUTH'],
+            'BANGKA_SOUTH' => ['BANGKA_NORTH', 'JAVA_SEA_WEST', 'SUNDA_STRAIT'],
+            'SUNDA_STRAIT' => ['BANGKA_SOUTH', 'JAVA_SEA_WEST', 'SRI_LANKA', 'CAPE_GOOD_HOPE'],
+            'JAVA_SEA_WEST' => ['SUNDA_STRAIT', 'BANGKA_SOUTH', 'JAVA_SEA_MID'],
+            'JAVA_SEA_MID' => ['JAVA_SEA_WEST', 'JAVA_SEA_EAST'],
+            'JAVA_SEA_EAST' => ['JAVA_SEA_MID', 'LOMBOK_STRAIT', 'MAKASSAR_STRAIT'],
+            'LOMBOK_STRAIT' => ['JAVA_SEA_EAST', 'MAKASSAR_STRAIT', 'CAPE_GOOD_HOPE'],
+            'MAKASSAR_STRAIT' => ['JAVA_SEA_EAST', 'LOMBOK_STRAIT', 'SCS_SOUTH'],
 
             // SCS & East Asia
-            'SCS_SOUTH' => ['SG_STRAIT', 'SCS_NORTH'],
+            'SCS_SOUTH' => ['SG_STRAIT', 'RIAU_STRAIT', 'SCS_NORTH', 'MAKASSAR_STRAIT'],
             'SCS_NORTH' => ['SCS_SOUTH', 'TAIWAN_STRAIT', 'ECS_SHANGHAI'],
             'TAIWAN_STRAIT' => ['SCS_NORTH', 'ECS_SHANGHAI', 'TSUSHIMA'],
             'ECS_SHANGHAI' => ['TAIWAN_STRAIT', 'YELLOW_SEA', 'TSUSHIMA', 'PACIFIC_MID'],
@@ -343,7 +473,7 @@ class MaritimeWaypointRepository
             'TSUGARU' => ['TSUSHIMA', 'PACIFIC_MID'],
 
             // Indian Ocean & Red Sea
-            'ANDAMAN_SEA' => ['MALACCA_NORTH', 'SG_STRAIT', 'BAY_OF_BENGAL', 'SRI_LANKA'],
+            'ANDAMAN_SEA' => ['ACEH_NORTH', 'MALACCA_NORTH', 'SG_STRAIT', 'BAY_OF_BENGAL', 'SRI_LANKA'],
             'BAY_OF_BENGAL' => ['ANDAMAN_SEA', 'SRI_LANKA'],
             'SRI_LANKA' => ['ANDAMAN_SEA', 'BAY_OF_BENGAL', 'ARABIAN_SEA', 'BAB_EL_MANDEB', 'CAPE_GOOD_HOPE'],
             'ARABIAN_SEA' => ['SRI_LANKA', 'HORMUZ_STRAIT', 'BAB_EL_MANDEB'],
@@ -364,7 +494,7 @@ class MaritimeWaypointRepository
             // Africa Cape Bypass
             'HORN_OF_AFRICA' => ['BAB_EL_MANDEB', 'MOZAMBIQUE_CHANNEL', 'SRI_LANKA'],
             'MOZAMBIQUE_CHANNEL' => ['HORN_OF_AFRICA', 'CAPE_GOOD_HOPE'],
-            'CAPE_GOOD_HOPE' => ['SRI_LANKA', 'SUNDA_STRAIT', 'MOZAMBIQUE_CHANNEL', 'SOUTH_ATLANTIC'],
+            'CAPE_GOOD_HOPE' => ['SRI_LANKA', 'SUNDA_STRAIT', 'LOMBOK_STRAIT', 'MOZAMBIQUE_CHANNEL', 'SOUTH_ATLANTIC'],
             'SOUTH_ATLANTIC' => ['CAPE_GOOD_HOPE', 'GULF_OF_GUINEA'],
             'GULF_OF_GUINEA' => ['SOUTH_ATLANTIC', 'GIBRALTAR', 'CARIBBEAN_SEA'],
 

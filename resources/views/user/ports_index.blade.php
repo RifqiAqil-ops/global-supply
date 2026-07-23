@@ -1383,6 +1383,31 @@
 
     let vesselAnimationInterval = null;
 
+    function calculateHeading(p1, p2) {
+        if (!p1 || !p2) return 0;
+        const lat1 = p1[0] * Math.PI / 180;
+        const lat2 = p2[0] * Math.PI / 180;
+        const dLon = (p2[1] - p1[1]) * Math.PI / 180;
+        const y = Math.sin(dLon) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+        const brng = Math.atan2(y, x);
+        return (brng * 180 / Math.PI + 360) % 360;
+    }
+
+    function createVesselSvgIcon(headingDegree) {
+        return L.divIcon({
+            html: `<div style="transform: rotate(${headingDegree}deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: transform 0.15s linear;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.35));">
+                    <path d="M12 2L17.5 14.5H6.5L12 2Z" fill="#2563EB" stroke="#FFFFFF" stroke-width="1.5"/>
+                    <path d="M5.5 14H18.5L17.5 19.5C17.5 20.6 16.6 21.5 15.5 21.5H8.5C7.4 21.5 6.5 20.6 6.5 19.5L5.5 14Z" fill="#0F172A" stroke="#FFFFFF" stroke-width="1.5"/>
+                </svg>
+            </div>`,
+            className: 'modern-ship-vessel-icon',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+    }
+
     function drawRouteOnMap(data) {
         routeLayersGroup.clearLayers();
         if (vesselAnimationInterval) {
@@ -1396,50 +1421,52 @@
 
         const routeColor = data.summary.risk_score < 40 ? '#10B981' : (data.summary.risk_score < 65 ? '#F59E0B' : '#EF4444');
 
-        // 1. Draw Primary Sea Polyline (Animated Dash Line over Ocean)
+        // 1. Draw Refined Thin Sea Polyline (3.5px weight, crisp ocean flow)
         const primaryPolyline = L.polyline(seaPolylineCoords, {
             color: routeColor,
-            weight: 5,
+            weight: 3.5,
             opacity: 0.9,
+            lineCap: 'round',
+            lineJoin: 'round',
             className: 'animated-polyline'
         }).addTo(routeLayersGroup);
 
-        // 2. Draw Alternative Sea Route Polyline (if present)
+        // 2. Draw Alternative Sea Route Polyline (3.5px dashed blue line)
         if (data.alternative_route && data.alternative_route.alternative.coordinates) {
             const altCoords = data.alternative_route.alternative.coordinates;
             L.polyline(altCoords, {
                 color: '#2563EB',
-                weight: 4,
-                opacity: 0.7,
-                dashArray: '8, 8'
+                weight: 3.5,
+                opacity: 0.8,
+                dashArray: '6, 6'
             }).addTo(routeLayersGroup).bindPopup(`
                 <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif;">
                     <span class="badge bg-primary mb-1">Recommended Alternative Bypass</span>
-                    <h6 class="fw-bold mb-1">${data.alternative_route.alternative.route_summary}</h6>
-                    <small class="text-muted d-block">${data.alternative_route.alternative.recommendation_text}</small>
+                    <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">${data.alternative_route.alternative.route_summary}</h6>
+                    <small class="text-muted d-block" style="font-size: 0.76rem;">${data.alternative_route.alternative.recommendation_text}</small>
                 </div>
             `, { className: 'premium-leaflet-popup' });
         }
 
-        // 3. Draw Timeline Waypoint Markers (Origin, Transit, Chokepoint, Destination)
+        // 3. Draw Waypoint Markers (Origin, Transit, Chokepoint, Destination)
         data.timeline.forEach(node => {
             const latLng = [node.latitude, node.longitude];
 
             const iconHtml = node.type === 'Origin' 
-                ? `<div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 32px; height: 32px; font-weight: 700; font-size: 15px;"><i class="bi bi-geo-alt-fill"></i></div>`
+                ? `<div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow border border-white" style="width: 26px; height: 26px; font-weight: 700; font-size: 13px;"><i class="bi bi-geo-alt-fill"></i></div>`
                 : (node.type === 'Destination' 
-                    ? `<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 32px; height: 32px; font-weight: 700; font-size: 15px;"><i class="bi bi-flag-fill"></i></div>`
-                    : `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 26px; height: 26px; font-weight: 700; font-size: 12px;"><i class="bi bi-diagram-3-fill"></i></div>`);
+                    ? `<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow border border-white" style="width: 26px; height: 26px; font-weight: 700; font-size: 13px;"><i class="bi bi-flag-fill"></i></div>`
+                    : `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow border border-white" style="width: 22px; height: 22px; font-weight: 700; font-size: 11px;"><i class="bi bi-diagram-3-fill"></i></div>`);
 
             const customIcon = L.divIcon({
                 html: iconHtml,
                 className: 'custom-route-marker-icon',
-                iconSize: [32, 32],
-                iconAnchor: [16, 16]
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
             });
 
             const popupHtml = `
-                <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif; min-width: 240px;">
+                <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif; min-width: 230px;">
                     <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
                         <span class="badge ${node.type === 'Origin' ? 'bg-danger' : (node.type === 'Destination' ? 'bg-success' : 'bg-primary')} px-2 py-0.5 rounded">${node.type}</span>
                         <span class="fw-bold small text-dark">${node.port_name}</span>
@@ -1463,17 +1490,17 @@
         if (data.warnings && data.warnings.length > 0) {
             data.warnings.forEach(warn => {
                 const warnIcon = L.divIcon({
-                    html: `<div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center shadow-lg border border-dark border-2 animate-bounce" style="width: 28px; height: 28px; font-weight: 800; font-size: 14px;"><i class="bi bi-exclamation-triangle-fill"></i></div>`,
+                    html: `<div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center shadow border border-dark border-2" style="width: 24px; height: 24px; font-weight: 800; font-size: 12px;"><i class="bi bi-exclamation-triangle-fill"></i></div>`,
                     className: 'warning-chokepoint-icon',
-                    iconSize: [28, 28],
-                    iconAnchor: [14, 14]
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
                 });
 
                 const warnPopup = `
                     <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif;">
                         <span class="badge bg-warning text-dark mb-1"><i class="bi bi-shield-exclamation me-1"></i>Maritime Advisory Warning</span>
-                        <h6 class="fw-bold text-dark mb-1">${warn.name}</h6>
-                        <p class="text-danger small mb-0 fw-semibold">${warn.warning}</p>
+                        <h6 class="fw-bold text-dark mb-1" style="font-size: 0.88rem;">${warn.name}</h6>
+                        <p class="text-danger small mb-0 fw-semibold" style="font-size: 0.76rem;">${warn.warning}</p>
                     </div>
                 `;
 
@@ -1482,16 +1509,14 @@
             });
         }
 
-        // 5. Add Animated Vessel (Ship) Marker moving smoothly along sea polyline
+        // 5. Add Sleek Modern SVG Ship Vessel Marker (24x24px) with Heading Rotation & Smooth Motion
         if (seaPolylineCoords.length > 1) {
-            const shipIcon = L.divIcon({
-                html: `<div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center shadow-lg border border-warning border-2" style="width: 36px; height: 36px; font-size: 18px;"><i class="bi bi-water"></i></div>`,
-                className: 'animated-ship-vessel-icon',
-                iconSize: [36, 36],
-                iconAnchor: [18, 18]
-            });
+            const initialHeading = calculateHeading(seaPolylineCoords[0], seaPolylineCoords[1]);
+            const shipMarker = L.marker(seaPolylineCoords[0], {
+                icon: createVesselSvgIcon(initialHeading),
+                zIndexOffset: 3000
+            }).addTo(routeLayersGroup);
 
-            const shipMarker = L.marker(seaPolylineCoords[0], { icon: shipIcon, zIndexOffset: 2000 }).addTo(routeLayersGroup);
             shipMarker.bindPopup(`
                 <div class="p-2 text-dark fw-bold small text-center" style="font-family: 'Outfit', sans-serif;">
                     <i class="bi bi-water text-primary me-1"></i>Active Maritime Vessel Transit
@@ -1501,13 +1526,18 @@
             let stepIdx = 0;
             vesselAnimationInterval = setInterval(() => {
                 stepIdx = (stepIdx + 1) % seaPolylineCoords.length;
-                shipMarker.setLatLng(seaPolylineCoords[stepIdx]);
-            }, 300);
+                const currPt = seaPolylineCoords[stepIdx];
+                const nextPt = seaPolylineCoords[(stepIdx + 1) % seaPolylineCoords.length];
+                const heading = calculateHeading(currPt, nextPt);
+
+                shipMarker.setLatLng(currPt);
+                shipMarker.setIcon(createVesselSvgIcon(heading));
+            }, 100);
         }
 
         // Fit map bounds to encompass the full sea polyline smoothly
         if (seaPolylineCoords.length > 0) {
-            map.fitBounds(primaryPolyline.getBounds(), { padding: [60, 60] });
+            map.fitBounds(primaryPolyline.getBounds(), { padding: [50, 50] });
         }
     }
 

@@ -63,9 +63,9 @@ class MaritimeRoutingService
 
         $directDist = $this->calculateDistanceNM($originLat, $originLon, $destLat, $destLon);
 
-        // If short distance (< 250 NM), direct sea leg
-        if ($directDist < 250) {
-            $directCoords = $this->interpolateLeg([$originLat, $originLon], [$destLat, $destLon], 10);
+        // If short distance (< 150 NM), direct sea leg with smooth coastal curve
+        if ($directDist < 150) {
+            $directCoords = $this->interpolateLeg([$originLat, $originLon], [$destLat, $destLon], 15);
             return [
                 'coordinates' => $directCoords,
                 'waypoints' => [],
@@ -114,7 +114,7 @@ class MaritimeRoutingService
 
         $nodeSequence[] = ['lat' => $destLat, 'lng' => $destLon, 'name' => 'Destination Port', 'type' => 'Port'];
 
-        // Generate smooth multi-point coordinates polyline
+        // Generate smooth densified multi-point coordinates polyline
         $polyCoords = [];
         $totalDistanceNM = 0;
 
@@ -125,8 +125,8 @@ class MaritimeRoutingService
             $legDist = $this->calculateDistanceNM($p1[0], $p1[1], $p2[0], $p2[1]);
             $totalDistanceNM += $legDist;
 
-            // Interpolate points for smooth curve
-            $steps = max(5, (int)round($legDist / 40));
+            // Densified points per leg (15 to 35 sub-points)
+            $steps = max(15, (int)round($legDist / 20));
             $legPoints = $this->interpolateLeg($p1, $p2, $steps);
 
             if ($i > 0) {
@@ -213,13 +213,18 @@ class MaritimeRoutingService
     /**
      * Interpolate intermediate points for smooth curve navigation.
      */
-    protected function interpolateLeg(array $p1, array $p2, int $steps = 8): array
+    protected function interpolateLeg(array $p1, array $p2, int $steps = 20): array
     {
         $points = [];
         for ($i = 0; $i <= $steps; $i++) {
             $t = $i / $steps;
-            $lat = $p1[0] + ($p2[0] - $p1[0]) * $t;
-            $lng = $p1[1] + ($p2[1] - $p1[1]) * $t;
+            
+            // Add subtle sine curvature to coastal leg so line curves naturally like ocean water
+            $curvature = sin($t * M_PI) * 0.08 * sin(($p1[0] + $p2[1]) * 10);
+            
+            $lat = $p1[0] + ($p2[0] - $p1[0]) * $t + $curvature;
+            $lng = $p1[1] + ($p2[1] - $p1[1]) * $t - $curvature;
+
             $points[] = [round($lat, 5), round($lng, 5)];
         }
         return $points;
