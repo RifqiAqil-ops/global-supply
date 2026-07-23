@@ -8,160 +8,184 @@ use App\Models\CountryRiskScore;
 use App\Models\WeatherData;
 use App\Models\ExchangeRate;
 use App\Models\NewsArticle;
+use App\Services\MaritimeRoutingService;
 
 class RouteAnalysisService
 {
-    /**
-     * Calculate Nautical Miles distance between two coordinates using Haversine formula.
-     */
-    public function calculateDistanceNM(float $lat1, float $lon1, float $lat2, float $lon2): float
+    protected MaritimeRoutingService $maritimeRoutingService;
+
+    public function __construct(MaritimeRoutingService $maritimeRoutingService)
     {
-        $earthRadiusKm = 6371.0;
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLon = deg2rad($lon2 - $lon1);
-
-        $a = sin($dLat / 2) * sin($dLat / 2) +
-            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-            sin($dLon / 2) * sin($dLon / 2);
-
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-        $km = $earthRadiusKm * $c;
-
-        // Convert km to Nautical Miles (1 NM = 1.852 km)
-        return round($km / 1.852, 1);
+        $this->maritimeRoutingService = $maritimeRoutingService;
     }
 
     /**
-     * Analyze route parameters between origin and destination ports.
+     * Analyze route parameters using true maritime sea lanes.
      */
     public function analyze(int $originPortId, int $destinationPortId, string $priority = 'safest', string $containerType = 'container'): array
     {
         $origin = Port::with(['country.latestRiskScore', 'country.latestWeather', 'country.exchangeRates'])->findOrFail($originPortId);
         $destination = Port::with(['country.latestRiskScore', 'country.latestWeather', 'country.exchangeRates'])->findOrFail($destinationPortId);
 
-        // Find potential transit hubs in the DB
-        $transitPorts = $this->findTransitPorts($origin, $destination, $priority);
+        // 1. Compute Primary Sea Route Polyline & Waypoints via Maritime Routing Service
+        $seaRoute = $this->maritimeRoutingService->calculateSeaRoute(
+            (float)$origin->latitude, (float)$origin->longitude,
+            (float)$destination->latitude, (float)$destination->longitude
+        );
 
-        // Build route timeline nodes: Origin -> Transits -> Destination
-        $nodes = array_merge([$origin], $transitPorts, [$destination]);
-        
-        // Calculate cumulative distance and leg metrics
-        $totalDistanceNM = 0;
+        // 2. Build Transit Timeline Steps
         $timeline = [];
         $waypointRiskScores = [];
         $weatherAlerts = [];
-        $newsHeadlines = [];
 
-        for ($i = 0; $i < count($nodes); $i++) {
-            $current = $nodes[$i];
-            
-            if ($i > 0) {
-                $prev = $nodes[$i - 1];
-                $legDist = $this->calculateDistanceNM(
-                    (float)$prev->latitude, (float)$prev->longitude,
-                    (float)$current->latitude, (float)$current->longitude
-                );
-                $totalDistanceNM += $legDist;
+        // Origin Node (Step 1)
+        $originRisk = $origin->country && $origin->country->latestRiskScore ? (float)$origin->country->latestRiskScore->composite_score : 35.0;
+        $originRiskLevel = $origin->country && $origin->country->latestRiskScore ? $origin->country->latestRiskScore->risk_level : 'Low';
+        $originWeather = $origin->country && $origin->country->latestWeather ? $origin->country->latestWeather->temperature . '°C, ' . $origin->country->latestWeather->weather_description : 'Normal Sea Conditions';
+
+        $waypointRiskScores[] = $originRisk;
+        $timeline[] = [
+            'step' => 1,
+            'type' => 'Origin',
+            'port_id' => $origin->id,
+            'port_name' => $origin->name,
+            'port_code' => $origin->port_code ?? $origin->un_locode,
+            'country_name' => $origin->country ? $origin->country->name : 'Unknown',
+            'latitude' => (float)$origin->latitude,
+            'longitude' => (float)$origin->longitude,
+            'status' => $origin->is_active ? 'Operational' : 'Inactive',
+            'risk_score' => $originRisk,
+            'risk_level' => $originRiskLevel,
+            'weather' => $originWeather,
+            'congestion' => $this->calculateCongestionIndex($origin) . '%',
+        ];
+
+        // Sea Passage / Chokepoint Nodes
+        $stepCounter = 2;
+        foreach ($seaRoute['waypoints'] as $wp) {
+            $wpRisk = $wp['type'] === 'Chokepoint' || $wp['type'] === 'Canal' ? 55.0 : 30.0;
+            if (!empty($wp['warning'])) {
+                $wpRisk += 15.0;
             }
-
-            // Extract country metrics
-            $country = $current->country;
-            $riskModel = $country ? $country->latestRiskScore : null;
-            $weatherModel = $country ? $country->latestWeather : null;
-
-            $riskScore = $riskModel ? (float)$riskModel->composite_score : 35.0;
-            $riskLevel = $riskModel ? $riskModel->risk_level : 'Medium';
-            $weatherTemp = $weatherModel ? $weatherModel->temperature . '°C, ' . $weatherModel->weather_description : 'Data belum tersedia.';
-            $isExtremeWeather = $weatherModel ? $weatherModel->is_extreme : false;
-
-            if ($isExtremeWeather) {
-                $weatherAlerts[] = $current->name . ' (' . $country->name . ') experiencing extreme weather: ' . ($weatherModel->weather_description ?? 'Severe Conditions');
-            }
-
-            // Calculate port congestion index based on harbor size & max depth
-            $congestionIndex = $this->calculateCongestionIndex($current);
-
-            $waypointRiskScores[] = $riskScore;
-
-            $typeLabel = ($i === 0) ? 'Origin' : (($i === count($nodes) - 1) ? 'Destination' : 'Transit Hub');
+            $waypointRiskScores[] = $wpRisk;
 
             $timeline[] = [
-                'step' => $i + 1,
-                'type' => $typeLabel,
-                'port_id' => $current->id,
-                'port_name' => $current->name,
-                'port_code' => $current->port_code ?? $current->un_locode,
-                'country_name' => $country ? $country->name : 'Unknown',
-                'country_flag' => $country ? $country->flag_url : null,
-                'latitude' => (float)$current->latitude,
-                'longitude' => (float)$current->longitude,
-                'harbor_size' => $current->harbor_size ?? 'Medium',
-                'status' => $current->is_active ? 'Operational' : 'Inactive',
-                'risk_score' => $riskScore,
-                'risk_level' => $riskLevel,
-                'weather' => $weatherTemp,
-                'congestion' => $congestionIndex . '%',
+                'step' => $stepCounter++,
+                'type' => $wp['type'] === 'Chokepoint' || $wp['type'] === 'Canal' ? 'Maritime Chokepoint' : 'Sea Passage',
+                'port_id' => null,
+                'port_name' => $wp['name'],
+                'port_code' => $wp['id'],
+                'country_name' => $wp['country'] ?? 'International Waters',
+                'latitude' => (float)$wp['lat'],
+                'longitude' => (float)$wp['lng'],
+                'status' => 'Navigable Lane',
+                'risk_score' => $wpRisk,
+                'risk_level' => $wpRisk >= 65 ? 'High' : ($wpRisk >= 40 ? 'Medium' : 'Low'),
+                'weather' => 'Marine Current Monitoring',
+                'congestion' => ($wp['type'] === 'Canal' ? '78%' : '45%'),
+                'warning' => $wp['warning'] ?? null,
             ];
         }
 
-        // Vessel speed based on container type (knots = NM/hour)
-        $vesselSpeedKnots = match($containerType) {
-            'container' => 20,
-            'liquid' => 14,
-            'bulk' => 13,
-            default => 16,
-        };
+        // Destination Node (Final Step)
+        $destRisk = $destination->country && $destination->country->latestRiskScore ? (float)$destination->country->latestRiskScore->composite_score : 30.0;
+        $destRiskLevel = $destination->country && $destination->country->latestRiskScore ? $destination->country->latestRiskScore->risk_level : 'Low';
+        $destWeather = $destination->country && $destination->country->latestWeather ? $destination->country->latestWeather->temperature . '°C, ' . $destination->country->latestWeather->weather_description : 'Normal Sea Conditions';
 
-        // Estimated transit time in days (24 hours sailing per day + 12h per transit port)
-        $sailingHours = $totalDistanceNM / max(10, $vesselSpeedKnots);
-        $transitPortDelayHours = count($transitPorts) * 12;
-        $totalHours = $sailingHours + $transitPortDelayHours;
+        $waypointRiskScores[] = $destRisk;
+        $timeline[] = [
+            'step' => $stepCounter,
+            'type' => 'Destination',
+            'port_id' => $destination->id,
+            'port_name' => $destination->name,
+            'port_code' => $destination->port_code ?? $destination->un_locode,
+            'country_name' => $destination->country ? $destination->country->name : 'Unknown',
+            'latitude' => (float)$destination->latitude,
+            'longitude' => (float)$destination->longitude,
+            'status' => $destination->is_active ? 'Operational' : 'Inactive',
+            'risk_score' => $destRisk,
+            'risk_level' => $destRiskLevel,
+            'weather' => $destWeather,
+            'congestion' => $this->calculateCongestionIndex($destination) . '%',
+        ];
+
+        // 3. Distance & ETA Calculations
+        $totalDistanceNM = $seaRoute['total_distance_nm'];
+        $vesselSpeedKnots = 18.0; // Standard commercial vessel cruising speed in knots
+
+        $sailingHours = $totalDistanceNM / $vesselSpeedKnots;
+        $chokepointDelayHours = count($seaRoute['chokepoints']) * 8;
+        $totalHours = $sailingHours + $chokepointDelayHours;
         $etaDays = round($totalHours / 24, 1);
 
-        // Overall risk score: average of waypoints + vessel type risk factor
+        // 4. Composite Risk Calculations
         $avgRiskScore = count($waypointRiskScores) > 0 ? array_sum($waypointRiskScores) / count($waypointRiskScores) : 35;
-        $typeModifier = match($containerType) {
-            'liquid' => 6,
-            'bulk' => 4,
-            default => 0,
-        };
-        $overallRiskScore = round(min(100, max(1, $avgRiskScore + $typeModifier)), 1);
-
-        // Risk Level Badge
+        $chokepointPenalty = count($seaRoute['warnings']) * 5;
+        $overallRiskScore = round(min(100, max(1, $avgRiskScore + $chokepointPenalty)), 1);
         $overallRiskLevel = $overallRiskScore >= 65 ? 'High' : ($overallRiskScore >= 40 ? 'Medium' : 'Low');
 
-        // Fetch recent news for geopolitical status
+        // 5. Macro Data (Exchange Rates, News, Congestion)
         $newsArticles = NewsArticle::orderBy('published_at', 'desc')->take(3)->get();
         $geopoliticalStatus = $newsArticles->count() > 0 
             ? 'Monitored: ' . $newsArticles->first()->title
             : 'Data belum tersedia.';
 
-        // Currency Impact
         $destCurrency = $destination->country ? $destination->country->currency_code : 'USD';
         $exchangeRate = ExchangeRate::where('currency_code', $destCurrency)->first();
         $currencyImpact = $exchangeRate 
             ? "1 USD = {$exchangeRate->rate_to_usd} {$destCurrency} (" . ($exchangeRate->change_percent >= 0 ? '+' : '') . "{$exchangeRate->change_percent}%)"
             : 'Stable / Standard USD Settlement';
 
-        // Overall Port Congestion Average
         $avgCongestion = count($timeline) > 0 
             ? round(array_sum(array_map(fn($t) => (float)str_replace('%', '', $t['congestion']), $timeline)) / count($timeline))
-            : 25;
+            : 30;
 
-        // Overall Recommendation
         $recommendation = match(true) {
-            $overallRiskScore < 40 => 'Optimal & Safe Route - Standard Transit Schedule Recommended',
-            $overallRiskScore < 65 => 'Moderate Caution - Monitor Weather & Port Congestion Advisories',
-            default => 'High Risk Alert - Consider Alternative Transit Routes or Escort Protocols',
+            $overallRiskScore < 40 => 'Optimal & Safe Maritime Lane - Standard Cruising Schedule Recommended',
+            $overallRiskScore < 65 => 'Moderate Caution - Escort Patrols & Chokepoint Traffic Monitoring Advised',
+            default => 'High Risk Alert - Consider Alternative Cape Bypass or Rerouting Protocols',
         };
 
-        // AI Insight commentary generation
-        $aiInsight = $this->generateAiInsight($origin, $destination, $transitPorts, $overallRiskScore, $overallRiskLevel, $avgCongestion, $weatherAlerts, $priority);
+        // 6. Advisory Commentary Generation
+        $advisoryText = "Rute pelayaran laut dari {$origin->name} menuju {$destination->name} melintasi jalur maritim sepanjang " . number_format($totalDistanceNM, 1) . " NM dengan estimasi transit {$etaDays} Hari. " .
+            (count($seaRoute['warnings']) > 0 
+                ? "Ditemukan " . count($seaRoute['warnings']) . " area chokepoint berisiko: " . implode(', ', array_map(fn($w) => $w['name'], $seaRoute['warnings'])) . "."
+                : "Koridor maritim kondusif tanpa kendala navigasi utama.");
 
-        // Alternative Route Generation (if risk >= 40 or priority == 'safest')
+        // 7. Alternative Sea Route Calculation
         $alternativeRoute = null;
-        if ($overallRiskScore >= 40 || count($transitPorts) > 0) {
-            $alternativeRoute = $this->generateAlternativeRoute($origin, $destination, $overallRiskScore, $etaDays, $containerType);
+        if (count($seaRoute['warnings']) > 0 || $overallRiskScore >= 45) {
+            $avoidWps = array_map(fn($w) => $w['waypoint_id'], $seaRoute['warnings']);
+            $avoidWps[] = 'SUEZ_CANAL';
+            $avoidWps[] = 'BAB_EL_MANDEB';
+            $avoidWps[] = 'RED_SEA_MID';
+
+            $altSeaRoute = $this->maritimeRoutingService->calculateSeaRoute(
+                (float)$origin->latitude, (float)$origin->longitude,
+                (float)$destination->latitude, (float)$destination->longitude,
+                $avoidWps
+            );
+
+            $altDistanceNM = $altSeaRoute['total_distance_nm'];
+            $altEtaDays = round(($altDistanceNM / 18.0) / 24, 1);
+            $altRiskScore = round(max(15, $overallRiskScore - 22.5), 1);
+            $savingsPercent = round((($overallRiskScore - $altRiskScore) / $overallRiskScore) * 100, 1);
+
+            $alternativeRoute = [
+                'original' => [
+                    'route_summary' => "{$origin->name} → {$destination->name} (Direct Lane)",
+                    'risk_score' => $overallRiskScore,
+                    'eta_days' => $etaDays,
+                ],
+                'alternative' => [
+                    'route_summary' => "{$origin->name} → Cape Bypass → {$destination->name}",
+                    'risk_score' => $altRiskScore,
+                    'eta_days' => $altEtaDays,
+                    'savings_risk_percent' => $savingsPercent,
+                    'recommendation_text' => "Rute laut alternatif via Cape Bypass menurunkan tingkat risiko sebesar {$savingsPercent}% dengan penyesuaian waktu pelayaran maritim.",
+                    'coordinates' => $altSeaRoute['coordinates'],
+                ]
+            ];
         }
 
         return [
@@ -169,7 +193,6 @@ class RouteAnalysisService
                 'id' => $origin->id,
                 'name' => $origin->name,
                 'country' => $origin->country ? $origin->country->name : '',
-                'flag' => $origin->country ? $origin->country->flag_url : '',
                 'latitude' => (float)$origin->latitude,
                 'longitude' => (float)$origin->longitude,
             ],
@@ -177,7 +200,6 @@ class RouteAnalysisService
                 'id' => $destination->id,
                 'name' => $destination->name,
                 'country' => $destination->country ? $destination->country->name : '',
-                'flag' => $destination->country ? $destination->country->flag_url : '',
                 'latitude' => (float)$destination->latitude,
                 'longitude' => (float)$destination->longitude,
             ],
@@ -187,75 +209,19 @@ class RouteAnalysisService
                 'eta_days' => $etaDays,
                 'risk_score' => $overallRiskScore,
                 'risk_level' => $overallRiskLevel,
-                'weather_summary' => count($weatherAlerts) > 0 ? implode('; ', $weatherAlerts) : 'Normal Marine Conditions',
+                'weather_summary' => 'Normal Maritime Conditions',
                 'currency_impact' => $currencyImpact,
                 'port_congestion' => $avgCongestion . '%',
                 'geopolitical_status' => $geopoliticalStatus,
                 'recommendation' => $recommendation,
             ],
-            'ai_insight' => $aiInsight,
+            'sea_polyline' => $seaRoute['coordinates'],
+            'chokepoints' => $seaRoute['chokepoints'],
+            'warnings' => $seaRoute['warnings'],
+            'ai_insight' => $advisoryText,
             'timeline' => $timeline,
             'alternative_route' => $alternativeRoute,
         ];
-    }
-
-    /**
-     * Find logical transit ports between origin and destination.
-     */
-    protected function findTransitPorts(Port $origin, Port $destination, string $priority): array
-    {
-        // Find major hub ports that lie spatially between origin and destination
-        $minLat = min($origin->latitude, $destination->latitude) - 5;
-        $maxLat = max($origin->latitude, $destination->latitude) + 5;
-        $minLon = min($origin->longitude, $destination->longitude) - 5;
-        $maxLon = max($origin->longitude, $destination->longitude) + 5;
-
-        $query = Port::with(['country.latestRiskScore', 'country.latestWeather'])
-            ->where('is_active', true)
-            ->whereNotIn('id', [$origin->id, $destination->id]);
-
-        // If distance is large (> 800 NM), find intermediate hub
-        $directDist = $this->calculateDistanceNM(
-            (float)$origin->latitude, (float)$origin->longitude,
-            (float)$destination->latitude, (float)$destination->longitude
-        );
-
-        if ($directDist < 500) {
-            return []; // Direct shipment for short distances
-        }
-
-        $candidates = $query->whereBetween('latitude', [$minLat, $maxLat])
-            ->whereBetween('longitude', [$minLon, $maxLon])
-            ->get();
-
-        if ($candidates->isEmpty()) {
-            // Fallback: pick major global hub ports in nearby region
-            $candidates = Port::with(['country.latestRiskScore', 'country.latestWeather'])
-                ->where('is_active', true)
-                ->whereIn('harbor_size', ['Very Large', 'Large', 'Medium'])
-                ->whereNotIn('id', [$origin->id, $destination->id])
-                ->take(10)
-                ->get();
-        }
-
-        // Sort candidates based on priority
-        $sorted = $candidates->sortBy(function($port) use ($priority, $origin, $destination) {
-            $risk = $port->country && $port->country->latestRiskScore ? (float)$port->country->latestRiskScore->composite_score : 50;
-            $distFromOrigin = $this->calculateDistanceNM((float)$origin->latitude, (float)$origin->longitude, (float)$port->latitude, (float)$port->longitude);
-            $distToDest = $this->calculateDistanceNM((float)$port->latitude, (float)$port->longitude, (float)$destination->latitude, (float)$destination->longitude);
-            $totalDist = $distFromOrigin + $distToDest;
-
-            if ($priority === 'safest') {
-                return $risk * 100 + $totalDist;
-            } elseif ($priority === 'fastest') {
-                return $totalDist;
-            } else { // cheapest
-                return $distFromOrigin;
-            }
-        });
-
-        // Pick 1 or 2 best transit hubs
-        return $sorted->take($directDist > 3000 ? 2 : 1)->values()->all();
     }
 
     /**
@@ -269,73 +235,6 @@ class RouteAnalysisService
             'Medium' => 45,
             default => 60,
         };
-
-        // Randomize slight variance based on port ID
-        $variance = ($port->id * 7) % 15;
-        return min(95, max(10, $base + $variance));
-    }
-
-    /**
-     * Generate humanized AI Insight commentary text.
-     */
-    protected function generateAiInsight(Port $origin, Port $destination, array $transits, float $riskScore, string $riskLevel, int $avgCongestion, array $weatherAlerts, string $priority): string
-    {
-        $transitNames = count($transits) > 0 ? implode(' dan ', array_map(fn($t) => $t->name, $transits)) : 'langsung tanpa transit';
-
-        if ($riskScore >= 60) {
-            $text = "Rute pengiriman dari {$origin->name} ke {$destination->name} (melalui {$transitNames}) melewati wilayah dengan tingkat risiko geopolitik dan maritim tinggi ({$riskScore}/100, Kategori: {$riskLevel}). ";
-            if (count($weatherAlerts) > 0) {
-                $text .= "Terdapat peringatan cuaca ekstrim di sepanjang koridor pelayaran. ";
-            }
-            if ($avgCongestion > 40) {
-                $text .= "Pelabuhan transit sedang mengalami tingkat kepadatan tinggi ({$avgCongestion}%). ";
-            }
-            $text .= "Disarankan mempertimbangkan rute alternatif yang lebih aman atau menyesuaikan jadwal keberangkatan untuk menghindari kerugian logistik.";
-        } elseif ($riskScore >= 35) {
-            $text = "Rute dari {$origin->name} ke {$destination->name} (melalui {$transitNames}) berada dalam batas kondisi operasional yang stabil ({$riskScore}/100, Kategori: {$riskLevel}). ";
-            if ($avgCongestion > 35) {
-                $text .= "Estimasi waktu bongkar muat diperkirakan mengalami antrean sedang akibat kepadatan pelabuhan ({$avgCongestion}%). ";
-            }
-            $text .= "Pengiriman dapat dilanjutkan dengan tetap memantau pembaruan cuaca harian dan status sekuritas wilayah laut.";
-        } else {
-            $text = "Rute pelayaran dari {$origin->name} ke {$destination->name} merupakan koridor logistik paling aman dan efisien ({$riskScore}/100, Kategori: {$riskLevel}). Kondisi cuaca maritim terpantau kondusif dan kelancaran arus barang di pelabuhan sangat baik ({$avgCongestion}% kepadatan).";
-        }
-
-        return $text;
-    }
-
-    /**
-     * Generate alternative route comparison.
-     */
-    protected function generateAlternativeRoute(Port $origin, Port $destination, float $primaryRisk, float $primaryEta, string $containerType): array
-    {
-        // Alternative route chooses safer hubs or different pathing
-        $altRisk = round(max(15, $primaryRisk - rand(18, 28)), 1);
-        $altEta = round($primaryEta + (rand(12, 24) / 10), 1);
-
-        // Find an alternative transit hub in neighboring country
-        $altHub = Port::with('country')
-            ->where('is_active', true)
-            ->whereNotIn('id', [$origin->id, $destination->id])
-            ->whereIn('harbor_size', ['Very Large', 'Large'])
-            ->orderBy('id', 'desc')
-            ->first();
-
-        $altHubName = $altHub ? $altHub->name . ' (' . ($altHub->country ? $altHub->country->name : '') . ')' : 'Port Klang (Malaysia)';
-
-        return [
-            'original' => [
-                'route_summary' => $origin->name . ' → ' . $destination->name,
-                'risk_score' => $primaryRisk,
-                'eta_days' => $primaryEta,
-            ],
-            'alternative' => [
-                'route_summary' => $origin->name . ' → ' . $altHubName . ' → ' . $destination->name,
-                'risk_score' => $altRisk,
-                'eta_days' => $altEta,
-                'savings_risk_percent' => round((($primaryRisk - $altRisk) / max(1, $primaryRisk)) * 100, 1),
-                'recommendation_text' => "Rute alternatif melalui {$altHubName} menurunkan risiko sebesar " . round($primaryRisk - $altRisk, 1) . " poin dengan penambahan waktu pelayaran yang minimal (+ " . round($altEta - $primaryEta, 1) . " hari).",
-            ],
-        ];
+        return min(95, max(10, $base + ($port->id % 25)));
     }
 }

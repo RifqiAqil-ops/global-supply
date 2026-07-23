@@ -1381,27 +1381,61 @@
         }
     }
 
+    let vesselAnimationInterval = null;
+
     function drawRouteOnMap(data) {
         routeLayersGroup.clearLayers();
+        if (vesselAnimationInterval) {
+            clearInterval(vesselAnimationInterval);
+            vesselAnimationInterval = null;
+        }
 
-        const latLngs = [];
+        const seaPolylineCoords = (data.sea_polyline && data.sea_polyline.length > 0) 
+            ? data.sea_polyline 
+            : data.timeline.map(n => [n.latitude, n.longitude]);
+
         const routeColor = data.summary.risk_score < 40 ? '#10B981' : (data.summary.risk_score < 65 ? '#F59E0B' : '#EF4444');
 
+        // 1. Draw Primary Sea Polyline (Animated Dash Line over Ocean)
+        const primaryPolyline = L.polyline(seaPolylineCoords, {
+            color: routeColor,
+            weight: 5,
+            opacity: 0.9,
+            className: 'animated-polyline'
+        }).addTo(routeLayersGroup);
+
+        // 2. Draw Alternative Sea Route Polyline (if present)
+        if (data.alternative_route && data.alternative_route.alternative.coordinates) {
+            const altCoords = data.alternative_route.alternative.coordinates;
+            L.polyline(altCoords, {
+                color: '#2563EB',
+                weight: 4,
+                opacity: 0.7,
+                dashArray: '8, 8'
+            }).addTo(routeLayersGroup).bindPopup(`
+                <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif;">
+                    <span class="badge bg-primary mb-1">Recommended Alternative Bypass</span>
+                    <h6 class="fw-bold mb-1">${data.alternative_route.alternative.route_summary}</h6>
+                    <small class="text-muted d-block">${data.alternative_route.alternative.recommendation_text}</small>
+                </div>
+            `, { className: 'premium-leaflet-popup' });
+        }
+
+        // 3. Draw Timeline Waypoint Markers (Origin, Transit, Chokepoint, Destination)
         data.timeline.forEach(node => {
             const latLng = [node.latitude, node.longitude];
-            latLngs.push(latLng);
 
             const iconHtml = node.type === 'Origin' 
-                ? `<div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 30px; height: 30px; font-weight: 700; font-size: 14px;"><i class="bi bi-geo-alt-fill"></i></div>`
+                ? `<div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 32px; height: 32px; font-weight: 700; font-size: 15px;"><i class="bi bi-geo-alt-fill"></i></div>`
                 : (node.type === 'Destination' 
-                    ? `<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 30px; height: 30px; font-weight: 700; font-size: 14px;"><i class="bi bi-flag-fill"></i></div>`
+                    ? `<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 32px; height: 32px; font-weight: 700; font-size: 15px;"><i class="bi bi-flag-fill"></i></div>`
                     : `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-lg border border-white" style="width: 26px; height: 26px; font-weight: 700; font-size: 12px;"><i class="bi bi-diagram-3-fill"></i></div>`);
 
             const customIcon = L.divIcon({
                 html: iconHtml,
                 className: 'custom-route-marker-icon',
-                iconSize: [30, 30],
-                iconAnchor: [15, 15]
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
             });
 
             const popupHtml = `
@@ -1411,11 +1445,12 @@
                         <span class="fw-bold small text-dark">${node.port_name}</span>
                     </div>
                     <div class="text-muted small" style="font-size: 0.78rem; line-height: 1.6;">
-                        <div>Country: <strong class="text-dark">${node.country_name}</strong></div>
+                        <div>Territory: <strong class="text-dark">${node.country_name}</strong></div>
                         <div>Status: <strong class="text-success">${node.status}</strong></div>
                         <div>Congestion Index: <strong class="text-dark">${node.congestion}</strong></div>
                         <div>Weather: <strong class="text-dark">${node.weather}</strong></div>
-                        <div>Risk Score: <strong class="text-dark">${node.risk_score} (${node.risk_level})</strong></div>
+                        <div>Risk Rating: <strong class="text-dark">${node.risk_score} (${node.risk_level})</strong></div>
+                        ${node.warning ? `<div class="mt-1 text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i>${node.warning}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -1424,17 +1459,55 @@
             routeLayersGroup.addLayer(marker);
         });
 
-        // Add Animated Polyline
-        const polyline = L.polyline(latLngs, {
-            color: routeColor,
-            weight: 5,
-            opacity: 0.9,
-            className: 'animated-polyline'
-        }).addTo(routeLayersGroup);
+        // 4. Draw Warning Badges for Chokepoints
+        if (data.warnings && data.warnings.length > 0) {
+            data.warnings.forEach(warn => {
+                const warnIcon = L.divIcon({
+                    html: `<div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center shadow-lg border border-dark border-2 animate-bounce" style="width: 28px; height: 28px; font-weight: 800; font-size: 14px;"><i class="bi bi-exclamation-triangle-fill"></i></div>`,
+                    className: 'warning-chokepoint-icon',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                });
 
-        // Fit map bounds to encompass the full route smoothly
-        if (latLngs.length > 0) {
-            map.fitBounds(polyline.getBounds(), { padding: [60, 60] });
+                const warnPopup = `
+                    <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif;">
+                        <span class="badge bg-warning text-dark mb-1"><i class="bi bi-shield-exclamation me-1"></i>Maritime Advisory Warning</span>
+                        <h6 class="fw-bold text-dark mb-1">${warn.name}</h6>
+                        <p class="text-danger small mb-0 fw-semibold">${warn.warning}</p>
+                    </div>
+                `;
+
+                const warnMarker = L.marker([warn.lat, warn.lng], { icon: warnIcon }).bindPopup(warnPopup, { className: 'premium-leaflet-popup' });
+                routeLayersGroup.addLayer(warnMarker);
+            });
+        }
+
+        // 5. Add Animated Vessel (Ship) Marker moving smoothly along sea polyline
+        if (seaPolylineCoords.length > 1) {
+            const shipIcon = L.divIcon({
+                html: `<div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center shadow-lg border border-warning border-2" style="width: 36px; height: 36px; font-size: 18px;"><i class="bi bi-water"></i></div>`,
+                className: 'animated-ship-vessel-icon',
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            });
+
+            const shipMarker = L.marker(seaPolylineCoords[0], { icon: shipIcon, zIndexOffset: 2000 }).addTo(routeLayersGroup);
+            shipMarker.bindPopup(`
+                <div class="p-2 text-dark fw-bold small text-center" style="font-family: 'Outfit', sans-serif;">
+                    <i class="bi bi-water text-primary me-1"></i>Active Maritime Vessel Transit
+                </div>
+            `, { className: 'premium-leaflet-popup' });
+
+            let stepIdx = 0;
+            vesselAnimationInterval = setInterval(() => {
+                stepIdx = (stepIdx + 1) % seaPolylineCoords.length;
+                shipMarker.setLatLng(seaPolylineCoords[stepIdx]);
+            }, 300);
+        }
+
+        // Fit map bounds to encompass the full sea polyline smoothly
+        if (seaPolylineCoords.length > 0) {
+            map.fitBounds(primaryPolyline.getBounds(), { padding: [60, 60] });
         }
     }
 
