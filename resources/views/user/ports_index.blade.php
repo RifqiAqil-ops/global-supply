@@ -1182,13 +1182,16 @@
                               (data.summary.risk_level === 'Medium' ? 'badge bg-warning bg-opacity-20 text-warning border border-warning border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold' :
                               'badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-30 px-2.5 py-1 rounded-pill small fw-semibold');
 
-        document.getElementById('resHeaderDistance').innerHTML = `${data.summary.distance_nm} NM <small class="text-white-50 font-normal" style="font-size: 0.75rem;">(${data.summary.distance_km} km)</small>`;
+        const formattedDistNm = parseFloat(data.summary.distance_nm).toFixed(1);
+        const formattedDistKm = parseFloat(data.summary.distance_km).toFixed(1);
+
+        document.getElementById('resHeaderDistance').innerHTML = `${formattedDistNm} NM <small class="text-white-50 font-normal" style="font-size: 0.75rem;">(${formattedDistKm} km)</small>`;
         document.getElementById('resHeaderEta').innerText = `${data.summary.eta_days} Days`;
         document.getElementById('resHeaderRiskScore').innerText = `${data.summary.risk_score} / 100`;
 
         // 2. Update Categorized 4 Panels
-        document.getElementById('resDistanceVal').innerText = `${data.summary.distance_nm} NM`;
-        document.getElementById('resDistanceKm').innerText = `(${data.summary.distance_km} km)`;
+        document.getElementById('resDistanceVal').innerText = `${formattedDistNm} NM`;
+        document.getElementById('resDistanceKm').innerText = `(${formattedDistKm} km)`;
         document.getElementById('resEtaVal').innerText = `${data.summary.eta_days} Days`;
 
         document.getElementById('resRiskVal').innerText = `${data.summary.risk_score}`;
