@@ -156,6 +156,13 @@ class DashboardController extends Controller
             \Illuminate\Support\Facades\Log::error("Failed to recalculate risk scores after weight update: " . $e->getMessage());
         }
 
+        // Broadcast RiskWeightsUpdated event to all connected clients in realtime
+        try {
+            \App\Events\RiskWeightsUpdated::dispatch($weights, 'Risk weights updated by Administrator');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Realtime broadcast failed: " . $e->getMessage());
+        }
+
         return redirect()->back()->with('success', 'Scoring weights updated successfully!');
     }
 

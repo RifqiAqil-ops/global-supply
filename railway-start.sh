@@ -52,6 +52,14 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
+# Start Laravel Reverb WebSocket Server Daemon in background
+echo "Starting Laravel Reverb WebSocket Server Daemon..."
+php artisan reverb:start --host=0.0.0.0 --port=8080 &
+
+# Start Async Queue Worker Daemon in background
+echo "Starting Async Queue Worker Daemon..."
+php artisan queue:work --tries=3 --timeout=90 &
+
 # Start Laravel production web server
 echo "Starting application web server on port $PORT..."
 php artisan serve --host 0.0.0.0 --port $PORT

@@ -43,7 +43,11 @@ class PortController extends Controller
             'status' => ['required', 'string', 'max:50'],
         ]);
 
-        Port::create($validated);
+        $port = Port::create($validated);
+
+        try {
+            \App\Events\PortChanged::dispatch('created', $port->toArray());
+        } catch (\Throwable $e) {}
 
         return redirect()->route('admin.ports.index')->with('success', 'Port created successfully.');
     }
@@ -67,12 +71,22 @@ class PortController extends Controller
 
         $port->update($validated);
 
+        try {
+            \App\Events\PortChanged::dispatch('updated', $port->toArray());
+        } catch (\Throwable $e) {}
+
         return redirect()->route('admin.ports.index')->with('success', 'Port updated successfully.');
     }
 
     public function destroy(Port $port)
     {
+        $portData = $port->toArray();
         $port->delete();
+
+        try {
+            \App\Events\PortChanged::dispatch('deleted', $portData);
+        } catch (\Throwable $e) {}
+
         return redirect()->route('admin.ports.index')->with('success', 'Port deleted successfully.');
     }
 }
