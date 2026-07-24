@@ -1443,11 +1443,9 @@
             ? data.sea_polyline 
             : data.timeline.map(n => [n.latitude, n.longitude]);
 
-        const routeColor = data.summary.risk_score < 40 ? '#10B981' : (data.summary.risk_score < 65 ? '#F59E0B' : '#EF4444');
-
-        // 1. Draw Refined Thin Sea Polyline (3.5px weight, crisp ocean flow)
+        // 1. Draw Primary Curved Sea Polyline (Ocean Blue #2563EB, 3.5px weight, crisp ocean flow)
         const primaryPolyline = L.polyline(seaPolylineCoords, {
-            color: routeColor,
+            color: '#2563EB',
             weight: 3.5,
             opacity: 0.9,
             lineCap: 'round',
@@ -1455,17 +1453,19 @@
             className: 'animated-polyline'
         }).addTo(routeLayersGroup);
 
-        // 2. Draw Alternative Sea Route Polyline (3.5px dashed blue line)
+        // 2. Draw Alternative Sea Route Polyline (Emerald #059669, 3.5px dashed line)
         if (data.alternative_route && data.alternative_route.alternative.coordinates) {
             const altCoords = data.alternative_route.alternative.coordinates;
             L.polyline(altCoords, {
-                color: '#2563EB',
+                color: '#059669',
                 weight: 3.5,
-                opacity: 0.8,
+                opacity: 0.85,
+                lineCap: 'round',
+                lineJoin: 'round',
                 dashArray: '6, 6'
             }).addTo(routeLayersGroup).bindPopup(`
                 <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif;">
-                    <span class="badge bg-primary mb-1">Recommended Alternative Bypass</span>
+                    <span class="badge bg-success mb-1">Recommended Alternative Bypass</span>
                     <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">${data.alternative_route.alternative.route_summary}</h6>
                     <small class="text-muted d-block" style="font-size: 0.76rem;">${data.alternative_route.alternative.recommendation_text}</small>
                 </div>

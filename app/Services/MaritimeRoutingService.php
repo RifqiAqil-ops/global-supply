@@ -61,8 +61,6 @@ class MaritimeRoutingService
         $allWaypoints = $this->repository->getWaypoints();
         $graph = $this->repository->getGraphEdges();
 
-        $directDist = $this->calculateDistanceNM($originLat, $originLon, $destLat, $destLon);
-
         // Find entry and exit sea waypoints
         $startWpId = $this->findClosestWaypointId($originLat, $originLon, $avoidWaypointIds);
         $endWpId = $this->findClosestWaypointId($destLat, $destLon, $avoidWaypointIds);
@@ -102,27 +100,16 @@ class MaritimeRoutingService
 
         $nodeSequence[] = ['lat' => $destLat, 'lng' => $destLon, 'name' => 'Destination Port', 'type' => 'Port'];
 
-        // Generate smooth densified multi-point coordinates polyline strictly over water
-        $polyCoords = [];
+        // Generate smooth Catmull-Rom curved polyline strictly through sea waypoints
+        $polyCoords = $this->generateCatmullRomSpline($nodeSequence, 12);
+        
+        // Calculate total sea distance
         $totalDistanceNM = 0;
-
         for ($i = 0; $i < count($nodeSequence) - 1; $i++) {
-            $p1 = [$nodeSequence[$i]['lat'], $nodeSequence[$i]['lng']];
-            $p2 = [$nodeSequence[$i + 1]['lat'], $nodeSequence[$i + 1]['lng']];
-
-            $legDist = $this->calculateDistanceNM($p1[0], $p1[1], $p2[0], $p2[1]);
-            $totalDistanceNM += $legDist;
-
-            // Interpolate clean sub-points per leg
-            $steps = max(10, (int)round($legDist / 25));
-            $legPoints = $this->interpolateLeg($p1, $p2, $steps);
-
-            if ($i > 0) {
-                array_shift($legPoints); // Avoid duplicate point at joint
-            }
-            foreach ($legPoints as $pt) {
-                $polyCoords[] = $pt;
-            }
+            $totalDistanceNM += $this->calculateDistanceNM(
+                $nodeSequence[$i]['lat'], $nodeSequence[$i]['lng'],
+                $nodeSequence[$i + 1]['lat'], $nodeSequence[$i + 1]['lng']
+            );
         }
 
         return [
@@ -199,17 +186,47 @@ class MaritimeRoutingService
     }
 
     /**
-     * Interpolate clean intermediate sea points between open-water waypoints.
+     * Generate Catmull-Rom spline curves across sea waypoints.
      */
-    protected function interpolateLeg(array $p1, array $p2, int $steps = 15): array
+    protected function generateCatmullRomSpline(array $nodes, int $samplesPerSegment = 12): array
     {
-        $points = [];
-        for ($i = 0; $i <= $steps; $i++) {
-            $t = $i / $steps;
-            $lat = $p1[0] + ($p2[0] - $p1[0]) * $t;
-            $lng = $p1[1] + ($p2[1] - $p1[1]) * $t;
-            $points[] = [round($lat, 5), round($lng, 5)];
+        $count = count($nodes);
+        if ($count < 2) {
+            return array_map(fn($n) => [$n['lat'], $n['lng']], $nodes);
         }
-        return $points;
+
+        $pts = array_map(fn($n) => [$n['lat'], $n['lng']], $nodes);
+        $result = [];
+
+        for ($i = 0; $i < $count - 1; $i++) {
+            $p0 = $pts[max(0, $i - 1)];
+            $p1 = $pts[$i];
+            $p2 = $pts[$i + 1];
+            $p3 = $pts[min($count - 1, $i + 2)];
+
+            for ($j = 0; $j < $samplesPerSegment; $j++) {
+                if ($i > 0 && $j === 0) continue; // Avoid duplicate point at joint
+
+                $t = $j / $samplesPerSegment;
+                $t2 = $t * $t;
+                $t3 = $t2 * $t;
+
+                $f0 = -0.5 * $t3 + $t2 - 0.5 * $t;
+                $f1 = 1.5 * $t3 - 2.5 * $t2 + 1.0;
+                $f2 = -1.5 * $t3 + 2.0 * $t2 + 0.5 * $t;
+                $f3 = 0.5 * $t3 - 0.5 * $t2;
+
+                $lat = $p0[0] * $f0 + $p1[0] * $f1 + $p2[0] * $f2 + $p3[0] * $f3;
+                $lng = $p0[1] * $f0 + $p1[1] * $f1 + $p2[1] * $f2 + $p3[1] * $f3;
+
+                $result[] = [round($lat, 5), round($lng, 5)];
+            }
+        }
+
+        // Always append exact final destination point
+        $lastPt = $pts[$count - 1];
+        $result[] = [round($lastPt[0], 5), round($lastPt[1], 5)];
+
+        return $result;
     }
 }
