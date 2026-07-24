@@ -60,8 +60,8 @@ class PortController extends Controller
         $request->validate([
             'origin_port_id' => 'required|exists:ports,id',
             'destination_port_id' => 'required|exists:ports,id|different:origin_port_id',
-            'priority' => 'required|in:safest,fastest,cheapest',
-            'container_type' => 'required|in:general,container,liquid,bulk',
+            'priority' => 'nullable|in:safest,fastest,cheapest',
+            'container_type' => 'nullable|in:general,container,liquid,bulk',
         ], [
             'destination_port_id.different' => 'Pelabuhan tujuan harus berbeda dengan pelabuhan asal.',
         ]);
@@ -70,8 +70,8 @@ class PortController extends Controller
             $result = $routeService->analyze(
                 (int) $request->origin_port_id,
                 (int) $request->destination_port_id,
-                $request->priority,
-                $request->container_type
+                $request->input('priority', 'safest'),
+                $request->input('container_type', 'container')
             );
 
             return response()->json([

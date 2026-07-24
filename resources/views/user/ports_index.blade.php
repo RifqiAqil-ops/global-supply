@@ -427,7 +427,8 @@
         <div class="card-body p-4">
             <form id="formRouteAnalyzer" class="row g-3">
                 @csrf
-                <!-- Default hidden field for container_type to satisfy backend validation without breaking contract -->
+                <!-- Default hidden fields for priority and container_type to satisfy backend without UI inputs -->
+                <input type="hidden" name="priority" value="safest">
                 <input type="hidden" name="container_type" value="container">
 
                 <!-- 1. Origin Port Searchable Combobox -->
