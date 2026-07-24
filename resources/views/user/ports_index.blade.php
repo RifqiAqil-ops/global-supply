@@ -305,16 +305,6 @@
         box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
     }
 
-    /* Animated Polyline dash animation */
-    @keyframes leaflet-dash-flow {
-        to {
-            stroke-dashoffset: -20;
-        }
-    }
-    .animated-polyline {
-        stroke-dasharray: 10, 10;
-        animation: leaflet-dash-flow 1s linear infinite;
-    }
 
     /* Categorized Section Cards */
     .info-group-card {
@@ -1205,11 +1195,6 @@
         document.getElementById('selectDestinationPort').value = '';
         document.getElementById('inputDestinationPortSearch').value = '';
 
-        if (vesselAnimationInterval) {
-            clearInterval(vesselAnimationInterval);
-            vesselAnimationInterval = null;
-        }
-
         routeLayersGroup.clearLayers();
         resultsContainer.style.display = 'none';
         map.setView([20, 0], 2);
@@ -1217,10 +1202,6 @@
     });
 
     btnCloseRouteResults?.addEventListener('click', function() {
-        if (vesselAnimationInterval) {
-            clearInterval(vesselAnimationInterval);
-            vesselAnimationInterval = null;
-        }
         resultsContainer.style.display = 'none';
         routeLayersGroup.clearLayers();
         map.setView([20, 0], 2);
@@ -1385,164 +1366,45 @@
         }
     }
 
-    let vesselAnimationInterval = null;
-
-    function calculateHeading(p1, p2) {
-        if (!p1 || !p2) return 0;
-        const lat1 = p1[0] * Math.PI / 180;
-        const lat2 = p2[0] * Math.PI / 180;
-        const dLon = (p2[1] - p1[1]) * Math.PI / 180;
-        const y = Math.sin(dLon) * Math.cos(lat2);
-        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
-        const brng = Math.atan2(y, x);
-        return (brng * 180 / Math.PI + 360) % 360;
-    }
-
-    function createVesselSvgIcon(headingDegree) {
-        return L.divIcon({
-            html: `<div style="transform: rotate(${headingDegree}deg); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: transform 0.15s linear;">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.35));">
-                    <path d="M12 2L17.5 14.5H6.5L12 2Z" fill="#2563EB" stroke="#FFFFFF" stroke-width="1.5"/>
-                    <path d="M5.5 14H18.5L17.5 19.5C17.5 20.6 16.6 21.5 15.5 21.5H8.5C7.4 21.5 6.5 20.6 6.5 19.5L5.5 14Z" fill="#0F172A" stroke="#FFFFFF" stroke-width="1.5"/>
-                </svg>
-            </div>`,
-            className: 'modern-ship-vessel-icon',
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-        });
-    }
-
     function drawRouteOnMap(data) {
         routeLayersGroup.clearLayers();
-        if (vesselAnimationInterval) {
-            clearInterval(vesselAnimationInterval);
-            vesselAnimationInterval = null;
-        }
 
-        const seaPolylineCoords = (data.sea_polyline && data.sea_polyline.length > 0) 
-            ? data.sea_polyline 
-            : data.timeline.map(n => [n.latitude, n.longitude]);
+        const originCoords = [parseFloat(data.origin.latitude), parseFloat(data.origin.longitude)];
+        const destCoords = [parseFloat(data.destination.latitude), parseFloat(data.destination.longitude)];
 
-        // 1. Draw Primary Curved Sea Polyline (Ocean Blue #2563EB, 3.5px weight, crisp ocean flow)
-        const primaryPolyline = L.polyline(seaPolylineCoords, {
+        // 1. Draw single straight line from Origin to Destination (Ocean Blue #2563EB)
+        const straightPolyline = L.polyline([originCoords, destCoords], {
             color: '#2563EB',
             weight: 3.5,
             opacity: 0.9,
             lineCap: 'round',
-            lineJoin: 'round',
-            className: 'animated-polyline'
+            lineJoin: 'round'
         }).addTo(routeLayersGroup);
 
-        // 2. Draw Alternative Sea Route Polyline (Emerald #059669, 3.5px dashed line)
-        if (data.alternative_route && data.alternative_route.alternative.coordinates) {
-            const altCoords = data.alternative_route.alternative.coordinates;
-            L.polyline(altCoords, {
-                color: '#059669',
-                weight: 3.5,
-                opacity: 0.85,
-                lineCap: 'round',
-                lineJoin: 'round',
-                dashArray: '6, 6'
-            }).addTo(routeLayersGroup).bindPopup(`
-                <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif;">
-                    <span class="badge bg-success mb-1">Recommended Alternative Bypass</span>
-                    <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">${data.alternative_route.alternative.route_summary}</h6>
-                    <small class="text-muted d-block" style="font-size: 0.76rem;">${data.alternative_route.alternative.recommendation_text}</small>
-                </div>
-            `, { className: 'premium-leaflet-popup' });
-        }
-
-        // 3. Draw Waypoint Markers (Origin, Transit, Chokepoint, Destination)
-        data.timeline.forEach(node => {
-            const latLng = [node.latitude, node.longitude];
-
-            const iconHtml = node.type === 'Origin' 
-                ? `<div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow border border-white" style="width: 26px; height: 26px; font-weight: 700; font-size: 13px;"><i class="bi bi-geo-alt-fill"></i></div>`
-                : (node.type === 'Destination' 
-                    ? `<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow border border-white" style="width: 26px; height: 26px; font-weight: 700; font-size: 13px;"><i class="bi bi-flag-fill"></i></div>`
-                    : `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow border border-white" style="width: 22px; height: 22px; font-weight: 700; font-size: 11px;"><i class="bi bi-diagram-3-fill"></i></div>`);
-
-            const customIcon = L.divIcon({
-                html: iconHtml,
-                className: 'custom-route-marker-icon',
-                iconSize: [26, 26],
-                iconAnchor: [13, 13]
-            });
-
-            const popupHtml = `
-                <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif; min-width: 230px;">
-                    <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
-                        <span class="badge ${node.type === 'Origin' ? 'bg-danger' : (node.type === 'Destination' ? 'bg-success' : 'bg-primary')} px-2 py-0.5 rounded">${node.type}</span>
-                        <span class="fw-bold small text-dark">${node.port_name}</span>
-                    </div>
-                    <div class="text-muted small" style="font-size: 0.78rem; line-height: 1.6;">
-                        <div>Territory: <strong class="text-dark">${node.country_name}</strong></div>
-                        <div>Status: <strong class="text-success">${node.status}</strong></div>
-                        <div>Congestion Index: <strong class="text-dark">${node.congestion}</strong></div>
-                        <div>Weather: <strong class="text-dark">${node.weather}</strong></div>
-                        <div>Risk Rating: <strong class="text-dark">${node.risk_score} (${node.risk_level})</strong></div>
-                        ${node.warning ? `<div class="mt-1 text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i>${node.warning}</div>` : ''}
-                    </div>
-                </div>
-            `;
-
-            const marker = L.marker(latLng, { icon: customIcon }).bindPopup(popupHtml, { className: 'premium-leaflet-popup' });
-            routeLayersGroup.addLayer(marker);
+        // 2. Red Marker for Origin
+        const originIcon = L.divIcon({
+            html: `<div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center shadow border border-white" style="width: 26px; height: 26px; font-weight: 700; font-size: 13px;"><i class="bi bi-geo-alt-fill"></i></div>`,
+            className: 'custom-route-marker-icon',
+            iconSize: [26, 26],
+            iconAnchor: [13, 13]
         });
+        const originMarker = L.marker(originCoords, { icon: originIcon })
+            .bindPopup(`<div class="p-2 text-dark fw-bold small" style="font-family: 'Outfit', sans-serif;"><span class="badge bg-danger px-2 py-0.5 me-1">Origin</span>${data.origin.name} (${data.origin.country})</div>`, { className: 'premium-leaflet-popup' });
+        routeLayersGroup.addLayer(originMarker);
 
-        // 4. Draw Warning Badges for Chokepoints
-        if (data.warnings && data.warnings.length > 0) {
-            data.warnings.forEach(warn => {
-                const warnIcon = L.divIcon({
-                    html: `<div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center shadow border border-dark border-2" style="width: 24px; height: 24px; font-weight: 800; font-size: 12px;"><i class="bi bi-exclamation-triangle-fill"></i></div>`,
-                    className: 'warning-chokepoint-icon',
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
-                });
+        // 3. Green Marker for Destination
+        const destIcon = L.divIcon({
+            html: `<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center shadow border border-white" style="width: 26px; height: 26px; font-weight: 700; font-size: 13px;"><i class="bi bi-flag-fill"></i></div>`,
+            className: 'custom-route-marker-icon',
+            iconSize: [26, 26],
+            iconAnchor: [13, 13]
+        });
+        const destMarker = L.marker(destCoords, { icon: destIcon })
+            .bindPopup(`<div class="p-2 text-dark fw-bold small" style="font-family: 'Outfit', sans-serif;"><span class="badge bg-success px-2 py-0.5 me-1">Destination</span>${data.destination.name} (${data.destination.country})</div>`, { className: 'premium-leaflet-popup' });
+        routeLayersGroup.addLayer(destMarker);
 
-                const warnPopup = `
-                    <div class="p-2 text-dark" style="font-family: 'Outfit', sans-serif;">
-                        <span class="badge bg-warning text-dark mb-1"><i class="bi bi-shield-exclamation me-1"></i>Maritime Advisory Warning</span>
-                        <h6 class="fw-bold text-dark mb-1" style="font-size: 0.88rem;">${warn.name}</h6>
-                        <p class="text-danger small mb-0 fw-semibold" style="font-size: 0.76rem;">${warn.warning}</p>
-                    </div>
-                `;
-
-                const warnMarker = L.marker([warn.lat, warn.lng], { icon: warnIcon }).bindPopup(warnPopup, { className: 'premium-leaflet-popup' });
-                routeLayersGroup.addLayer(warnMarker);
-            });
-        }
-
-        // 5. Add Sleek Modern SVG Ship Vessel Marker (24x24px) with Heading Rotation & Smooth Motion
-        if (seaPolylineCoords.length > 1) {
-            const initialHeading = calculateHeading(seaPolylineCoords[0], seaPolylineCoords[1]);
-            const shipMarker = L.marker(seaPolylineCoords[0], {
-                icon: createVesselSvgIcon(initialHeading),
-                zIndexOffset: 3000
-            }).addTo(routeLayersGroup);
-
-            shipMarker.bindPopup(`
-                <div class="p-2 text-dark fw-bold small text-center" style="font-family: 'Outfit', sans-serif;">
-                    <i class="bi bi-water text-primary me-1"></i>Active Maritime Vessel Transit
-                </div>
-            `, { className: 'premium-leaflet-popup' });
-
-            let stepIdx = 0;
-            vesselAnimationInterval = setInterval(() => {
-                stepIdx = (stepIdx + 1) % seaPolylineCoords.length;
-                const currPt = seaPolylineCoords[stepIdx];
-                const nextPt = seaPolylineCoords[(stepIdx + 1) % seaPolylineCoords.length];
-                const heading = calculateHeading(currPt, nextPt);
-
-                shipMarker.setLatLng(currPt);
-                shipMarker.setIcon(createVesselSvgIcon(heading));
-            }, 100);
-        }
-
-        // Fit map bounds to encompass the full sea polyline smoothly
-        if (seaPolylineCoords.length > 0) {
-            map.fitBounds(primaryPolyline.getBounds(), { padding: [50, 50] });
-        }
+        // Fit map bounds to encompass the straight polyline smoothly
+        map.fitBounds(straightPolyline.getBounds(), { padding: [50, 50] });
     }
 
     window.focusRouteNode = function(lat, lng, portId) {
