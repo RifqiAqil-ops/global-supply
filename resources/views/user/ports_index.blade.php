@@ -431,7 +431,7 @@
                 <input type="hidden" name="container_type" value="container">
 
                 <!-- 1. Origin Port Searchable Combobox -->
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Origin Port</label>
                     <div class="combobox-wrapper">
                         <input type="hidden" id="selectOriginPort" name="origin_port_id" value="" required>
@@ -441,33 +441,12 @@
                 </div>
 
                 <!-- 2. Destination Port Searchable Combobox -->
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-flag-fill text-success me-1"></i>Destination Port</label>
                     <div class="combobox-wrapper">
                         <input type="hidden" id="selectDestinationPort" name="destination_port_id" value="" required>
                         <input type="text" class="form-control combobox-input" id="inputDestinationPortSearch" placeholder="Search destination port..." autocomplete="off" value="">
                         <div class="combobox-dropdown" id="dropdownDestinationPort"></div>
-                    </div>
-                </div>
-
-                <!-- 3. Priority Selector -->
-                <div class="col-md-2">
-                    <label class="form-label text-dark fw-semibold small mb-1"><i class="bi bi-sliders me-1 text-primary"></i>Priority Mode</label>
-                    <div class="d-flex gap-1.5">
-                        <input type="radio" class="btn-check" name="priority" id="prioritySafest" value="safest" checked>
-                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-2" for="prioritySafest" title="Safest Route">
-                            <i class="bi bi-shield-check"></i> Safest
-                        </label>
-
-                        <input type="radio" class="btn-check" name="priority" id="priorityFastest" value="fastest">
-                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-2" for="priorityFastest" title="Fastest Route">
-                            <i class="bi bi-lightning-charge"></i>
-                        </label>
-
-                        <input type="radio" class="btn-check" name="priority" id="priorityCheapest" value="cheapest">
-                        <label class="btn btn-outline-primary btn-sm flex-fill rounded-3 small fw-semibold py-2" for="priorityCheapest" title="Cheapest Route">
-                            <i class="bi bi-currency-dollar"></i>
-                        </label>
                     </div>
                 </div>
 
