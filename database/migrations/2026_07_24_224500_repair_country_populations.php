@@ -1,47 +1,226 @@
 <?php
 
 use App\Models\Country;
-use App\Models\EconomicIndicator;
-use App\Services\External\WorldBankService;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Log;
 
 return new class extends Migration
 {
     /**
+     * Complete Master Population Dictionary for Sovereign Nations (World Bank dataset).
+     */
+    private const WORLD_POPULATION_MAP = [
+        'AFG' => 42647492,
+        'AGO' => 37885849,
+        'ALB' => 2377128,
+        'AND' => 81938,
+        'ARE' => 10986400,
+        'ARG' => 45696159,
+        'ARM' => 3033500,
+        'ATG' => 93772,
+        'AUS' => 27194286,
+        'AUT' => 9177982,
+        'AZE' => 10202830,
+        'BDI' => 14047786,
+        'BEL' => 11858610,
+        'BEN' => 14462724,
+        'BFA' => 23548781,
+        'BGD' => 173562364,
+        'BGR' => 6441421,
+        'BHR' => 1588670,
+        'BHS' => 401283,
+        'BIH' => 3164253,
+        'BLR' => 9132629,
+        'BLZ' => 417072,
+        'BOL' => 12413315,
+        'BRA' => 211998573,
+        'BRB' => 282467,
+        'BRN' => 462721,
+        'BTN' => 791524,
+        'BWA' => 2521139,
+        'CAF' => 5330690,
+        'CAN' => 41262329,
+        'CHE' => 9005582,
+        'CHL' => 19764771,
+        'CHN' => 1408975000,
+        'CIV' => 31934230,
+        'CMR' => 29123744,
+        'COD' => 109276265,
+        'COG' => 6332961,
+        'COL' => 52886363,
+        'COM' => 866628,
+        'CPV' => 524877,
+        'CRI' => 5129910,
+        'CUB' => 10979783,
+        'CYP' => 1358282,
+        'CZE' => 10905028,
+        'DEU' => 83516593,
+        'DJI' => 1168722,
+        'DMA' => 66205,
+        'DNK' => 5976992,
+        'DOM' => 11427557,
+        'DZA' => 46814308,
+        'ECU' => 18135478,
+        'EGY' => 116538258,
+        'ERI' => 3535603,
+        'ESP' => 48848840,
+        'EST' => 1372341,
+        'ETH' => 132059767,
+        'FIN' => 5619911,
+        'FJI' => 928784,
+        'FRA' => 68551653,
+        'FSM' => 113160,
+        'GAB' => 2538952,
+        'GBR' => 69281000,
+        'GEO' => 3812518,
+        'GHA' => 34427414,
+        'GIN' => 14754785,
+        'GMB' => 2759988,
+        'GNB' => 2201352,
+        'GNQ' => 1892516,
+        'GRC' => 10405134,
+        'GRD' => 117207,
+        'GTM' => 18406359,
+        'GUY' => 831087,
+        'HND' => 10825703,
+        'HRV' => 3866200,
+        'HTI' => 11772557,
+        'HUN' => 9562065,
+        'IDN' => 283487931,
+        'IND' => 1450935791,
+        'IRL' => 5395790,
+        'IRN' => 91567738,
+        'IRQ' => 46042015,
+        'ISL' => 386506,
+        'ISR' => 10002200,
+        'ITA' => 58952704,
+        'JAM' => 2839175,
+        'JOR' => 11552876,
+        'JPN' => 123975371,
+        'KAZ' => 20592571,
+        'KEN' => 56432944,
+        'KGZ' => 7221868,
+        'KHM' => 17638801,
+        'KIR' => 134518,
+        'KNA' => 46843,
+        'KOR' => 51751065,
+        'KWT' => 4897263,
+        'LAO' => 7769819,
+        'LBN' => 5805962,
+        'LBR' => 5612817,
+        'LBY' => 7381023,
+        'LCA' => 179744,
+        'LIE' => 40450,
+        'LKA' => 21916000,
+        'LSO' => 2337423,
+        'LTU' => 2888278,
+        'LUX' => 677012,
+        'LVA' => 1866124,
+        'MAR' => 38081173,
+        'MCO' => 38631,
+        'MDA' => 2402306,
+        'MDG' => 31964956,
+        'MDV' => 527799,
+        'MEX' => 130861007,
+        'MHL' => 37548,
+        'MKD' => 1824359,
+        'MLI' => 24478595,
+        'MLT' => 568847,
+        'MMR' => 54500091,
+        'MNE' => 623525,
+        'MNG' => 3524788,
+        'MOZ' => 34631766,
+        'MRT' => 5169395,
+        'MUS' => 1245779,
+        'MWI' => 21655286,
+        'MYS' => 35557673,
+        'NAM' => 3030131,
+        'NER' => 27032412,
+        'NGA' => 232679478,
+        'NIC' => 6916140,
+        'NLD' => 17993485,
+        'NOR' => 5572279,
+        'NPL' => 29651054,
+        'NRU' => 11947,
+        'NZL' => 5290000,
+        'OMN' => 5281538,
+        'PAK' => 251269164,
+        'PAN' => 4515577,
+        'PER' => 34217848,
+        'PHL' => 115843670,
+        'PLW' => 17695,
+        'PNG' => 10576502,
+        'POL' => 36559233,
+        'PRK' => 26498823,
+        'PRT' => 10694681,
+        'PRY' => 6929153,
+        'PSE' => 5289152,
+        'QAT' => 2857822,
+        'ROU' => 19051804,
+        'RUS' => 143669648,
+        'RWA' => 14256567,
+        'SAU' => 35300280,
+        'SDN' => 50448963,
+        'SEN' => 18501984,
+        'SGP' => 6036860,
+        'SLB' => 819198,
+        'SLE' => 8642022,
+        'SLV' => 6338193,
+        'SMR' => 33977,
+        'SOM' => 19009151,
+        'SRB' => 6586476,
+        'SSD' => 11943408,
+        'STP' => 235536,
+        'SUR' => 634431,
+        'SVK' => 5422069,
+        'SVN' => 2127400,
+        'SWE' => 10569709,
+        'SWZ' => 1242822,
+        'SYC' => 121354,
+        'SYR' => 24672760,
+        'TCD' => 20299123,
+        'TGO' => 8406558,
+        'THA' => 71668011,
+        'TJK' => 10590927,
+        'TKM' => 7494498,
+        'TLS' => 1400638,
+        'TON' => 104175,
+        'TTO' => 1368333,
+        'TUN' => 12277109,
+        'TUR' => 85518661,
+        'TUV' => 9646,
+        'TZA' => 68560157,
+        'UGA' => 50015092,
+        'UKR' => 37860221,
+        'URY' => 3386588,
+        'USA' => 340003797,
+        'UZB' => 36361859,
+        'VAT' => 518,
+        'VA'  => 518,
+        'VCT' => 100616,
+        'VEN' => 28405543,
+        'VNM' => 100987686,
+        'VUT' => 327777,
+        'WSM' => 218019,
+        'YEM' => 40583164,
+        'ZAF' => 64007187,
+        'ZMB' => 21314956,
+        'ZWE' => 16634373,
+    ];
+
+    /**
      * Run the migrations to repair country population data in production database.
      */
     public function up(): void
     {
         try {
-            $unpopulatedCount = Country::where('population', '<=', 0)->count();
-            if ($unpopulatedCount > 0) {
-                Log::info("Migration repairing population headcount for {$unpopulatedCount} countries...");
-
-                // 1. First, check if EconomicIndicator table already has SP.POP.TOTL data
-                $indicators = EconomicIndicator::where('indicator_code', 'SP.POP.TOTL')
-                    ->where('value', '>', 0)
-                    ->orderByDesc('year')
-                    ->get()
-                    ->unique('country_id');
-
-                foreach ($indicators as $ind) {
-                    Country::where('id', $ind->country_id)->update(['population' => (int) $ind->value]);
-                }
-
-                // 2. If countries still have zero population, run World Bank API sync
-                $stillZero = Country::where('population', '<=', 0)->count();
-                if ($stillZero > 0) {
-                    try {
-                        app(WorldBankService::class)->syncEconomicIndicators();
-                    } catch (\Throwable $e) {
-                        Log::warning("Migration World Bank sync warning: " . $e->getMessage());
-                    }
-                }
-
-                // 3. Fallback for microstates (e.g. Vatican City)
-                Country::where('iso2', 'VA')->where('population', '<=', 0)->update(['population' => 518]);
+            Log::info("Executing population repair migration across countries database table...");
+            foreach (self::WORLD_POPULATION_MAP as $iso3 => $pop) {
+                Country::where('iso3', $iso3)
+                    ->orWhere('iso2', $iso3)
+                    ->update(['population' => (int) $pop]);
             }
+            Log::info("Population repair migration completed successfully for all sovereign nations.");
         } catch (\Throwable $e) {
             Log::error("Population repair migration error: " . $e->getMessage());
         }
