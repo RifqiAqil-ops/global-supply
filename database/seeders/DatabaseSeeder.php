@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
         if (Country::count() === 0) {
             $this->command?->info("Database empty. Auto-initializing master datasets...");
             Artisan::call('gscrip:sync-countries');
+            Artisan::call('gscrip:sync-worldbank');
             $this->call([WorldPortSeeder::class]);
             Artisan::call('gscrip:sync-exchange');
             Artisan::call('gscrip:sync-weather');

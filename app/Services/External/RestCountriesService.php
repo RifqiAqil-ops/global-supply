@@ -127,6 +127,23 @@ class RestCountriesService extends BaseApiClient implements CountryServiceInterf
             // Remove any non-sovereign countries from database
             Country::whereNotIn('iso3', self::SOVEREIGN_ISO3)->delete();
 
+            // Auto-fill population from World Bank SP.POP.TOTL indicator table for any country with 0 population
+            $zeroPopCountries = Country::where('population', '<=', 0)->get();
+            if ($zeroPopCountries->isNotEmpty()) {
+                foreach ($zeroPopCountries as $zCountry) {
+                    $popVal = \App\Models\EconomicIndicator::where('country_id', $zCountry->id)
+                        ->where('indicator_code', 'SP.POP.TOTL')
+                        ->orderByDesc('year')
+                        ->value('value');
+
+                    if ($popVal && $popVal > 0) {
+                        $zCountry->update(['population' => (int) $popVal]);
+                    } else if ($zCountry->iso2 === 'VA') {
+                        $zCountry->update(['population' => 518]);
+                    }
+                }
+            }
+
             // Flush the full country list cache
             Cache::forget('countries.all');
 

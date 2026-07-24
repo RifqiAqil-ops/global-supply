@@ -82,12 +82,16 @@ class CountryRepository extends BaseRepository implements CountryRepositoryInter
             $range = $filters['population_range'];
             if ($range === 'under_1m') {
                 $query->where('population', '<', 1000000);
+            } elseif ($range === 'small') {
+                $query->where('population', '<', 5000000);
             } elseif ($range === '1m_10m') {
                 $query->whereBetween('population', [1000000, 10000000]);
+            } elseif ($range === 'medium') {
+                $query->whereBetween('population', [5000000, 50000000]);
             } elseif ($range === '10m_100m') {
                 $query->whereBetween('population', [10000000, 100000000]);
-            } elseif ($range === 'over_100m') {
-                $query->where('population', '>', 100000000);
+            } elseif ($range === 'over_100m' || $range === 'large') {
+                $query->where('population', '>', 50000000);
             }
         }
 

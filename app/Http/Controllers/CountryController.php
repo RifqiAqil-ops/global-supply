@@ -64,8 +64,8 @@ class CountryController extends Controller
         // 3. Average Inflation
         $avgInflation = EconomicIndicator::where('indicator_code', 'FP.CPI.TOTL.ZG')->avg('value') ?? 0.0;
 
-        // 4. Average Population
-        $avgPopulation = Country::avg('population') ?? 0.0;
+        // 4. Average Population (filter non-zero for accuracy)
+        $avgPopulation = Country::where('population', '>', 0)->avg('population') ?? 0.0;
 
         // 5. Last Live Update (Latest successful API log)
         $lastLiveUpdate = ApiLog::where('is_success', true)
@@ -106,6 +106,19 @@ class CountryController extends Controller
             Log::warning("Country details failed to load live indicators: " . $e->getMessage());
             $indicators = collect();
             $wbOffline = true;
+        }
+
+        // Auto-heal: If country model population is 0, pull latest from indicators
+        if ($countryModel->population <= 0) {
+            $popVal = EconomicIndicator::where('country_id', $countryModel->id)
+                ->where('indicator_code', 'SP.POP.TOTL')
+                ->orderByDesc('year')
+                ->value('value');
+
+            if ($popVal && $popVal > 0) {
+                $countryModel->update(['population' => (int) $popVal]);
+                $countryModel->population = (int) $popVal;
+            }
         }
 
         // 2. Fetch REST Countries live data (reads updated population from DB)

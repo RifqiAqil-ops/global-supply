@@ -42,6 +42,17 @@ class SyncCountriesCommand extends Command
         try {
             $summary = $service->syncAllCountries();
             
+            // If any countries lack population data, auto-sync World Bank indicators
+            $zeroPopCount = \App\Models\Country::where('population', '<=', 0)->count();
+            if ($zeroPopCount > 0) {
+                $this->info("Detected {$zeroPopCount} countries with unpopulated headcount. Syncing World Bank population indicator (SP.POP.TOTL)...");
+                try {
+                    app(\App\Services\External\WorldBankService::class)->syncEconomicIndicators();
+                } catch (Throwable $e) {
+                    $this->warn("World Bank population sync warning: " . $e->getMessage());
+                }
+            }
+
             // Warm up cache after synchronization
             $service->getAllCountries(true);
 

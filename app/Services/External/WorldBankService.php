@@ -56,8 +56,12 @@ class WorldBankService extends BaseApiClient
         $countries = Country::all();
         $summary['countries_processed'] = $countries->count();
 
-        // Pre-cache country database lookups to optimize database hits during sync loops
-        $countryMap = $countries->pluck('id', 'iso3')->toArray();
+        // Pre-cache country database lookups to optimize database hits during sync loops (support both ISO3 and ISO2)
+        $countryMap = [];
+        foreach ($countries as $c) {
+            if (!empty($c->iso3)) $countryMap[strtoupper($c->iso3)] = $c->id;
+            if (!empty($c->iso2)) $countryMap[strtoupper($c->iso2)] = $c->id;
+        }
 
         // Tracker for country population updates (stores latest year populated to prevent back-updating)
         $latestPopTracker = [];
@@ -88,11 +92,13 @@ class WorldBankService extends BaseApiClient
                 foreach ($records as $record) {
                     try {
                         $iso3 = strtoupper($record['countryiso3code'] ?? '');
-                        if (empty($iso3) || !isset($countryMap[$iso3])) {
+                        $iso2 = strtoupper($record['country']['id'] ?? '');
+                        
+                        $countryId = $countryMap[$iso3] ?? $countryMap[$iso2] ?? null;
+                        if (!$countryId) {
                             continue; // Skip aggregate regions or unmapped countries
                         }
 
-                        $countryId = $countryMap[$iso3];
                         $year = (int) ($record['date'] ?? 0);
                         $value = $record['value'] !== null ? (float) $record['value'] : null;
 
@@ -127,7 +133,7 @@ class WorldBankService extends BaseApiClient
                         }
 
                         // Side Effect: If the indicator is total population, update the master `countries` table population
-                        if ($code === 'SP.POP.TOTL') {
+                        if ($code === 'SP.POP.TOTL' && $value > 0) {
                             $trackedLatest = $latestPopTracker[$countryId] ?? 0;
                             if ($year > $trackedLatest) {
                                 Country::where('id', $countryId)->update(['population' => (int) $value]);
