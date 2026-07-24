@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\ArticlePublished;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use Illuminate\Http\Request;
@@ -44,7 +45,7 @@ class ArticleController extends Controller
             $slug = $originalSlug . '-' . $count++;
         }
 
-        Article::create([
+        $article = Article::create([
             'title' => $validated['title'],
             'slug' => $slug,
             'summary' => $validated['summary'],
@@ -53,6 +54,10 @@ class ArticleController extends Controller
             'status' => $validated['status'],
             'published_at' => $validated['status'] === 'published' ? now() : null,
         ]);
+
+        try {
+            ArticlePublished::dispatch('created', $article->toArray());
+        } catch (\Throwable $e) {}
 
         return redirect()->route('admin.articles.index')->with('success', 'Article created successfully.');
     }
@@ -82,12 +87,22 @@ class ArticleController extends Controller
 
         $article->save();
 
+        try {
+            ArticlePublished::dispatch('updated', $article->toArray());
+        } catch (\Throwable $e) {}
+
         return redirect()->route('admin.articles.index')->with('success', 'Article updated successfully.');
     }
 
     public function destroy(Article $article)
     {
+        $articleData = $article->toArray();
         $article->delete();
+
+        try {
+            ArticlePublished::dispatch('deleted', $articleData);
+        } catch (\Throwable $e) {}
+
         return redirect()->route('admin.articles.index')->with('success', 'Article deleted successfully.');
     }
 }

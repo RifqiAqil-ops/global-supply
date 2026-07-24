@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\UserUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -30,12 +31,16 @@ class UserController extends Controller
             'role' => ['required', Rule::in(['admin', 'user'])],
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
         ]);
+
+        try {
+            UserUpdated::dispatch('created', $user->toArray());
+        } catch (\Throwable $e) {}
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
@@ -64,6 +69,10 @@ class UserController extends Controller
 
         $user->save();
 
+        try {
+            UserUpdated::dispatch('updated', $user->toArray());
+        } catch (\Throwable $e) {}
+
         return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
 
@@ -73,7 +82,13 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'You cannot delete your own admin account.');
         }
 
+        $userData = $user->toArray();
         $user->delete();
+
+        try {
+            UserUpdated::dispatch('deleted', $userData);
+        } catch (\Throwable $e) {}
+
         return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Events\WatchlistUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\Watchlist;
@@ -65,12 +66,16 @@ class WatchlistController extends Controller
             return redirect()->back()->with('error', 'This country is already in your watchlist.');
         }
 
-        WatchlistItem::create([
+        $item = WatchlistItem::create([
             'watchlist_id' => $watchlist->id,
             'country_id' => $request->input('country_id'),
             'alert_threshold' => $request->input('alert_threshold'),
             'notes' => $request->input('notes'),
         ]);
+
+        try {
+            WatchlistUpdated::dispatch($user->id, 'created', $item->toArray());
+        } catch (\Throwable $e) {}
 
         return redirect()->back()->with('success', 'Country added to watchlist successfully.');
     }
@@ -97,6 +102,10 @@ class WatchlistController extends Controller
             'notes' => $request->input('notes'),
         ]);
 
+        try {
+            WatchlistUpdated::dispatch(Auth::id(), 'updated', $item->toArray());
+        } catch (\Throwable $e) {}
+
         return redirect()->back()->with('success', 'Watchlist item updated successfully.');
     }
 
@@ -112,7 +121,12 @@ class WatchlistController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        $itemData = $item->toArray();
         $item->delete();
+
+        try {
+            WatchlistUpdated::dispatch(Auth::id(), 'deleted', $itemData);
+        } catch (\Throwable $e) {}
 
         return redirect()->back()->with('success', 'Country removed from watchlist successfully.');
     }

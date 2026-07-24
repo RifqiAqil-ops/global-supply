@@ -64,6 +64,10 @@ class SyncController extends Controller
                 'risk' => Artisan::call('gscrip:recalculate-risk'),
             };
 
+            try {
+                \App\Events\DataSyncCompleted::dispatch($service, "Synchronization for service [{$service}] completed successfully!");
+            } catch (\Throwable $e) {}
+
             return redirect()->back()->with('status', "Synchronization for service [{$service}] completed successfully!");
 
         } catch (\Throwable $e) {
@@ -78,6 +82,10 @@ class SyncController extends Controller
     {
         try {
             Artisan::call('waypoint:setup');
+
+            try {
+                \App\Events\DataSyncCompleted::dispatch('all', "Full system setup and data synchronization completed successfully!");
+            } catch (\Throwable $e) {}
 
             return redirect()->back()->with('status', "Full system setup and data synchronization completed successfully!");
         } catch (\Throwable $e) {

@@ -534,7 +534,70 @@
                             }
                         })
                         .catch(() => setStatusOffline());
-                }, 60000);
+            }
+
+            // 📡 Global Laravel Echo WebSockets Realtime Engine
+            if (window.Echo) {
+                try {
+                    // Global presence channel
+                    window.Echo.join('presence-global-users')
+                        .here((users) => {
+                            const countEl = document.getElementById('online-users-count');
+                            if (countEl) countEl.innerText = users.length;
+                        })
+                        .joining((user) => {
+                            const countEl = document.getElementById('online-users-count');
+                            if (countEl) countEl.innerText = parseInt(countEl.innerText || 0) + 1;
+                        })
+                        .leaving((user) => {
+                            const countEl = document.getElementById('online-users-count');
+                            if (countEl) countEl.innerText = Math.max(0, parseInt(countEl.innerText || 1) - 1);
+                        });
+
+                    // Articles channel
+                    window.Echo.channel('articles-channel')
+                        .listen('.ArticlePublished', (e) => {
+                            console.log('📡 Realtime Article Event:', e);
+                        });
+
+                    // Ports channel
+                    window.Echo.channel('ports-channel')
+                        .listen('.PortChanged', (e) => {
+                            console.log('📡 Realtime Port Event:', e);
+                        });
+
+                    // System sync channel
+                    window.Echo.channel('system-sync')
+                        .listen('.DataSyncCompleted', (e) => {
+                            console.log('📡 Realtime Sync Event:', e);
+                            setStatusOnline();
+                            updateTime();
+                        });
+
+                    // Risk weights channel
+                    window.Echo.channel('risk-weights')
+                        .listen('.RiskWeightsUpdated', (e) => {
+                            console.log('📡 Realtime Risk Weights Event:', e);
+                        });
+
+                    @if(auth()->check())
+                        // User private channel
+                        window.Echo.private('user.{{ auth()->id() }}')
+                            .listen('.WatchlistUpdated', (e) => {
+                                console.log('📡 Realtime Watchlist Event:', e);
+                            });
+
+                        @if(auth()->user()->isAdmin())
+                            // Admin private channel
+                            window.Echo.private('admin-channel')
+                                .listen('.UserUpdated', (e) => {
+                                    console.log('📡 Realtime Admin User Event:', e);
+                                });
+                        @endif
+                    @endif
+                } catch (err) {
+                    console.warn('Realtime Echo initialization warning:', err);
+                }
             }
         });
     </script>
