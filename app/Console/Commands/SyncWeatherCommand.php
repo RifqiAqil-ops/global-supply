@@ -48,6 +48,11 @@ class SyncWeatherCommand extends Command
 
             SyncTracker::success('weather', $startTime, $processed);
 
+            try {
+                \App\Events\WeatherUpdated::dispatch($summary, "Weather forecast updated for {$processed} countries.");
+                \Illuminate\Support\Facades\Artisan::call('gscrip:recalculate-risk');
+            } catch (\Throwable $e) {}
+
             $this->line("");
             $this->info("Weather synchronization completed in {$duration} seconds!");
 

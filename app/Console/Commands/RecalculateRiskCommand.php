@@ -64,6 +64,10 @@ class RecalculateRiskCommand extends Command
 
                 SyncTracker::success('risk', $startTime, $totalCountries);
 
+                try {
+                    \App\Events\RiskScoreUpdated::dispatch([], "Risk scores recalculated for all {$totalCountries} countries.");
+                } catch (\Throwable $e) {}
+
                 $this->info("Recalculation completed successfully in {$duration} seconds!");
             } catch (Throwable $e) {
                 SyncTracker::fail('risk', $startTime, $e);

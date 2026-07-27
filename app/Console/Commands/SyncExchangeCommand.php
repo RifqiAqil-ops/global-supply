@@ -48,6 +48,11 @@ class SyncExchangeCommand extends Command
 
             SyncTracker::success('exchange', $startTime, $totalProcessed);
 
+            try {
+                \App\Events\ExchangeRateUpdated::dispatch($summary, "Exchange rates updated for {$totalProcessed} currencies.");
+                \Illuminate\Support\Facades\Artisan::call('gscrip:recalculate-risk');
+            } catch (\Throwable $e) {}
+
             $this->line("");
             $this->info("Exchange rate synchronization completed in {$duration} seconds!");
 

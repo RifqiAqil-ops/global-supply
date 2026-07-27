@@ -139,6 +139,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('articles', [\App\Http\Controllers\User\ArticleController::class, 'index'])->name('articles.index');
     Route::get('articles/{slug}', [\App\Http\Controllers\User\ArticleController::class, 'show'])->name('articles.show');
 
+    // Live API endpoints for auto polling and dynamic UI update
+    Route::prefix('live-api')->group(function () {
+        Route::get('dashboard-metrics', [\App\Http\Controllers\LiveApiController::class, 'dashboardMetrics']);
+        Route::get('weather', [\App\Http\Controllers\LiveApiController::class, 'weather']);
+        Route::get('exchange-rates', [\App\Http\Controllers\LiveApiController::class, 'exchangeRates']);
+        Route::get('news', [\App\Http\Controllers\LiveApiController::class, 'news']);
+        Route::get('country-risk/{code}', [\App\Http\Controllers\LiveApiController::class, 'countryRisk']);
+    });
+
     // Admin settings
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('diagnose-api', [AdminDashboardController::class, 'diagnoseApi'])->name('diagnose-api');

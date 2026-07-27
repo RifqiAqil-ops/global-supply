@@ -56,6 +56,11 @@ class SyncNewsCommand extends Command
 
             SyncTracker::success('news', $startTime, $saved);
 
+            try {
+                \App\Events\NewsUpdated::dispatch($summary, "News feed updated with {$saved} new articles.");
+                \Illuminate\Support\Facades\Artisan::call('gscrip:recalculate-risk');
+            } catch (\Throwable $e) {}
+
             $this->line("");
             $this->info("News synchronization completed in {$duration} seconds!");
 
